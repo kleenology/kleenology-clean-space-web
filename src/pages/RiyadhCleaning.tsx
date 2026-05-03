@@ -58,6 +58,48 @@ export default function RiyadhCleaning() {
     window.location.href = "tel:+966537519929";
   };
 
+  const riyadhJsonLd = [
+    {
+      "@type": "LocalBusiness",
+      "name": "كلينولوجي | Kleenology",
+      "alternateName": "Kleenology",
+      "description": "أفضل شركة تنظيف في الرياض. تنظيف منازل، مكاتب، سجاد وتنظيف عميق بمواد آمنة وضمان الرضا ١٠٠٪",
+      "url": "https://kleenology.me/cleaning-riyadh",
+      "telephone": "+966537519929",
+      "address": {
+        "@type": "PostalAddress",
+        "addressLocality": "الرياض",
+        "addressRegion": "الرياض",
+        "addressCountry": "SA",
+      },
+      "geo": {
+        "@type": "GeoCoordinates",
+        "latitude": "24.7136",
+        "longitude": "46.6753",
+      },
+      "areaServed": neighborhoods.map((n) => ({ "@type": "Neighborhood", "name": n })),
+      "aggregateRating": {
+        "@type": "AggregateRating",
+        "ratingValue": "4.9",
+        "reviewCount": "690",
+        "bestRating": "5",
+      },
+      "review": reviews.map((r) => ({
+        "@type": "Review",
+        "author": { "@type": "Person", "name": r.name },
+        "reviewRating": { "@type": "Rating", "ratingValue": String(r.stars), "bestRating": "5" },
+        "reviewBody": r.text,
+      })),
+    },
+    {
+      "@type": "BreadcrumbList",
+      "itemListElement": [
+        { "@type": "ListItem", "position": 1, "name": "الرئيسية", "item": "https://kleenology.me" },
+        { "@type": "ListItem", "position": 2, "name": "خدمات التنظيف في الرياض", "item": "https://kleenology.me/cleaning-riyadh" },
+      ],
+    },
+  ];
+
   return (
     <div className="min-h-screen bg-background" dir="rtl">
       <SEO
@@ -65,6 +107,8 @@ export default function RiyadhCleaning() {
         description="كلينولوجي أفضل شركة تنظيف في الرياض. تنظيف منازل، مكاتب، سجاد وتنظيف عميق بمواد آمنة وضمان الرضا ١٠٠٪. خدمة في جميع أحياء الرياض. احجز الآن!"
         keywords="شركة تنظيف الرياض, تنظيف منازل الرياض, تنظيف شقق الرياض, تنظيف فلل الرياض, شركة تنظيف بالرياض, تنظيف عميق الرياض, تنظيف سجاد الرياض, أفضل شركة تنظيف الرياض"
         url="https://kleenology.me/cleaning-riyadh"
+        locale="ar_SA"
+        jsonLd={riyadhJsonLd}
       />
       <Header />
 

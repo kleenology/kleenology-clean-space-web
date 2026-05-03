@@ -2,39 +2,56 @@
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9"
         xmlns:image="http://www.google.com/schemas/sitemap-image/1.1">
   <url>
-    <loc>https://kleenology.com/</loc>
+    <loc>https://kleenology.me/</loc>
     <image:image>
-      <image:loc>https://kleenology.com/logobg.png</image:loc>
+      <image:loc>https://kleenology.me/logobg.png</image:loc>
       <image:title>Kleenology Professional Cleaning Services</image:title>
       <image:caption>Professional cleaning services with eco-friendly products</image:caption>
     </image:image>
     <image:image>
-      <image:loc>https://kleenology.com/logo.png</image:loc>
+      <image:loc>https://kleenology.me/logo.png</image:loc>
       <image:title>Kleenology Logo</image:title>
       <image:caption>Kleenology cleaning company logo</image:caption>
     </image:image>
   </url>
   <url>
-    <loc>https://kleenology.com/services</loc>
+    <loc>https://kleenology.me/home-cleaning</loc>
     <image:image>
-      <image:loc>https://kleenology.com/src/assets/deep-cleaning.jpg</image:loc>
-      <image:title>Deep Cleaning Service</image:title>
-      <image:caption>Professional deep cleaning and sanitization services</image:caption>
+      <image:loc>https://kleenology.me/logobg.png</image:loc>
+      <image:title>Home Cleaning Service — Kleenology</image:title>
+      <image:caption>Professional home cleaning services in Riyadh</image:caption>
     </image:image>
+  </url>
+  <url>
+    <loc>https://kleenology.me/deep-cleaning</loc>
     <image:image>
-      <image:loc>https://kleenology.com/src/assets/furniture-cleaning.jpg</image:loc>
-      <image:title>Furniture Cleaning Service</image:title>
-      <image:caption>Expert furniture cleaning and maintenance</image:caption>
+      <image:loc>https://kleenology.me/logobg.png</image:loc>
+      <image:title>Deep Cleaning Service — Kleenology</image:title>
+      <image:caption>Professional deep cleaning and sanitization services in Riyadh</image:caption>
     </image:image>
+  </url>
+  <url>
+    <loc>https://kleenology.me/carpet-cleaning</loc>
     <image:image>
-      <image:loc>https://kleenology.com/src/assets/ac-cleaning.jpg</image:loc>
-      <image:title>AC Cleaning Service</image:title>
-      <image:caption>Professional air conditioning cleaning and maintenance</image:caption>
+      <image:loc>https://kleenology.me/logobg.png</image:loc>
+      <image:title>Carpet Cleaning Service — Kleenology</image:title>
+      <image:caption>Deep carpet cleaning and stain removal in Riyadh</image:caption>
     </image:image>
+  </url>
+  <url>
+    <loc>https://kleenology.me/office-cleaning</loc>
     <image:image>
-      <image:loc>https://kleenology.com/src/assets/carpet-cleaning.jpg</image:loc>
-      <image:title>Carpet Cleaning Service</image:title>
-      <image:caption>Deep carpet cleaning and stain removal</image:caption>
+      <image:loc>https://kleenology.me/logobg.png</image:loc>
+      <image:title>Office Cleaning Service — Kleenology</image:title>
+      <image:caption>Professional office and commercial cleaning in Riyadh</image:caption>
+    </image:image>
+  </url>
+  <url>
+    <loc>https://kleenology.me/post-construction-cleaning</loc>
+    <image:image>
+      <image:loc>https://kleenology.me/logobg.png</image:loc>
+      <image:title>Post-Construction Cleaning — Kleenology</image:title>
+      <image:caption>Specialist post-construction and renovation cleaning in Riyadh</image:caption>
     </image:image>
   </url>
 </urlset> 

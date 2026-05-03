@@ -7,68 +7,64 @@ interface SEOProps {
   image?: string;
   url?: string;
   type?: string;
-  jsonLd?: object;
+  locale?: string;
+  jsonLd?: object | object[];
   hreflang?: boolean;
 }
 
 export const SEO: React.FC<SEOProps> = ({
-  title = "Kleenology - Professional Cleaning Services | Excellence in Every Inch",
-  description = "Kleenology delivers spotless cleaning results using eco-friendly products. Professional home and office cleaning services with satisfaction guarantee.",
-  keywords = "cleaning services, professional cleaning, house cleaning, office cleaning, eco-friendly cleaning, deep cleaning, sanitization",
+  title = "كلينولوجي - خدمات تنظيف احترافية في الرياض | Kleenology",
+  description = "كلينولوجي — شركة تنظيف احترافية في الرياض. تنظيف منازل، مكاتب، سجاد، وتنظيف عميق بمواد آمنة وضمان الرضا ١٠٠٪.",
+  keywords = "تنظيف منازل الرياض, شركة تنظيف الرياض, تنظيف عميق, تنظيف سجاد, تنظيف مكاتب, كلينولوجي, cleaning company Riyadh",
   image = "https://kleenology.me/logobg.png",
   url = "https://kleenology.me",
   type = "website",
+  locale = "ar_SA",
   jsonLd,
   hreflang = true,
 }) => {
   useEffect(() => {
     document.title = title;
 
-    const setMeta = (selector: string, attr: string, value: string, attrName = 'content') => {
+    const setMeta = (selector: string, attr: string, value: string) => {
       let tag = document.querySelector(selector) as HTMLMetaElement | null;
       if (!tag) {
         tag = document.createElement('meta');
         tag.setAttribute(attr, selector.match(/["']([^"']+)["']/)?.[1] ?? '');
         document.head.appendChild(tag);
       }
-      tag.setAttribute(attrName, value);
+      tag.setAttribute('content', value);
     };
 
-    setMeta('meta[name="description"]', 'name', description);
-    setMeta('meta[name="keywords"]', 'name', keywords);
-
-    const ogTags: [string, string][] = [
-      ['og:title', title],
-      ['og:description', description],
-      ['og:image', image],
-      ['og:url', url],
-      ['og:type', type],
-    ];
-    ogTags.forEach(([property, content]) => {
+    const setProp = (property: string, value: string) => {
       let tag = document.querySelector(`meta[property="${property}"]`);
       if (!tag) {
         tag = document.createElement('meta');
         tag.setAttribute('property', property);
         document.head.appendChild(tag);
       }
-      tag.setAttribute('content', content);
-    });
+      tag.setAttribute('content', value);
+    };
 
-    const twitterTags: [string, string][] = [
-      ['twitter:title', title],
-      ['twitter:description', description],
-      ['twitter:image', image],
-    ];
-    twitterTags.forEach(([name, content]) => {
-      let tag = document.querySelector(`meta[name="${name}"]`);
-      if (!tag) {
-        tag = document.createElement('meta');
-        tag.setAttribute('name', name);
-        document.head.appendChild(tag);
-      }
-      tag.setAttribute('content', content);
-    });
+    setMeta('meta[name="description"]', 'name', description);
+    setMeta('meta[name="keywords"]', 'name', keywords);
 
+    // Open Graph
+    setProp('og:title', title);
+    setProp('og:description', description);
+    setProp('og:image', image);
+    setProp('og:url', url);
+    setProp('og:type', type);
+    setProp('og:site_name', 'Kleenology');
+    setProp('og:locale', locale);
+
+    // Twitter Card
+    setMeta('meta[name="twitter:card"]', 'name', 'summary_large_image');
+    setMeta('meta[name="twitter:title"]', 'name', title);
+    setMeta('meta[name="twitter:description"]', 'name', description);
+    setMeta('meta[name="twitter:image"]', 'name', image);
+
+    // Canonical
     let canonical = document.querySelector('link[rel="canonical"]');
     if (!canonical) {
       canonical = document.createElement('link');
@@ -104,14 +100,17 @@ export const SEO: React.FC<SEOProps> = ({
         script.id = scriptId;
         document.head.appendChild(script);
       }
-      script.textContent = JSON.stringify(jsonLd);
+      const payload = Array.isArray(jsonLd)
+        ? { '@context': 'https://schema.org', '@graph': jsonLd }
+        : jsonLd;
+      script.textContent = JSON.stringify(payload);
     }
 
     return () => {
       const script = document.getElementById('seo-page-jsonld');
       if (script) script.remove();
     };
-  }, [title, description, keywords, image, url, type, jsonLd, hreflang]);
+  }, [title, description, keywords, image, url, type, locale, jsonLd, hreflang]);
 
   return null;
 };

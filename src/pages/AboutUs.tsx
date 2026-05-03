@@ -64,6 +64,33 @@ const AboutUs = () => {
   const isRTL = i18n.dir() === "rtl";
   const c = isRTL ? content.ar : content.en;
 
+  const aboutJsonLd = [
+    {
+      "@type": "Organization",
+      "name": "Kleenology",
+      "alternateName": "كلينولوجي",
+      "url": "https://kleenology.me",
+      "logo": "https://kleenology.me/logobg.png",
+      "foundingDate": "2022",
+      "description": isRTL ? content.ar.hero.subtitle : content.en.hero.subtitle,
+      "telephone": "+966537519929",
+      "email": "Contract@kleenology.net",
+      "address": {
+        "@type": "PostalAddress",
+        "addressLocality": "الرياض",
+        "addressCountry": "SA",
+      },
+      "sameAs": ["https://www.tiktok.com/@kleenology"],
+    },
+    {
+      "@type": "BreadcrumbList",
+      "itemListElement": [
+        { "@type": "ListItem", "position": 1, "name": isRTL ? "الرئيسية" : "Home", "item": "https://kleenology.me" },
+        { "@type": "ListItem", "position": 2, "name": isRTL ? "من نحن" : "About Us", "item": "https://kleenology.me/about" },
+      ],
+    },
+  ];
+
   return (
     <div className={`min-h-screen bg-background ${isRTL ? "rtl" : "ltr"}`} dir={isRTL ? "rtl" : "ltr"}>
       <SEO
@@ -71,6 +98,8 @@ const AboutUs = () => {
         description={c.seoDesc}
         keywords="كلينولوجي, من نحن, شركة تنظيف الرياض, kleenology about"
         url="https://kleenology.me/about"
+        locale={isRTL ? "ar_SA" : "en_US"}
+        jsonLd={aboutJsonLd}
       />
       <Header />
 

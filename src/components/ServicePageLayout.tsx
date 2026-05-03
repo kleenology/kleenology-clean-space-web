@@ -45,7 +45,6 @@ export const ServicePageLayout = ({ ar, en }: ServicePageLayoutProps) => {
   };
 
   const breadcrumbJsonLd = {
-    "@context": "https://schema.org",
     "@type": "BreadcrumbList",
     "itemListElement": [
       { "@type": "ListItem", "position": 1, "name": isRTL ? "الرئيسية" : "Home", "item": "https://kleenology.me" },
@@ -53,9 +52,41 @@ export const ServicePageLayout = ({ ar, en }: ServicePageLayoutProps) => {
     ],
   };
 
+  const serviceJsonLd = {
+    "@type": "Service",
+    "name": c.seo.title.replace(/ \| كلينولوجي| \| Kleenology/g, ""),
+    "description": c.seo.description,
+    "url": c.seo.url,
+    "provider": {
+      "@type": "LocalBusiness",
+      "name": "Kleenology",
+      "alternateName": "كلينولوجي",
+      "url": "https://kleenology.me",
+      "telephone": "+966537519929",
+      "address": {
+        "@type": "PostalAddress",
+        "addressLocality": "الرياض",
+        "addressCountry": "SA",
+      },
+    },
+    "areaServed": {
+      "@type": "City",
+      "name": "Riyadh",
+      "sameAs": "https://www.wikidata.org/wiki/Q3692",
+    },
+    "hasOfferCatalog": {
+      "@type": "OfferCatalog",
+      "name": c.includes.title,
+      "itemListElement": c.includes.items.map((item) => ({
+        "@type": "Offer",
+        "itemOffered": { "@type": "Service", "name": item },
+      })),
+    },
+  };
+
   return (
     <div className={`min-h-screen bg-background ${isRTL ? "rtl" : "ltr"}`} dir={isRTL ? "rtl" : "ltr"}>
-      <SEO {...c.seo} jsonLd={breadcrumbJsonLd} />
+      <SEO {...c.seo} jsonLd={[breadcrumbJsonLd, serviceJsonLd]} />
       <Header />
 
       <main className="pt-20">

@@ -29,13 +29,32 @@ const Index = () => {
     window.open('https://wa.me/966537519929', '_blank');
   };
 
+  const isRTL = i18n.dir() === "rtl";
+
+  const homeJsonLd = [
+    {
+      "@type": "BreadcrumbList",
+      "itemListElement": [
+        { "@type": "ListItem", "position": 1, "name": isRTL ? "الرئيسية" : "Home", "item": "https://kleenology.me" },
+      ],
+    },
+  ];
+
   return (
     <div className="min-h-screen bg-background">
-      <SEO 
-        title="Kleenology - Professional Cleaning Services | Excellence in Every Inch"
-        description="Kleenology delivers spotless cleaning results using eco-friendly products. Professional home and office cleaning services with satisfaction guarantee."
-        keywords="cleaning services, professional cleaning, house cleaning, office cleaning, eco-friendly cleaning, deep cleaning, sanitization"
+      <SEO
+        title={isRTL
+          ? "كلينولوجي - خدمات تنظيف احترافية في الرياض | Kleenology"
+          : "Kleenology - Professional Cleaning Services Riyadh | كلينولوجي"}
+        description={isRTL
+          ? "كلينولوجي — شركة تنظيف احترافية في الرياض. تنظيف منازل، مكاتب، سجاد، وتنظيف عميق بمواد آمنة وضمان الرضا ١٠٠٪. احجز الآن!"
+          : "Kleenology delivers spotless cleaning results using eco-friendly products. Professional home and office cleaning services in Riyadh with 100% satisfaction guarantee."}
+        keywords={isRTL
+          ? "تنظيف منازل الرياض, شركة تنظيف الرياض, تنظيف عميق, تنظيف سجاد, تنظيف مكاتب, كلينولوجي"
+          : "cleaning services Riyadh, professional cleaning, house cleaning, office cleaning, eco-friendly cleaning, deep cleaning, Kleenology"}
         url="https://kleenology.me"
+        locale={isRTL ? "ar_SA" : "en_US"}
+        jsonLd={homeJsonLd}
       />
       
       <PromoBanner />

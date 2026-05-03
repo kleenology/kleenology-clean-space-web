@@ -154,6 +154,51 @@ export default function Pricing() {
       ? `مرحباً، أريد حجز خدمة ${mode === "general" ? "تنظيف عام" : "تنظيف تأهيلي"} لـ ${label} (${sub})${price ? ` — السعر ${price} ر.س` : ""}`
       : `Hello! I'd like to book ${mode === "general" ? "General Cleaning" : "Deep Cleaning"} for ${label} (${sub})${price ? ` — ${price} SAR` : ""}`;
 
+  const pricingJsonLd = [
+    {
+      "@type": "ItemList",
+      "name": isRTL ? "أسعار خدمات التنظيف — كلينولوجي" : "Cleaning Service Prices — Kleenology",
+      "description": isRTL
+        ? "أسعار خدمات التنظيف العام والتأهيلي في الرياض"
+        : "General and deep cleaning service prices in Riyadh",
+      "itemListElement": places.map((p, i) => ({
+        "@type": "ListItem",
+        "position": i + 1,
+        "item": {
+          "@type": "Offer",
+          "name": p.label,
+          "description": p.sub,
+          "priceSpecification": [
+            ...(p.general ? [{
+              "@type": "UnitPriceSpecification",
+              "price": p.general,
+              "priceCurrency": "SAR",
+              "name": isRTL ? "تنظيف عام" : "General Cleaning",
+            }] : []),
+            {
+              "@type": "UnitPriceSpecification",
+              "price": p.deep,
+              "priceCurrency": "SAR",
+              "name": isRTL ? "تنظيف تأهيلي" : "Deep Cleaning",
+            },
+          ],
+          "seller": {
+            "@type": "LocalBusiness",
+            "name": "Kleenology",
+            "url": "https://kleenology.me",
+          },
+        },
+      })),
+    },
+    {
+      "@type": "BreadcrumbList",
+      "itemListElement": [
+        { "@type": "ListItem", "position": 1, "name": isRTL ? "الرئيسية" : "Home", "item": "https://kleenology.me" },
+        { "@type": "ListItem", "position": 2, "name": isRTL ? "الأسعار" : "Pricing", "item": "https://kleenology.me/pricing" },
+      ],
+    },
+  ];
+
   return (
     <div className={`min-h-screen bg-white ${isRTL ? "rtl" : "ltr"}`} dir={isRTL ? "rtl" : "ltr"}>
       <SEO
@@ -163,6 +208,8 @@ export default function Pricing() {
           : "Cleaning service prices in Riyadh — general and deep cleaning for apartments, floors, and villas."}
         keywords="أسعار تنظيف, cleaning prices, kleenology"
         url="https://kleenology.me/pricing"
+        locale={isRTL ? "ar_SA" : "en_US"}
+        jsonLd={pricingJsonLd}
       />
       <Header />
 
