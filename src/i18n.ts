@@ -99,7 +99,7 @@ const resources = {
         terms: 'Terms & Conditions',
         booking: 'Book Now',
         contactInfo: 'Contact Info',
-        copyright: '© 2024 Kleenology. All rights reserved. | Excellence in every inch.'
+        copyright: '© {{year}} Kleenology. All rights reserved. | Excellence in every inch.'
       },
       nav: {
         home: 'Home',
@@ -349,7 +349,7 @@ const resources = {
         terms: 'الشروط والأحكام',
         booking: 'احجز الآن',
         contactInfo: 'معلومات التواصل',
-        copyright: '© 2024 كلينولوجي. جميع الحقوق محفوظة. | الفرق يُرى… في كل لمسة.'
+        copyright: '© {{year}} كلينولوجي. جميع الحقوق محفوظة. | الفرق يُرى… في كل لمسة.'
       },
       nav: {
         home: 'الرئيسية',

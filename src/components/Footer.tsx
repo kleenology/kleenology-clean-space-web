@@ -180,7 +180,7 @@ export const Footer = ({ onTermsClick, onNavClick }: FooterProps) => {
         {/* Bottom Bar */}
         <div className="border-t border-background/20 mt-8 pt-8 text-center">
           <p className="text-sm text-background/60">
-            {t('footer.copyright')}
+            {t('footer.copyright', { year: new Date().getFullYear() })}
           </p>
         </div>
       </div>
