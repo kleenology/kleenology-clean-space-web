@@ -142,6 +142,12 @@ export const Header = ({ onLogoClick, onNavClick }: HeaderProps) => {
             {t('nav.pricing')}
           </a>
           <a
+            href="/blog"
+            className="text-foreground hover:text-primary transition-colors cursor-pointer font-medium"
+          >
+            {t('nav.blog')}
+          </a>
+          <a
             href="/booking"
             className="flex items-center gap-1.5 bg-primary text-white px-4 py-2 rounded-lg font-semibold text-sm hover:bg-primary/90 transition-colors"
           >
@@ -246,6 +252,13 @@ export const Header = ({ onLogoClick, onNavClick }: HeaderProps) => {
                   className="text-lg font-medium text-foreground hover:text-primary transition-colors"
                 >
                   {t('nav.pricing')}
+                </a>
+                <a
+                  href="/blog"
+                  onClick={() => setOpen(false)}
+                  className="text-lg font-medium text-foreground hover:text-primary transition-colors"
+                >
+                  {t('nav.blog')}
                 </a>
                 <a
                   href="/booking"
