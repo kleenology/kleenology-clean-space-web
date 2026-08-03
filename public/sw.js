@@ -1,11 +1,15 @@
-const CACHE_NAME = 'kleenology-v5';
+const CACHE_NAME = 'kleenology-v6';
 // Precache only shell and public static assets; do NOT cache source files
 const urlsToCache = [
   '/',
   '/index.html',
   '/logobg.png',
   '/logo.png',
-  '/favicon.ico'
+  '/favicon.ico',
+  '/favicon-96x96.png',
+  '/icon-192.png',
+  '/icon-512.png',
+  '/apple-touch-icon.png'
 ];
 
 // Install event - cache resources and activate immediately
