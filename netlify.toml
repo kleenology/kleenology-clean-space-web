@@ -32,8 +32,6 @@
     Referrer-Policy = "strict-origin-when-cross-origin"
     X-Content-Type-Options = "nosniff"
     Permissions-Policy = "geolocation=(), microphone=(), camera=()"
-    # Content Security Policy tuned to allow analytics/pixels used on the site
-    Content-Security-Policy = "default-src 'self'; script-src 'self' 'unsafe-inline' 'unsafe-eval' https://*.googletagmanager.com https://www.googleadservices.com https://googleads.g.doubleclick.net https://connect.facebook.net https://analytics.tiktok.com https://sc-static.net https://app.trysoro.com; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com; img-src 'self' data: https:; connect-src 'self' https://*.google-analytics.com https://*.analytics.google.com https://*.googletagmanager.com https://*.google.com https://*.doubleclick.net https://www.googleadservices.com https://connect.facebook.net https://analytics.tiktok.com https://tr.snapchat.com https://sc-static.net https://app.trysoro.com; frame-src https://*.googletagmanager.com https://td.doubleclick.net https://connect.facebook.net; frame-ancestors 'self';"
 
 [[headers]]
   for = "/*"
