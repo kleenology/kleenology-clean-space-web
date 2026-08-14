@@ -136,12 +136,6 @@ export const Header = ({ onLogoClick, onNavClick }: HeaderProps) => {
             {t('nav.contact')}
           </a>
           <a
-            href="/pricing"
-            className="text-foreground hover:text-primary transition-colors cursor-pointer font-medium"
-          >
-            {t('nav.pricing')}
-          </a>
-          <a
             href="/blog"
             className="text-foreground hover:text-primary transition-colors cursor-pointer font-medium"
           >
@@ -245,13 +239,6 @@ export const Header = ({ onLogoClick, onNavClick }: HeaderProps) => {
                   className="text-lg font-medium text-foreground hover:text-primary transition-colors"
                 >
                   {t('nav.contact')}
-                </a>
-                <a
-                  href="/pricing"
-                  onClick={() => setOpen(false)}
-                  className="text-lg font-medium text-foreground hover:text-primary transition-colors"
-                >
-                  {t('nav.pricing')}
                 </a>
                 <a
                   href="/blog"
