@@ -212,16 +212,46 @@ const resources = {
             'The company has the right to extend work duration if the work requires it.'
           ]
         },
-        liabilityDisclaimer: {
-          title: '5. Liability Disclaimer',
+        furnitureMoving: {
+          title: '5. Furniture Moving',
           points: [
-            'Services include what was agreed upon and do not include cleaning ceilings, chandeliers, or polishing unless the contract specifies otherwise.',
-            'Client is responsible for safeguarding valuable belongings, and the company is not responsible for their loss.',
-            'If we cause damage without requesting movement or relocation, compensation is capped at three times the service value.'
+            'The client must notify the team supervisor in writing if furniture is not suitable for disassembly, reassembly, or moving; the client bears full responsibility for failing to give such notice, including that no compensation is due from the company.',
+            'If damage occurs to furniture that was moved and it is proven that the company caused it, the company\'s compensation shall not exceed the total value of the client\'s invoice.',
+            'The client acknowledges that the company is not responsible for any effect on furniture not designed to be disassembled and reassembled as it was — for example, ready-made and fixed furniture pieces; if the client wishes otherwise, they must notify the team supervisor in writing.'
+          ]
+        },
+        maintenanceSpareParts: {
+          title: '6. Maintenance and Spare Parts',
+          points: [
+            'The client acknowledges the company\'s entitlement to the repair amount for the specified fault upon its completion, based on the client\'s initial approval of the repair; the appearance of another fault different from the one repaired does not affect this entitlement.',
+            'The client acknowledges the company\'s entitlement to the amount of the service provided once the repair is completed, with the company\'s liability released after the team leaves the site.',
+            'The client acknowledges that spare parts are covered by the agent\'s (manufacturer\'s) warranty, if any, and that the client may claim against that warranty directly, with the company\'s liability released.'
+          ]
+        },
+        liabilityDisclaimer: {
+          title: '7. Liability Disclaimer',
+          points: [
+            'The team is committed to cleaning visible and general areas only. The cleaning and sanitization service does not include stains and dirt that can only be removed with corrosive materials or special equipment — for example: silicone, rust, paints of all kinds, cement on ceilings or surfaces, chandeliers of all kinds, fire traces, wall washing, floor polishing, or anything else not included in the contract or the provided quotation.',
+            'Service pricing is subject to an initial quote and a final quote; the final quote is issued after a team inspects the service location and provides a written quotation, and the company has the right to terminate the contract or amend the final quote with the client\'s approval.',
+            'If the client requests that any piece of furniture be moved, the client bears responsibility for any resulting damage.',
+            'If any damage is caused by the team without the client requesting the moving or relocation of furniture, the client must prove it, and compensation is capped at three times the value of the provided service.',
+            'The client must safeguard personal belongings, valuables, and any other items inside the home, and acknowledges that neither the company nor the team is responsible for the loss of any of them.',
+            'Any amounts offered by the company to the client to gain their satisfaction and loyalty are goodwill and conciliation gestures and do not constitute an admission of negligence or of causing damage in any way, unless the company explicitly states so.',
+            'All review appointments are booked to verify and inspect reported observations and do not constitute an admission of negligence in any way.',
+            'Automated replies do not place any obligation on the company towards the client; if an automated system responds to the client, the client must verify its accuracy through a customer service employee or the company\'s official website.',
+            'No condition or obligation is recognized unless stated in the written quotation or on the company\'s official website.'
+          ]
+        },
+        giftCard: {
+          title: '8. Gift Card',
+          points: [
+            'The card cannot be exchanged for cash and its value is non-refundable.',
+            'The card is valid for 12 months from the date of purchase, unless otherwise stated.',
+            'The card is subject to these terms and conditions and to any additional terms stated upon its issuance.'
           ]
         },
         offersDiscounts: {
-          title: '6. Offers and Discounts',
+          title: '9. Offers and Discounts',
           points: [
             'Offers are available only with online booking, and two offers cannot be combined in one order.',
             'Minimum invoice after discount is 400 SAR; each offer is for a limited time and on specific services.',
@@ -232,13 +262,36 @@ const resources = {
           ]
         },
         loyaltyProgram: {
-          title: '7. Loyalty Program',
+          title: '10. Loyalty Program',
           points: [
             'Membership is available to everyone and requires account activation.',
             'Customer receives cashback as a percentage of invoice value; balance is added to wallet and must be used within the specified period for each offer.',
             'Balance can be used to pay only 50% of invoice value, and cannot be converted to cash or used to cover the full invoice.',
             'Customers can receive rewards for referring new customers through the website, provided the referred person completes their first order.',
             'Loyalty program offers may be modified or cancelled at any time, and continued use of the program constitutes acceptance of modifications.'
+          ]
+        },
+        governingLaw: {
+          title: '11. Governing Law and Jurisdiction',
+          points: [
+            'These terms and conditions are governed by and construed in accordance with the laws and regulations of the Kingdom of Saudi Arabia.',
+            'The competent courts of the Kingdom of Saudi Arabia have jurisdiction over any disputes arising from the use of Kleenology\'s website or services.',
+            'By using Kleenology\'s website or services, users agree to submit to the jurisdiction of the Saudi courts for the resolution of any disputes.'
+          ]
+        },
+        disputeResolution: {
+          title: '12. Dispute Resolution',
+          points: [
+            'In the event of any dispute, users are encouraged to first contact the Kleenology customer service team at +966 53 751 9929 or via email at Contract@kleenology.net to reach an amicable solution.',
+            'If a resolution cannot be reached through customer service within a reasonable period, disputes shall be referred in accordance with the governing law set out in the Governing Law and Jurisdiction section.',
+            'Kleenology is committed to settling all disputes fairly and in a timely manner.'
+          ]
+        },
+        amendments: {
+          title: '13. Amendments to These Terms',
+          points: [
+            'Kleenology reserves the right to update or amend these terms and conditions at any time. Users will be notified of material changes via the website or through the contact information provided at booking.',
+            'Continued use of the website or services after any amendment constitutes acceptance of the updated terms.'
           ]
         },
         contact: {
@@ -426,8 +479,8 @@ const resources = {
         introduction: {
           title: 'تمهيد',
           points: [
-            'استخدام العميل لخدماتك أو موقعك يعد موافقة على هذه الشروط والأحكام بالكامل.',
-            'أي مخالفة تمنح شركتك الحق في الامتناع عن تقديم الخدمة أو تحصيل قيمتها كاملة.'
+            'استخدام العميل لخدمات كلينولوجي أو موقعها الإلكتروني يعد موافقة على هذه الشروط والأحكام بالكامل.',
+            'أي مخالفة تمنح الشركة الحق في الامتناع عن تقديم الخدمة أو تحصيل قيمتها كاملة.'
           ]
         },
         clientObligations: {
@@ -462,16 +515,46 @@ const resources = {
             'للشركة حق تمديد مدة العمل إذا احتاج العمل ذلك.'
           ]
         },
-        liabilityDisclaimer: {
-          title: '5. إخلاء المسؤولية',
+        furnitureMoving: {
+          title: '5. نقل الأثاث',
           points: [
-            'الخدمات تشمل ما تم الاتفاق عليه ولا تشمل تنظيف الأسقف أو الثريات أو التلميع إلا إذا نص العقد على ذلك.',
-            'العميل مسؤول عن حفظ مقتنياته الثمينة، ولا تتحمل الشركة مسؤولية فقدها.',
-            'إذا تسببنا في ضرر دون طلب نقل أو تحريك، يكون التعويض بحد أقصى ثلاثة أضعاف قيمة الخدمة.'
+            'يلتزم العميل بإخطار مشرف الفريق كتابةً في حال كان الأثاث غير قابل للفك والتركيب والنقل، ويتحمل المسؤولية كاملة عند عدم إخطاره، ومن ذلك عدم لزوم التعويض على الشركة.',
+            'في حال وقع تلف للأثاث الذي تم نقله وثبت أن الشركة هي المتسببة فيه، فإنها تلتزم بالتعويض بما لا يتجاوز إجمالي قيمة الفاتورة للعميل.',
+            'يقر العميل بعدم مسؤولية الشركة عن أي تأثر للأثاث غير المصمم للفك وإعادة التركيب كما كان، ومن ذلك على سبيل المثال قطع الأثاث الجاهزة والثابتة، وفي حال رغبة العميل بخلاف ذلك فعليه إخطار مشرف الفريق كتابةً.'
+          ]
+        },
+        maintenanceSpareParts: {
+          title: '6. الصيانة وقطع الغيار',
+          points: [
+            'يقر العميل باستحقاق الشركة لمبلغ الإصلاح للخلل المحدد عند الانتهاء منه بناءً على موافقته على إصلاحه ابتداءً، ولا يمنع من استحقاقها له ظهور خلل آخر مختلف عن الخلل الذي تم إصلاحه.',
+            'يقر العميل باستحقاق الشركة لمبلغ الخدمة المقدمة في حال إصلاحها، مع إخلاء مسؤوليتها بعد مغادرة الفريق للموقع.',
+            'يقر العميل بأن المعتبر في ضمان قطع الغيار ضمان الوكيل إن وجد، وأن للعميل حق الرجوع عليه، مع إخلاء مسؤولية الشركة.'
+          ]
+        },
+        liabilityDisclaimer: {
+          title: '7. إخلاء المسؤولية',
+          points: [
+            'يلتزم الفريق بتنظيف المناطق الظاهرة والعامة فقط، ولا يدخل ضمن خدمة التنظيف والتعقيم جميع البقع والأوساخ التي لا يمكن إزالتها إلا بمواد حارقة أو معدات خاصة، ومنها على سبيل المثال: السليكون، الصدأ، دهانات البوية بأنواعها، الإسمنت على الأسقف أو الأسطح، والثريا بأنواعها، أثر الحريق، غسل الجدران، جلي الأرض، وأي شيء آخر غير مشمول في العقد أو عرض السعر المقدم.',
+            'يخضع تقييم سعر الخدمة المقدمة إلى تسعير أولي وتسعير نهائي، ويكون التسعير النهائي عن طريق إرسال فريق لمعاينة مكان تقديم الخدمة وتحرير عرض سعر مكتوب، وللشركة الحق في فسخ العقد أو التعديل في عرض التسعير النهائي بموافقة العميل.',
+            'في حال طلب العميل تحريك أي قطع من الأثاث فإنه يتحمل مسؤولية حدوث أي تلفيات تترتب على ذلك.',
+            'في حال حصل أي إتلاف من الفريق دون طلب العميل تحريك أو نقل الأثاث، فعلى العميل إثبات ذلك، ويُعوض بثلاثة أضعاف قيمة الخدمة المقدمة كحد أقصى.',
+            'يلتزم العميل بالاحتفاظ بمتعلقاته الشخصية والقطع الثمينة أو أي قطع أخرى داخل المنزل ويقر بعدم تحمل الشركة أو الفريق مسؤولية فقدان أي شيء منها.',
+            'جميع المبالغ التي تقدمها الشركة للعميل لكسب رضاه وزيادة ولائه هي من باب الصلح وكسب رضا العميل ولا تعد إقرارًا بالتقصير بالعمل أو التسبب بالضرر بأي وجه من الوجوه ما لم تصرح الشركة بذلك.',
+            'جميع المواعيد المحجوزة للمراجعة تكون للتحقق من وجود الملاحظات ومعاينتها ولا تعد إقرارًا بالتقصير بالعمل بأي وجه من الوجوه.',
+            'لا يفيد الرد الآلي تحميل الشركة أي التزام اتجاه العميل، وفي حال قام الرد الآلي بالرد على العميل فيلتزم العميل بالتحقق من صحته عن طريق موظف خدمة العملاء أو موقع الشركة الرسمي.',
+            'لا يعتد بأي شرط أو التزام لم يرد في عرض السعر المكتوب أو على موقع الشركة الرسمي.'
+          ]
+        },
+        giftCard: {
+          title: '8. بطاقة الإهداء',
+          points: [
+            'لا يمكن استبدال البطاقة نقدًا أو استرجاع قيمتها.',
+            'البطاقة صالحة لمدة 12 شهرًا من تاريخ الشراء، ما لم يُذكر خلاف ذلك.',
+            'تخضع البطاقة لهذه الشروط والأحكام ولأي شروط إضافية تُذكر عند إصدارها.'
           ]
         },
         offersDiscounts: {
-          title: '6. العروض والخصومات',
+          title: '9. العروض والخصومات',
           points: [
             'العروض متاحة فقط عند الحجز الإلكتروني، ولا يمكن دمج عرضين في طلب واحد.',
             'الحد الأدنى للفاتورة بعد الخصم هو 400 ريال؛ كل عرض لفترة محدودة وعلى خدمات محددة.',
@@ -482,13 +565,36 @@ const resources = {
           ]
         },
         loyaltyProgram: {
-          title: '7. برنامج الولاء',
+          title: '10. برنامج الولاء',
           points: [
             'الاشتراك متاح للجميع ويتطلب تفعيل الحساب.',
             'يحصل العميل على كاش باك كنسبة من قيمة الفاتورة؛ يُضاف الرصيد للمحفظة ويجب استخدامه خلال المدة المحددة لكل عرض.',
             'يمكن استخدام الرصيد لدفع 50 % من قيمة الفاتورة فقط، ولا يمكن تحويل الرصيد إلى نقد أو استخدامه لتغطية كامل الفاتورة.',
             'يمكن للعملاء الحصول على مكافآت عند دعوة عملاء جدد عبر الموقع، بشرط إتمام الشخص المحال لأول طلب له.',
             'العروض الخاصة ببرنامج الولاء قد تُعدل أو تُلغى في أي وقت، واستمرار استخدام البرنامج يعد قبولاً بالتعديلات.'
+          ]
+        },
+        governingLaw: {
+          title: '11. القانون الحاكم والاختصاص القضائي',
+          points: [
+            'تخضع هذه الشروط والأحكام وتُفسَّر وفقًا لأنظمة ولوائح المملكة العربية السعودية.',
+            'تختص المحاكم المختصة في المملكة العربية السعودية بالفصل في أي نزاعات تنشأ عن استخدام موقع كلينولوجي أو خدماتها.',
+            'باستخدام موقع كلينولوجي أو خدماتها، يوافق العملاء على الخضوع للاختصاص القضائي للمحاكم السعودية لحل أي نزاعات.'
+          ]
+        },
+        disputeResolution: {
+          title: '12. حل النزاعات',
+          points: [
+            'في حال نشوء أي نزاع، يُشجَّع العملاء على التواصل أولًا مع فريق خدمة عملاء كلينولوجي على الرقم +966 53 751 9929 أو عبر البريد الإلكتروني Contract@kleenology.net للتوصل إلى حل ودي.',
+            'إذا تعذّر الوصول إلى حل عبر خدمة العملاء في غضون مدة معقولة، تُحال النزاعات وفق القانون الحاكم المنصوص عليه في بند القانون الحاكم والاختصاص القضائي.',
+            'تلتزم كلينولوجي بتسوية جميع النزاعات بصورة عادلة وفي الوقت المناسب.'
+          ]
+        },
+        amendments: {
+          title: '13. التعديلات على هذه الشروط',
+          points: [
+            'تحتفظ كلينولوجي بالحق في تحديث هذه الشروط والأحكام أو تعديلها في أي وقت. سيتم إخطار العملاء بالتغييرات الجوهرية عبر الموقع الإلكتروني أو من خلال معلومات الاتصال المقدمة عند الحجز.',
+            'يُعدّ استمرار استخدام الموقع أو الخدمات بعد أي تعديل موافقةً على الشروط المحدَّثة.'
           ]
         },
         contact: {
