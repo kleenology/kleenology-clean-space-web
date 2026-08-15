@@ -11,6 +11,21 @@
   status = 200
 
 [[redirects]]
+  from = "/api/deposit/config"
+  to = "/.netlify/functions/deposit-config"
+  status = 200
+
+[[redirects]]
+  from = "/api/deposit/create"
+  to = "/.netlify/functions/create-deposit"
+  status = 200
+
+[[redirects]]
+  from = "/api/payment/status"
+  to = "/.netlify/functions/payment-status"
+  status = 200
+
+[[redirects]]
   from = "/*"
   to = "/index.html"
   status = 200
