@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { Users, Calendar, MapPin, Star } from "lucide-react";
+import { VisitorCounter } from "@/components/VisitorCounter";
 
 const stats = [
   { icon: Calendar, valueAr: "٣", valueEn: "3", suffixAr: " سنوات", suffixEn: " Years", labelAr: "خبرة في السوق", labelEn: "In the Market", count: 3 },
@@ -73,6 +74,7 @@ export const Stats = () => {
             <StatCard key={s.labelAr} {...s} isRTL={isRTL} start={visible} />
           ))}
         </div>
+        <VisitorCounter />
       </div>
     </section>
   );
