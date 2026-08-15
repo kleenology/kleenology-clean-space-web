@@ -16,39 +16,6 @@ export function getMode(secretKey = getSecretKey()) {
   return null;
 }
 
-// وضع المحاكاة للتجربة المحلية فقط: يعمل حصراً عندما يكون الطلب قادماً من localhost
-// ولا يوجد مفتاح ميسر. لا يمكن تفعيله على النطاق الحقيقي إطلاقاً لأن الشرط هو المضيف نفسه.
-const PREVIEW_HOSTS = new Set(["localhost", "127.0.0.1", "[::1]", "::1"]);
-
-export function isPreviewHost(request) {
-  try {
-    return PREVIEW_HOSTS.has(new URL(request.url).hostname);
-  } catch {
-    return false;
-  }
-}
-
-export function isMockMode(request) {
-  return !getSecretKey() && isPreviewHost(request);
-}
-
-const MOCK_PREFIX = "mock_";
-
-export function encodeMockId(booking) {
-  return MOCK_PREFIX + Buffer.from(JSON.stringify(booking)).toString("base64url");
-}
-
-export function decodeMockId(id) {
-  if (typeof id !== "string" || !id.startsWith(MOCK_PREFIX)) return null;
-  try {
-    return JSON.parse(
-      Buffer.from(id.slice(MOCK_PREFIX.length), "base64url").toString("utf8")
-    );
-  } catch {
-    return null;
-  }
-}
-
 export function getDepositAmountSar() {
   const raw = Number(process.env.DEPOSIT_AMOUNT_SAR);
   return Number.isFinite(raw) && raw > 0 ? raw : DEFAULT_DEPOSIT_SAR;
