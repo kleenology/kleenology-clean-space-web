@@ -1,15 +1,19 @@
 import {
   getSecretKey,
   getMode,
+  getDepositAmountSar,
   fetchPayment,
   fetchInvoice,
+  isMockMode,
+  decodeMockId,
   jsonResponse,
 } from "../lib/moyasar.mjs";
 
 // يتحقق من حالة الدفع من خادم ميسر مباشرة.
 // لا نثق أبداً بحالة الدفع القادمة في رابط العودة لأنها قابلة للتزوير.
 export default async (request) => {
-  const mode = getMode(getSecretKey());
+  const mock = isMockMode(request);
+  const mode = mock ? "mock" : getMode(getSecretKey());
   if (!mode) {
     return jsonResponse({ error: "not_configured" }, 503);
   }
@@ -17,6 +21,18 @@ export default async (request) => {
   const id = new URL(request.url).searchParams.get("id");
   if (!id) {
     return jsonResponse({ error: "missing_id" }, 400);
+  }
+
+  // محاكاة محلية: نعيد نتيجة ناجحة مصطنعة — لا تعمل إلا على localhost وبدون مفتاح
+  if (mock) {
+    return jsonResponse({
+      mode,
+      paid: true,
+      status: "paid",
+      amountSar: getDepositAmountSar(),
+      reference: id,
+      booking: decodeMockId(id),
+    });
   }
 
   let record = null;

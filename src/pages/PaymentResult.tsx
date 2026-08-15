@@ -10,7 +10,7 @@ import { CheckCircle2, XCircle, Loader2, MessageCircle, FlaskConical } from "luc
 const WHATSAPP_NUMBER = "966537519929";
 
 interface PaymentStatus {
-  mode: "test" | "live";
+  mode: "mock" | "test" | "live";
   paid: boolean;
   status: string;
   amountSar: number | null;
@@ -109,6 +109,17 @@ export default function PaymentResult() {
                   ? "تم تثبيت موعدك بنجاح. أرسل تفاصيل الحجز عبر واتساب ليؤكدها فريقنا معك."
                   : "Your appointment is confirmed. Send the booking details on WhatsApp so our team can confirm with you."}
               </p>
+
+              {result?.mode === "mock" && (
+                <div className="flex items-start gap-3 bg-slate-100 border border-slate-300 rounded-xl p-4 mb-6 text-start">
+                  <FlaskConical className="h-5 w-5 text-slate-600 mt-0.5 flex-shrink-0" />
+                  <p className="text-sm text-slate-800 leading-relaxed">
+                    {isRTL
+                      ? "وضع محاكاة محلي: لم تجرِ أي عملية دفع فعلية — هذه معاينة للشكل النهائي فقط."
+                      : "Local mock mode: no actual payment took place — this is a preview of the final look only."}
+                  </p>
+                </div>
+              )}
 
               {result?.mode === "test" && (
                 <div className="flex items-start gap-3 bg-amber-50 border border-amber-300 rounded-xl p-4 mb-6 text-start">

@@ -3,6 +3,8 @@ import {
   getMode,
   getDepositAmountSar,
   createInvoice,
+  isMockMode,
+  encodeMockId,
   jsonResponse,
 } from "../lib/moyasar.mjs";
 
@@ -17,7 +19,8 @@ export default async (request) => {
     return jsonResponse({ error: "method_not_allowed" }, 405);
   }
 
-  const mode = getMode(getSecretKey());
+  const mock = isMockMode(request);
+  const mode = mock ? "mock" : getMode(getSecretKey());
   if (!mode) {
     return jsonResponse({ error: "not_configured" }, 503);
   }
@@ -46,6 +49,16 @@ export default async (request) => {
   // المبلغ يُحدَّد من الخادم فقط — لا يُقرأ من العميل إطلاقاً
   const amountSar = getDepositAmountSar();
   const origin = new URL(request.url).origin;
+
+  // محاكاة محلية: نتخطى ميسر ونعود مباشرة لصفحة النتيجة بمعرّف تجريبي
+  if (mock) {
+    const id = encodeMockId(booking);
+    return jsonResponse({
+      url: `${origin}/payment/result?id=${encodeURIComponent(id)}`,
+      mode,
+      amountSar,
+    });
+  }
 
   try {
     const invoice = await createInvoice({

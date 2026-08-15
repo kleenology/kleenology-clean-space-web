@@ -31,7 +31,7 @@ interface FormData {
 
 interface DepositConfig {
   enabled: boolean;
-  mode: "test" | "live" | null;
+  mode: "mock" | "test" | "live" | null;
   amountSar: number | null;
 }
 
@@ -446,6 +446,17 @@ export default function Booking() {
                 {/* خيار اختياري: دفع عربون لتثبيت الموعد */}
                 {deposit?.enabled && (
                   <div className="mt-5 pt-5 border-t border-border">
+                    {deposit.mode === "mock" && (
+                      <div className="flex items-start gap-3 bg-slate-100 border border-slate-300 rounded-xl p-4 mb-4">
+                        <FlaskConical className="h-5 w-5 text-slate-600 mt-0.5 flex-shrink-0" />
+                        <p className="text-sm text-slate-800 leading-relaxed">
+                          {isRTL
+                            ? "وضع محاكاة محلي: لا توجد بوابة دفع متصلة — هذه معاينة لشكل التجربة على جهازك فقط."
+                            : "Local mock mode: no payment gateway is connected — this is a preview of the flow on your machine only."}
+                        </p>
+                      </div>
+                    )}
+
                     {deposit.mode === "test" && (
                       <div className="flex items-start gap-3 bg-amber-50 border border-amber-300 rounded-xl p-4 mb-4">
                         <FlaskConical className="h-5 w-5 text-amber-600 mt-0.5 flex-shrink-0" />
