@@ -2,7 +2,9 @@ import { useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { Eye } from "lucide-react";
 
-// عداد زيارات حقيقي عبر خدمة Abacus المجانية — يزيد مرة واحدة لكل جلسة تصفح
+// المصدر الأساسي: بيانات Google Analytics الحقيقية عبر دالة Netlify
+const GA_ENDPOINT = "/api/visitors";
+// المصدر الاحتياطي: عداد Abacus المجاني (يزيد مرة واحدة لكل جلسة تصفح)
 const COUNTER_URL = "https://abacus.jasoncameron.dev";
 const NAMESPACE = "kleenology-me";
 const KEY = "homepage-visits";
@@ -23,6 +25,27 @@ function useCountUp(target: number, duration = 1200) {
   return count;
 }
 
+async function fetchGaVisitors(): Promise<number> {
+  const res = await fetch(GA_ENDPOINT);
+  if (!res.ok) throw new Error("ga endpoint unavailable");
+  const data = await res.json();
+  if (typeof data.visitors !== "number") throw new Error("bad response");
+  return data.visitors;
+}
+
+async function fetchFallbackVisitors(): Promise<number> {
+  const alreadyCounted = sessionStorage.getItem("kleenology-visit-counted");
+  const endpoint = alreadyCounted ? "get" : "hit";
+  const res = await fetch(`${COUNTER_URL}/${endpoint}/${NAMESPACE}/${KEY}`);
+  if (!res.ok) throw new Error("counter unavailable");
+  const data = await res.json();
+  if (typeof data.value !== "number") throw new Error("bad response");
+  if (!alreadyCounted) {
+    sessionStorage.setItem("kleenology-visit-counted", "1");
+  }
+  return data.value;
+}
+
 export const VisitorCounter = () => {
   const { i18n } = useTranslation();
   const isRTL = i18n.dir() === "rtl";
@@ -31,19 +54,13 @@ export const VisitorCounter = () => {
 
   useEffect(() => {
     let cancelled = false;
-    const alreadyCounted = sessionStorage.getItem("kleenology-visit-counted");
-    const endpoint = alreadyCounted ? "get" : "hit";
-    fetch(`${COUNTER_URL}/${endpoint}/${NAMESPACE}/${KEY}`)
-      .then((res) => (res.ok ? res.json() : Promise.reject()))
-      .then((data) => {
-        if (cancelled || typeof data.value !== "number") return;
-        if (!alreadyCounted) {
-          sessionStorage.setItem("kleenology-visit-counted", "1");
-        }
-        setVisitors(data.value);
+    fetchGaVisitors()
+      .catch(() => fetchFallbackVisitors())
+      .then((value) => {
+        if (!cancelled) setVisitors(value);
       })
       .catch(() => {
-        // خدمة العداد غير متاحة — نخفي العداد بدلاً من عرض رقم غير صحيح
+        // لا مصدر متاح — نخفي العداد بدلاً من عرض رقم غير صحيح
       });
     return () => {
       cancelled = true;
