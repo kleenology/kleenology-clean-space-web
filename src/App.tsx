@@ -9,6 +9,7 @@ import HomeCleaning from "./pages/HomeCleaning";
 import OfficeCleaning from "./pages/OfficeCleaning";
 import TermsAndConditions from "./pages/TermsAndConditions";
 import Booking from "./pages/Booking";
+import PaymentResult from "./pages/PaymentResult";
 import DeepCleaning from "./pages/DeepCleaning";
 import CarpetCleaning from "./pages/CarpetCleaning";
 import PostConstructionCleaning from "./pages/PostConstructionCleaning";
@@ -109,6 +110,7 @@ const App = () => {
               <Route path="/office-cleaning" element={<OfficeCleaning />} />
               <Route path="/terms-and-conditions" element={<TermsAndConditions />} />
               <Route path="/booking" element={<Booking />} />
+              <Route path="/payment/result" element={<PaymentResult />} />
               <Route path="/deep-cleaning" element={<DeepCleaning />} />
               <Route path="/carpet-cleaning" element={<CarpetCleaning />} />
               <Route path="/post-construction-cleaning" element={<PostConstructionCleaning />} />

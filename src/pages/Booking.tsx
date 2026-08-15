@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { Header } from "@/components/Header";
 import { Footer } from "@/components/Footer";
 import { SEO } from "@/components/SEO";
@@ -10,7 +10,7 @@ import {
   MessageCircle, Calendar, User, Phone, MapPin,
   ChevronRight, ChevronLeft, CheckCircle2,
   Home, Building2, Sparkles, Droplets, Wind, HardHat,
-  Star, Shield, Clock,
+  Star, Shield, Clock, CreditCard, FlaskConical, Loader2,
 } from "lucide-react";
 import { useTranslation } from "react-i18next";
 import { cn } from "@/lib/utils";
@@ -27,6 +27,12 @@ interface FormData {
   phone: string;
   neighborhood: string;
   notes: string;
+}
+
+interface DepositConfig {
+  enabled: boolean;
+  mode: "test" | "live" | null;
+  amountSar: number | null;
 }
 
 const SERVICES = {
@@ -100,6 +106,49 @@ export default function Booking() {
       ? `مرحباً، أود حجز خدمة تنظيف 🧹\n\nالخدمة: ${svc}\nالتاريخ: ${form.date}\nالوقت: ${time}\nالاسم: ${form.name}\nالجوال: ${form.phone}\nالعنوان: ${form.neighborhood}${form.notes ? `\nملاحظات: ${form.notes}` : ""}`
       : `Hello! I'd like to book a cleaning service 🧹\n\nService: ${svc}\nDate: ${form.date}\nTime: ${time}\nName: ${form.name}\nPhone: ${form.phone}\nAddress: ${form.neighborhood}${form.notes ? `\nNotes: ${form.notes}` : ""}`;
     window.open(`https://wa.me/${WHATSAPP_NUMBER}?text=${encodeURIComponent(msg)}`, "_blank");
+  };
+
+  // خيار العربون يظهر فقط إذا كانت بوابة الدفع مهيأة على الخادم
+  const [deposit, setDeposit] = useState<DepositConfig | null>(null);
+  const [payLoading, setPayLoading] = useState(false);
+  const [payError, setPayError] = useState(false);
+
+  useEffect(() => {
+    let cancelled = false;
+    fetch("/api/deposit/config")
+      .then(res => (res.ok ? res.json() : Promise.reject()))
+      .then(data => { if (!cancelled) setDeposit(data); })
+      .catch(() => { /* البوابة غير مهيأة — نكتفي بالحجز عبر واتساب */ });
+    return () => { cancelled = true; };
+  }, []);
+
+  const payDeposit = async () => {
+    setPayLoading(true);
+    setPayError(false);
+    try {
+      const res = await fetch("/api/deposit/create", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          service: selectedService?.label ?? "",
+          date: form.date,
+          timeSlot: selectedTimeSlot
+            ? `${selectedTimeSlot.label} (${selectedTimeSlot.range})`
+            : "",
+          name: form.name,
+          phone: form.phone,
+          neighborhood: form.neighborhood,
+          notes: form.notes,
+        }),
+      });
+      if (!res.ok) throw new Error("create failed");
+      const data = await res.json();
+      if (!data.url) throw new Error("no url");
+      window.location.href = data.url;
+    } catch {
+      setPayError(true);
+      setPayLoading(false);
+    }
   };
 
   const progressPct = ((step - 1) / 3) * 100;
@@ -393,6 +442,52 @@ export default function Booking() {
                   <MessageCircle className="h-5 w-5 me-2" />
                   {isRTL ? "إرسال الطلب عبر واتساب" : "Send Request via WhatsApp"}
                 </Button>
+
+                {/* خيار اختياري: دفع عربون لتثبيت الموعد */}
+                {deposit?.enabled && (
+                  <div className="mt-5 pt-5 border-t border-border">
+                    {deposit.mode === "test" && (
+                      <div className="flex items-start gap-3 bg-amber-50 border border-amber-300 rounded-xl p-4 mb-4">
+                        <FlaskConical className="h-5 w-5 text-amber-600 mt-0.5 flex-shrink-0" />
+                        <p className="text-sm text-amber-900 leading-relaxed">
+                          {isRTL
+                            ? "وضع تجريبي: خيار الدفع تحت التجربة حالياً ولن يتم خصم أي مبلغ حقيقي. للحجز الفعلي استخدم زر واتساب أعلاه."
+                            : "Test mode: the payment option is under testing and no real amount will be charged. For an actual booking, use the WhatsApp button above."}
+                        </p>
+                      </div>
+                    )}
+
+                    <p className="text-sm text-muted-foreground mb-3 leading-relaxed">
+                      {isRTL
+                        ? `أو ثبّت موعدك بدفع عربون ${deposit.amountSar} ر.س يُخصم من قيمة الفاتورة النهائية.`
+                        : `Or secure your slot with a ${deposit.amountSar} SAR deposit, deducted from your final invoice.`}
+                    </p>
+
+                    <Button
+                      onClick={payDeposit}
+                      disabled={payLoading}
+                      variant="outline"
+                      className="w-full h-12 rounded-xl font-semibold"
+                    >
+                      {payLoading ? (
+                        <Loader2 className="h-5 w-5 me-2 animate-spin" />
+                      ) : (
+                        <CreditCard className="h-5 w-5 me-2" />
+                      )}
+                      {isRTL
+                        ? `دفع عربون ${deposit.amountSar} ر.س`
+                        : `Pay ${deposit.amountSar} SAR Deposit`}
+                    </Button>
+
+                    {payError && (
+                      <p className="text-sm text-destructive mt-3">
+                        {isRTL
+                          ? "تعذّر فتح صفحة الدفع حالياً. جرّب مرة أخرى أو أرسل طلبك عبر واتساب."
+                          : "Could not open the payment page. Please try again or send your request on WhatsApp."}
+                      </p>
+                    )}
+                  </div>
+                )}
               </div>
             )}
 
