@@ -96,7 +96,7 @@ export default function AdsLanding() {
               className="bg-[#25D366] hover:bg-[#20BA5A] text-white text-base px-8 gap-2 h-12"
             >
               <MessageCircle className="h-5 w-5" />
-              تواصل عبر واتساب
+              اطلب عرض سعر الآن
             </Button>
             <Button
               onClick={handleCall}
@@ -230,7 +230,7 @@ export default function AdsLanding() {
             className="bg-[#25D366] hover:bg-[#20BA5A] text-white text-base px-10 gap-2 h-12"
           >
             <MessageCircle className="h-5 w-5" />
-            تواصل عبر واتساب
+            اطلب عرض سعر الآن
           </Button>
           <p className="text-xs text-gray-400 mt-4">
             أو اتصل مباشرة على{" "}

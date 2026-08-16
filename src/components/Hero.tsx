@@ -2,7 +2,7 @@
 import heroBg from "@/assets/hero-background-white.jpg";
 import heroBgMobile from "@/assets/hero-background-mobile.jpg";
 import { Button } from "@/components/ui/button";
-import { MessageCircle, Users, Shield, Sparkles } from "lucide-react";
+import { MessageCircle, Users, Shield, Sparkles, Calendar } from "lucide-react";
 import { useCallback } from "react";
 import { useTranslation } from "react-i18next";
 
@@ -17,12 +17,12 @@ export const Hero = () => {
     window.open('https://wa.me/966537519929', '_blank');
   }, []);
 
-  const handleLearnMore = useCallback(() => {
-    // Track learn more button click
+  const handleBookingPage = useCallback(() => {
+    // Track the step-by-step booking route
     if ((window as any).pixelTracker) {
-      (window as any).pixelTracker.trackButtonClick('learn_more');
+      (window as any).pixelTracker.trackButtonClick('booking_page');
     }
-    document.getElementById('about')?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    window.location.href = '/booking';
   }, []);
 
   return (
@@ -61,22 +61,28 @@ export const Hero = () => {
               <MessageCircle className="h-5 w-5 sm:h-6 sm:w-6 mr-2" />
               {t('hero.startBooking')}
             </Button>
-            <Button 
-              onClick={handleLearnMore}
+            <Button
+              onClick={handleBookingPage}
               variant="outline"
               size="lg"
               className="text-base sm:text-lg px-6 sm:px-8 py-4 sm:py-5 h-auto font-semibold border-white/40 text-white/90 bg-transparent sm:bg-white/10 hover:bg-white/20 hover:text-brand-blue w-full sm:w-auto"
             >
-              {t('hero.learnMore')}
+              <Calendar className="h-5 w-5 sm:h-6 sm:w-6 mr-2" />
+              {t('hero.bookOnline')}
             </Button>
           </div>
+          {/* ما الذي يحدث بعد الضغط — يقلل تردد الزائر */}
+          <p className="text-sm sm:text-base text-white/75 text-center font-medium -mt-1">
+            {t('hero.reassurance')}
+          </p>
         </div>
         {/* Stats Grid - Desktop only */}
         <div className="hidden sm:grid grid-cols-3 gap-8 max-w-4xl w-full mx-auto mt-2 animate-fade-in">
           {[
-            { icon: Users, number: "1542+", label: t('hero.stats.0') },
+            // هذه الأرقام يجب أن تطابق قسم الإحصائيات في Stats.tsx
+            { icon: Users, number: "690+", label: t('hero.stats.0') },
             { icon: Shield, number: "182+", label: t('hero.stats.1') },
-            { icon: Sparkles, number: "100%", label: t('hero.stats.2') }
+            { icon: Sparkles, number: "98%", label: t('hero.stats.2') }
           ].map((stat, idx) => (
             <div
               key={idx}

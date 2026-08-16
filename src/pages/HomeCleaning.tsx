@@ -60,7 +60,7 @@ const ar: ServiceContent = {
   cta: {
     title: "احجز تنظيف منزلك اليوم",
     subtitle: "استمتع بمنزل نظيف ومعقم — نحن نتولى كل شيء.",
-    whatsappLabel: "تواصل عبر واتساب",
+    whatsappLabel: "اطلب عرض سعر الآن",
     bookLabel: "احجز الآن",
   },
   breadcrumb: "تنظيف المنازل",
@@ -125,7 +125,7 @@ const en: ServiceContent = {
   cta: {
     title: "Book Your Home Cleaning Today",
     subtitle: "Enjoy a clean and sanitized home — we handle everything.",
-    whatsappLabel: "Contact via WhatsApp",
+    whatsappLabel: "Get a Price Quote",
     bookLabel: "Book Now",
   },
   breadcrumb: "Home Cleaning",
