@@ -7,8 +7,9 @@ const resources = {
       hero: {
         headline: 'Excellence in Every Inch',
         tagline: 'Premium cleaning for modern spaces. Trusted by homes and businesses for quality, reliability, and care.',
-        startBooking: 'Start Your Booking',
-        learnMore: 'Learn More',
+        startBooking: 'Book via WhatsApp',
+        bookOnline: 'Book Step by Step',
+        reassurance: 'Reply in under an hour · Written quote before we start',
         stats: [
           'Happy Clients',
           'Expert Team',
@@ -310,8 +311,9 @@ const resources = {
       hero: {
         headline: 'الفرق يُرى… في كل لمسة',
         tagline: 'نظافة عميقة، تنظيم مثالي، وتعقيم شامل يعكس احترافية كلينولوجي',
-        startBooking: 'ابدأ الحجز',
-        learnMore: 'اعرف المزيد',
+        startBooking: 'احجز عبر واتساب',
+        bookOnline: 'احجز بخطوات',
+        reassurance: 'رد خلال أقل من ساعة · عرض سعر مكتوب قبل البدء',
         stats: [
           'عملاء سعداء',
           'فريق خبراء',

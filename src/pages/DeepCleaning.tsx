@@ -60,7 +60,7 @@ const ar: ServiceContent = {
   cta: {
     title: "احجز التنظيف العميق الآن",
     subtitle: "لا تترك زاوية واحدة دون تنظيف. فريقنا جاهز اليوم.",
-    whatsappLabel: "تواصل عبر واتساب",
+    whatsappLabel: "اطلب عرض سعر الآن",
     bookLabel: "احجز الآن",
   },
   breadcrumb: "تنظيف عميق",
@@ -125,7 +125,7 @@ const en: ServiceContent = {
   cta: {
     title: "Book Your Deep Cleaning Today",
     subtitle: "Leave no corner untouched. Our team is ready today.",
-    whatsappLabel: "Contact via WhatsApp",
+    whatsappLabel: "Get a Price Quote",
     bookLabel: "Book Now",
   },
   breadcrumb: "Deep Cleaning",

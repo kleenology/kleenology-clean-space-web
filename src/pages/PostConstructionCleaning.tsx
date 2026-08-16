@@ -62,7 +62,7 @@ const ar: ServiceContent = {
   cta: {
     title: "هل انتهيت من البناء؟",
     subtitle: "تواصل معنا ونرتب تنظيف الموقع وتسليمك إياه جاهزاً.",
-    whatsappLabel: "تواصل عبر واتساب",
+    whatsappLabel: "اطلب عرض سعر الآن",
     bookLabel: "احجز الآن",
   },
   breadcrumb: "تنظيف بعد البناء",
@@ -127,7 +127,7 @@ const en: ServiceContent = {
   cta: {
     title: "Construction Done? Let's Clean Up.",
     subtitle: "Contact us and we'll arrange the cleanup and hand over your space ready.",
-    whatsappLabel: "Contact via WhatsApp",
+    whatsappLabel: "Get a Price Quote",
     bookLabel: "Book Now",
   },
   breadcrumb: "Post-Construction Cleaning",

@@ -5,9 +5,27 @@
 [build.environment]
   NODE_VERSION = "18"
 
+[functions]
+  directory = "netlify/functions"
+
 [[redirects]]
   from = "/api/visitors"
   to = "/.netlify/functions/visitors"
+  status = 200
+
+[[redirects]]
+  from = "/api/deposit/config"
+  to = "/.netlify/functions/deposit-config"
+  status = 200
+
+[[redirects]]
+  from = "/api/deposit/create"
+  to = "/.netlify/functions/create-deposit"
+  status = 200
+
+[[redirects]]
+  from = "/api/payment/status"
+  to = "/.netlify/functions/payment-status"
   status = 200
 
 [[redirects]]

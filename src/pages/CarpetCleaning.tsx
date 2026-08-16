@@ -60,7 +60,7 @@ const ar: ServiceContent = {
   cta: {
     title: "أعد لسجادتك بريقها الأصلي",
     subtitle: "تواصل معنا اليوم ونرتب لك موعداً في أقرب وقت.",
-    whatsappLabel: "تواصل عبر واتساب",
+    whatsappLabel: "اطلب عرض سعر الآن",
     bookLabel: "احجز الآن",
   },
   breadcrumb: "تنظيف السجاد",
@@ -125,7 +125,7 @@ const en: ServiceContent = {
   cta: {
     title: "Restore Your Carpet's Original Beauty",
     subtitle: "Contact us today and we'll arrange an appointment as soon as possible.",
-    whatsappLabel: "Contact via WhatsApp",
+    whatsappLabel: "Get a Price Quote",
     bookLabel: "Book Now",
   },
   breadcrumb: "Carpet Cleaning",

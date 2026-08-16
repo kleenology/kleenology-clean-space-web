@@ -60,7 +60,7 @@ const ar: ServiceContent = {
   cta: {
     title: "بيئة عمل نظيفة = فريق أكثر إنتاجية",
     subtitle: "تواصل معنا اليوم للحصول على عرض سعر مخصص لشركتك.",
-    whatsappLabel: "تواصل عبر واتساب",
+    whatsappLabel: "اطلب عرض سعر الآن",
     bookLabel: "احجز الآن",
   },
   breadcrumb: "تنظيف المكاتب",
@@ -125,7 +125,7 @@ const en: ServiceContent = {
   cta: {
     title: "Clean Office = More Productive Team",
     subtitle: "Contact us today for a customized quote for your business.",
-    whatsappLabel: "Contact via WhatsApp",
+    whatsappLabel: "Get a Price Quote",
     bookLabel: "Book Now",
   },
   breadcrumb: "Office Cleaning",
