@@ -47,7 +47,7 @@ export const Hero = () => {
             {t('hero.headline')}
           </h1>
           {/* Elegant Tagline */}
-          <p className="font-sans text-base sm:text-xl md:text-2xl text-center text-white/80 font-normal max-w-xl mx-auto mb-2 sm:mb-4 leading-relaxed">
+          <p className="font-sans text-base sm:text-xl md:text-2xl text-center text-white font-medium drop-shadow-lg max-w-xl mx-auto mb-2 sm:mb-4 leading-relaxed">
             {t('hero.tagline')}
           </p>
           {/* Call-to-Action Buttons */}
@@ -71,10 +71,13 @@ export const Hero = () => {
               {t('hero.bookOnline')}
             </Button>
           </div>
-          {/* ما الذي يحدث بعد الضغط — يقلل تردد الزائر */}
-          <p className="text-sm sm:text-base text-white/75 text-center font-medium -mt-1">
-            {t('hero.reassurance')}
-          </p>
+          {/* ما الذي يحدث بعد الضغط — يقلل تردد الزائر.
+              خلفية داكنة شبه شفافة لضمان الوضوح فوق أي صورة مهما كانت فاتحة */}
+          <div className="flex justify-center w-full">
+            <p className="text-sm sm:text-base text-white font-semibold text-center leading-relaxed bg-black/45 backdrop-blur-sm rounded-full px-5 py-2.5 shadow-lg">
+              {t('hero.reassurance')}
+            </p>
+          </div>
         </div>
         {/* Stats Grid - Desktop only */}
         <div className="hidden sm:grid grid-cols-3 gap-8 max-w-4xl w-full mx-auto mt-2 animate-fade-in">
