@@ -9,7 +9,7 @@ const resources = {
         tagline: 'Premium cleaning for modern spaces. Trusted by homes and businesses for quality, reliability, and care.',
         startBooking: 'Book via WhatsApp',
         bookOnline: 'Book Step by Step',
-        reassurance: 'Reply in under an hour · Written quote before we start',
+        reassurance: 'Reply in under an hour',
         stats: [
           'Happy Clients',
           'Expert Team',
@@ -313,7 +313,7 @@ const resources = {
         tagline: 'نظافة عميقة، تنظيم مثالي، وتعقيم شامل يعكس احترافية كلينولوجي',
         startBooking: 'احجز عبر واتساب',
         bookOnline: 'احجز بخطوات',
-        reassurance: 'رد خلال أقل من ساعة · عرض سعر مكتوب قبل البدء',
+        reassurance: 'رد خلال أقل من ساعة',
         stats: [
           'عملاء سعداء',
           'فريق خبراء',
