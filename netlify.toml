@@ -8,6 +8,23 @@
 [functions]
   directory = "netlify/functions"
 
+# Canonical domain: send the default Netlify subdomain to kleenology.me so all
+# traffic, analytics, and Meta pixel events land on the one verified domain.
+# Must stay above the other rules -- Netlify applies the first match.
+# Deploy previews (<hash>--kleenologysa.netlify.app) are a different host and
+# keep working untouched.
+[[redirects]]
+  from = "https://kleenologysa.netlify.app/*"
+  to = "https://kleenology.me/:splat"
+  status = 301
+  force = true
+
+[[redirects]]
+  from = "http://kleenologysa.netlify.app/*"
+  to = "https://kleenology.me/:splat"
+  status = 301
+  force = true
+
 [[redirects]]
   from = "/api/visitors"
   to = "/.netlify/functions/visitors"
