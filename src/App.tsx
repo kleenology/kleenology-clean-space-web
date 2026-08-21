@@ -109,7 +109,6 @@ const App = () => {
           <Sonner />
           <PixelTracker />
           <PerformanceMonitor />
-          <WhatsAppChatWidget />
           <BrowserRouter basename="/">
             <EnhancedTracking />
             <Routes>
@@ -137,6 +136,8 @@ const App = () => {
               {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
               <Route path="*" element={<NotFound />} />
             </Routes>
+            {/* داخل الراوتر: يحتاج معرفة المسار ليختفي في صفحات الإعلانات */}
+            <WhatsAppChatWidget />
           </BrowserRouter>
         </TooltipProvider>
       </QueryClientProvider>

@@ -1,4 +1,5 @@
 import { useState, useEffect, useRef } from "react";
+import { useLocation } from "react-router-dom";
 import { X } from "lucide-react";
 
 type Message = {
@@ -16,6 +17,10 @@ type QuickReply = {
 };
 
 const WHATSAPP_NUMBER = "966537519929";
+
+// صفحات الإعلانات تحمل أزرار واتساب واتصال خاصة بها في متن الصفحة،
+// والودجت يجلس فوقها في نفس الزاوية ويغطيها.
+const HIDDEN_ON_PATHS = ["/offer"];
 
 const fmt = () =>
   new Date().toLocaleTimeString("ar-SA", { hour: "2-digit", minute: "2-digit" });
@@ -101,6 +106,8 @@ export const WhatsAppChatWidget = () => {
   const [showBadge, setShowBadge] = useState(true);
   const bottomRef = useRef<HTMLDivElement>(null);
 
+  const { pathname } = useLocation();
+
   useEffect(() => {
     bottomRef.current?.scrollIntoView({ behavior: "smooth" });
   }, [messages, typing]);
@@ -185,6 +192,9 @@ export const WhatsAppChatWidget = () => {
       return;
     }
   };
+
+  // بعد كل الخطّافات، حتى لا يتغير ترتيب استدعائها بين الصفحات
+  if (HIDDEN_ON_PATHS.includes(pathname)) return null;
 
   return (
     <div className="fixed bottom-6 left-6 z-50 flex flex-col items-start gap-3">
