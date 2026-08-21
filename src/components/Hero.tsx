@@ -34,7 +34,7 @@ export const Hero = () => {
       <div
         className="absolute inset-0 w-full h-full z-0 bg-cover bg-center bg-no-repeat scale-110 sm:scale-100"
         style={{
-          backgroundImage: `linear-gradient(120deg, rgba(20,30,48,0.15) 30%, rgba(36,198,220,0.05)), url(${heroBg})`,
+          backgroundImage: `linear-gradient(180deg, rgba(20,30,48,0.50) 0%, rgba(20,30,48,0.38) 55%, rgba(20,30,48,0.45) 100%), linear-gradient(120deg, rgba(20,30,48,0.15) 30%, rgba(36,198,220,0.05)), url(${heroBg})`,
         }}
         aria-hidden="true"
       />
