@@ -15,6 +15,7 @@ import CarpetCleaning from "./pages/CarpetCleaning";
 import PostConstructionCleaning from "./pages/PostConstructionCleaning";
 import AboutUs from "./pages/AboutUs";
 import RiyadhCleaning from "./pages/RiyadhCleaning";
+import NeighborhoodCleaning from "./pages/NeighborhoodCleaning";
 import AdsLanding from "./pages/AdsLanding";
 import PremiumLanding from "./pages/PremiumLanding";
 import SecurityScanner from "./pages/SecurityScanner";
@@ -116,6 +117,7 @@ const App = () => {
               <Route path="/post-construction-cleaning" element={<PostConstructionCleaning />} />
               <Route path="/about" element={<AboutUs />} />
               <Route path="/cleaning-riyadh" element={<RiyadhCleaning />} />
+              <Route path="/cleaning-riyadh/:neighborhood" element={<NeighborhoodCleaning />} />
               <Route path="/book-now" element={<AdsLanding />} />
               <Route path="/premium" element={<PremiumLanding />} />
               <Route path="/scanner" element={<SecurityScanner />} />
