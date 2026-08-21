@@ -20,6 +20,7 @@ import AdsLanding from "./pages/AdsLanding";
 import PremiumLanding from "./pages/PremiumLanding";
 import SecurityScanner from "./pages/SecurityScanner";
 import Blog from "./pages/Blog";
+import BlogPost from "./pages/BlogPost";
 import { PixelTracker } from "@/components/PixelTracker";
 import { PerformanceMonitor } from "@/components/PerformanceMonitor";
 import { EnhancedTracking } from "@/components/EnhancedTracking";
@@ -122,6 +123,7 @@ const App = () => {
               <Route path="/premium" element={<PremiumLanding />} />
               <Route path="/scanner" element={<SecurityScanner />} />
               <Route path="/blog" element={<Blog />} />
+              <Route path="/blog/:slug" element={<BlogPost />} />
               {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
               <Route path="*" element={<NotFound />} />
             </Routes>
