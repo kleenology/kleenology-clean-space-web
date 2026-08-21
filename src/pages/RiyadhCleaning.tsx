@@ -14,15 +14,9 @@ import {
   Sparkles,
 } from "lucide-react";
 import { SEO } from "@/components/SEO";
+import { Link } from "react-router-dom";
+import { neighborhoods } from "@/data/neighborhoods";
 
-const neighborhoods = [
-  "حي العليا", "حي النخيل", "حي الملقا", "حي الياسمين",
-  "حي الروضة", "حي الورود", "حي السليمانية", "حي المحمدية",
-  "حي الربوة", "حي النرجس", "حي الصحافة", "حي الندى",
-  "حي قرطبة", "حي الرائد", "حي الوادي", "حي العزيزية",
-  "حي البديعة", "حي الشفا", "حي الملز", "حي الرحمانية",
-  "حي الزهراء", "حي الفيحاء", "حي البطحاء", "حي المربع",
-];
 
 const services = [
   { icon: "🏠", title: "تنظيف المنازل بالرياض", desc: "تنظيف شامل لجميع أنواع المنازل والفلل في الرياض بأعلى معايير الجودة", href: "/home-cleaning" },
@@ -187,14 +181,15 @@ export default function RiyadhCleaning() {
             <p className="text-muted-foreground">نصل إليك في جميع أنحاء مدينة الرياض</p>
           </div>
           <div className="flex flex-wrap gap-2 justify-center">
-            {neighborhoods.map((n, i) => (
-              <span
-                key={i}
-                className="inline-flex items-center gap-1.5 bg-primary/5 text-primary border border-primary/20 rounded-full px-4 py-1.5 text-sm font-medium"
+            {neighborhoods.map((n) => (
+              <Link
+                key={n.slug}
+                to={`/cleaning-riyadh/${n.slug}`}
+                className="inline-flex items-center gap-1.5 bg-primary/5 text-primary border border-primary/20 rounded-full px-4 py-1.5 text-sm font-medium hover:bg-primary/10 transition-colors"
               >
                 <MapPin className="h-3 w-3" />
-                {n}
-              </span>
+                {n.fullNameAr}
+              </Link>
             ))}
           </div>
           <p className="text-center text-sm text-muted-foreground mt-6">
