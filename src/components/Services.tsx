@@ -5,7 +5,6 @@ import { MessageCircle, Sparkles, Wind, Sofa, Home, Building2, Square, Zap, AppW
 import deepCleaningImg from "@/assets/deep-cleaning.jpg";
 import homeCleaningImg from "@/assets/home-cleaning.jpg";
 import rehabCleaningImg from "@/assets/rehab-cleaning.jpg";
-import carpetCleaningImg from "@/assets/carpet-cleaning.jpg";
 import windowsCleaningImg from "@/assets/windows-cleaning.jpg";
 import cleaningPattern from "@/assets/cleaning-pattern.jpg";
 import officeCleaningBg from "@/assets/office-cleaning-bg.jpg";
@@ -35,12 +34,6 @@ export const Services = () => {
       description: t('services.description'),
       image: rehabCleaningImg,
       icon: Wind
-    },
-    {
-      title: t('services.popular.3'),
-      description: t('services.description'),
-      image: carpetCleaningImg,
-      icon: Home
     },
     {
       // popular.5 is Windows Cleaning: already listed as a service and already
@@ -116,7 +109,7 @@ export const Services = () => {
           </div>
 
           {/* Services Grid */}
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 sm:gap-8 mb-12 sm:mb-16">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 sm:gap-8 mb-12 sm:mb-16">
             {services.map((service, index) => (
               <Card key={index} className="group border-primary/10 hover:border-primary/30 transition-all duration-300 hover:shadow-clean overflow-hidden">
                 <div className="relative">
