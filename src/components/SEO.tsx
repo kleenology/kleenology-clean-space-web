@@ -9,6 +9,7 @@ interface SEOProps {
   type?: string;
   jsonLd?: object;
   hreflang?: boolean;
+  noindex?: boolean;
 }
 
 export const SEO: React.FC<SEOProps> = ({
@@ -20,6 +21,7 @@ export const SEO: React.FC<SEOProps> = ({
   type = "website",
   jsonLd,
   hreflang = true,
+  noindex = false,
 }) => {
   useEffect(() => {
     document.title = title;
@@ -35,6 +37,7 @@ export const SEO: React.FC<SEOProps> = ({
     };
 
     setMeta('meta[name="description"]', 'name', description);
+    setMeta('meta[name="robots"]', 'name', noindex ? 'noindex, nofollow' : 'index, follow');
     setMeta('meta[name="keywords"]', 'name', keywords);
 
     const ogTags: [string, string][] = [
@@ -111,7 +114,7 @@ export const SEO: React.FC<SEOProps> = ({
       const script = document.getElementById('seo-page-jsonld');
       if (script) script.remove();
     };
-  }, [title, description, keywords, image, url, type, jsonLd, hreflang]);
+  }, [title, description, keywords, image, url, type, jsonLd, hreflang, noindex]);
 
   return null;
 };
