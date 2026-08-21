@@ -90,15 +90,6 @@ export default function OfferLanding() {
             ))}
           </ul>
 
-          {/* الثقة — أرقام معلنة في بقية الموقع */}
-          <div className="mt-5 rounded-2xl bg-brand-blue-dark px-5 py-5 text-white">
-            <p className="text-lg font-bold">أثاثك وبيتك بأيدٍ أمينة</p>
-            <p className="mt-2 text-sm leading-relaxed text-white/85">
-              أكثر من ٦٩٠ عميلاً في الرياض، بتقييم ٤.٩ من ٥، وضمان الرضا ١٠٠٪ — نعود مجاناً خلال ٢٤ ساعة إذا
-              لم تكن راضياً.
-            </p>
-          </div>
-
           {/* الإجراء */}
           <button
             onClick={handleWhatsApp}
