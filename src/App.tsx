@@ -21,7 +21,11 @@ import PremiumLanding from "./pages/PremiumLanding";
 import SecurityScanner from "./pages/SecurityScanner";
 import Blog from "./pages/Blog";
 import BlogPost from "./pages/BlogPost";
+import SelfInspection from "./pages/SelfInspection";
+import PrivacyPolicy from "./pages/PrivacyPolicy";
+import ReviewGate from "./pages/ReviewGate";
 import { PixelTracker } from "@/components/PixelTracker";
+import { WhatsAppChatWidget } from "@/components/WhatsAppChatWidget";
 import { PerformanceMonitor } from "@/components/PerformanceMonitor";
 import { EnhancedTracking } from "@/components/EnhancedTracking";
 import { Component, ErrorInfo, ReactNode } from "react";
@@ -104,6 +108,7 @@ const App = () => {
           <Sonner />
           <PixelTracker />
           <PerformanceMonitor />
+          <WhatsAppChatWidget />
           <BrowserRouter basename="/">
             <EnhancedTracking />
             <Routes>
@@ -124,6 +129,9 @@ const App = () => {
               <Route path="/scanner" element={<SecurityScanner />} />
               <Route path="/blog" element={<Blog />} />
               <Route path="/blog/:slug" element={<BlogPost />} />
+              <Route path="/self-inspection" element={<SelfInspection />} />
+              <Route path="/privacy-policy" element={<PrivacyPolicy />} />
+              <Route path="/review" element={<ReviewGate />} />
               {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
               <Route path="*" element={<NotFound />} />
             </Routes>

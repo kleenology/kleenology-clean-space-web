@@ -245,16 +245,6 @@ export default function AdsLanding() {
       <div className="border-t border-gray-100 py-6 text-center text-xs text-gray-400">
         © 2024 كلينولوجي — الرياض، المملكة العربية السعودية
       </div>
-
-      {/* Sticky WhatsApp */}
-      <Button
-        onClick={handleWhatsApp}
-        className="fixed bottom-6 right-6 z-50 w-16 h-16 rounded-full bg-[#25D366] hover:bg-[#20BA5A] shadow-lg hover:shadow-xl transform hover:scale-110 transition-all duration-300"
-        size="icon"
-        aria-label="WhatsApp"
-      >
-        <MessageCircle className="h-7 w-7 text-white" />
-      </Button>
     </div>
   );
 }

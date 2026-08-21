@@ -324,9 +324,6 @@ export default function PremiumLanding() {
       </div>
 
       {/* floating WhatsApp */}
-      <button onClick={wa} style={{ position: "fixed", bottom: 24, right: 24, zIndex: 50, width: 60, height: 60, borderRadius: "50%", background: "#25D366", border: "none", cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center", boxShadow: "0 4px 20px rgba(37,211,102,0.4)" }}>
-        <MessageCircle size={28} color="white" />
-      </button>
     </div>
   );
 }
