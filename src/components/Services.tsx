@@ -1,11 +1,12 @@
 import { useEffect, useRef } from "react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { MessageCircle, Sparkles, Wind, Sofa, Home, Building2, Square, Zap } from "lucide-react";
+import { MessageCircle, Sparkles, Wind, Sofa, Home, Building2, Square, Zap, AppWindow } from "lucide-react";
 import deepCleaningImg from "@/assets/deep-cleaning.jpg";
 import furnitureCleaningImg from "@/assets/furniture-cleaning.jpg";
-import acCleaningImg from "@/assets/ac-cleaning.jpg";
+import rehabCleaningImg from "@/assets/rehab-cleaning.jpg";
 import carpetCleaningImg from "@/assets/carpet-cleaning.jpg";
+import windowsCleaningImg from "@/assets/windows-cleaning.jpg";
 import cleaningPattern from "@/assets/cleaning-pattern.jpg";
 import officeCleaningBg from "@/assets/office-cleaning-bg.jpg";
 import { useTranslation } from "react-i18next";
@@ -32,7 +33,7 @@ export const Services = () => {
     {
       title: t('services.popular.4'),
       description: t('services.description'),
-      image: acCleaningImg,
+      image: rehabCleaningImg,
       icon: Wind
     },
     {
@@ -40,6 +41,14 @@ export const Services = () => {
       description: t('services.description'),
       image: carpetCleaningImg,
       icon: Home
+    },
+    {
+      // popular.5 is Windows Cleaning: already listed as a service and already
+      // has a description in both locales, but never had a card.
+      title: t('services.popular.5'),
+      description: t('services.description'),
+      image: windowsCleaningImg,
+      icon: AppWindow
     }
   ];
 
@@ -107,7 +116,7 @@ export const Services = () => {
           </div>
 
           {/* Services Grid */}
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 sm:gap-8 mb-12 sm:mb-16">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 sm:gap-8 mb-12 sm:mb-16">
             {services.map((service, index) => (
               <Card key={index} className="group border-primary/10 hover:border-primary/30 transition-all duration-300 hover:shadow-clean overflow-hidden">
                 <div className="relative">
