@@ -107,7 +107,11 @@ export default function OfferLanding() {
             اتصال مباشر: <span dir="ltr">{PHONE_DISPLAY}</span>
           </button>
 
-          <p className="mt-4 text-xs text-muted-foreground">نرد عادةً خلال أقل من ساعة</p>
+          {/* الدليل الاجتماعي في سطر واحد بدل لوحة كاملة — أرقام معلنة في بقية الموقع */}
+          <p className="mt-4 text-xs font-semibold text-brand-blue-dark">
+            ٦٩٠+ عميل في الرياض · تقييم ٤.٩ · ضمان الرضا ١٠٠٪
+          </p>
+          <p className="mt-1.5 text-xs text-muted-foreground">نرد عادةً خلال أقل من ساعة</p>
         </div>
         {/* لا زر واتساب عائم هنا: WhatsAppChatWidget مركّب في App ويظهر
             على كل الصفحات، فإضافة زر ثانٍ تضع اثنين في نفس الزاوية. */}
