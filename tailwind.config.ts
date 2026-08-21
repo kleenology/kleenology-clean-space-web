@@ -20,7 +20,7 @@ export default {
 		extend: {
 			fontFamily: {
 				'fredoka': ['Fredoka', 'sans-serif'],
-				sans: ['Inter', 'sans-serif'],
+				sans: ['Cairo', 'Fredoka', 'sans-serif'],
 			},
 			colors: {
 				border: 'hsl(var(--border))',
