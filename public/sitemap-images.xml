@@ -2,39 +2,41 @@
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9"
         xmlns:image="http://www.google.com/schemas/sitemap-image/1.1">
   <url>
-    <loc>https://kleenology.com/</loc>
+    <loc>https://kleenology.me/</loc>
     <image:image>
-      <image:loc>https://kleenology.com/logobg.png</image:loc>
+      <image:loc>https://kleenology.me/logobg.png</image:loc>
       <image:title>Kleenology Professional Cleaning Services</image:title>
       <image:caption>Professional cleaning services with eco-friendly products</image:caption>
     </image:image>
     <image:image>
-      <image:loc>https://kleenology.com/logo.png</image:loc>
+      <image:loc>https://kleenology.me/logo.png</image:loc>
       <image:title>Kleenology Logo</image:title>
       <image:caption>Kleenology cleaning company logo</image:caption>
     </image:image>
+    <image:image>
+      <image:loc>https://kleenology.me/lovable-uploads/before.jpg</image:loc>
+      <image:title>Before Cleaning</image:title>
+      <image:caption>Upholstery before a Kleenology deep clean in Riyadh</image:caption>
+    </image:image>
+    <image:image>
+      <image:loc>https://kleenology.me/lovable-uploads/after.jpg</image:loc>
+      <image:title>After Cleaning</image:title>
+      <image:caption>The same upholstery after a Kleenology deep clean in Riyadh</image:caption>
+    </image:image>
+    <image:image>
+      <image:loc>https://kleenology.me/lovable-uploads/1.jpg</image:loc>
+      <image:title>Sofa Cleaning Service</image:title>
+      <image:caption>Kleenology sofa and upholstery cleaning in Riyadh</image:caption>
+    </image:image>
+    <image:image>
+      <image:loc>https://kleenology.me/lovable-uploads/2.jpg</image:loc>
+      <image:title>Upholstery Steam Cleaning</image:title>
+      <image:caption>Steam cleaning upholstery with a Kleenology rotary machine</image:caption>
+    </image:image>
+    <image:image>
+      <image:loc>https://kleenology.me/lovable-uploads/3.jpg</image:loc>
+      <image:title>Upholstery Extraction Cleaning</image:title>
+      <image:caption>Extracting dirt from upholstery during a Kleenology service</image:caption>
+    </image:image>
   </url>
-  <url>
-    <loc>https://kleenology.com/services</loc>
-    <image:image>
-      <image:loc>https://kleenology.com/src/assets/deep-cleaning.jpg</image:loc>
-      <image:title>Deep Cleaning Service</image:title>
-      <image:caption>Professional deep cleaning and sanitization services</image:caption>
-    </image:image>
-    <image:image>
-      <image:loc>https://kleenology.com/src/assets/furniture-cleaning.jpg</image:loc>
-      <image:title>Furniture Cleaning Service</image:title>
-      <image:caption>Expert furniture cleaning and maintenance</image:caption>
-    </image:image>
-    <image:image>
-      <image:loc>https://kleenology.com/src/assets/ac-cleaning.jpg</image:loc>
-      <image:title>AC Cleaning Service</image:title>
-      <image:caption>Professional air conditioning cleaning and maintenance</image:caption>
-    </image:image>
-    <image:image>
-      <image:loc>https://kleenology.com/src/assets/carpet-cleaning.jpg</image:loc>
-      <image:title>Carpet Cleaning Service</image:title>
-      <image:caption>Deep carpet cleaning and stain removal</image:caption>
-    </image:image>
-  </url>
-</urlset> 
+</urlset>
