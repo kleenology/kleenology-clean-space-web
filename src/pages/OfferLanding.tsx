@@ -5,10 +5,11 @@ import { SEO } from "@/components/SEO";
 const WHATSAPP = "966537519929";
 const PHONE_DISPLAY = "٠٥٣ ٧٥١ ٩٩٢٩";
 
-// كل رقم هنا مطابق لما هو معلن في بقية الموقع — لا تُضف ادعاءات جديدة.
+// الأرقام هنا مطابقة لما هو معلن في بقية الموقع — لا تُضف ادعاءات من عندك.
+// "مواد إيطالية" ادعاء أضافه المالك عن مورّده، وليس مذكوراً في بقية الموقع.
 const FEATURES = [
   { icon: Users,       label: "فريق مدرّب ومعتمد" },
-  { icon: ShieldCheck, label: "منظفات آمنة للأطفال" },
+  { icon: ShieldCheck, label: "مواد إيطالية آمنة" },
   { icon: Sparkles,    label: "تنظيف عميق شامل" },
   { icon: Clock,       label: "التزام بالمواعيد" },
 ];
