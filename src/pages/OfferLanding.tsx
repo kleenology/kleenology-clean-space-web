@@ -59,13 +59,13 @@ export default function OfferLanding() {
           />
 
           <p className="mt-5 inline-block rounded-full bg-brand-blue-light/50 px-4 py-1.5 text-sm font-semibold text-brand-blue-dark">
-            نظافة تريح بالك
+            الفرق يُرى في كل لمسة
           </p>
 
           <h1 className="mt-4 text-3xl font-extrabold leading-tight text-brand-blue-dark">
-            الفرق يُرى
+            نظافة احترافية
             <br />
-            في كل لمسة
+            بمستوى فندقي
           </h1>
 
           <p className="mx-auto mt-4 max-w-sm text-base leading-relaxed text-muted-foreground">
