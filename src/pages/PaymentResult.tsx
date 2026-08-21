@@ -55,9 +55,7 @@ export default function PaymentResult() {
           b.date && `التاريخ: ${b.date}`,
           b.timeSlot && `الوقت: ${b.timeSlot}`,
           b.name && `الاسم: ${b.name}`,
-          b.phone && `الجوال: ${b.phone}`,
           b.neighborhood && `العنوان: ${b.neighborhood}`,
-          b.notes && `ملاحظات: ${b.notes}`,
           `رقم عملية الدفع: ${result?.reference ?? ""}`,
         ]
       : [
@@ -66,9 +64,7 @@ export default function PaymentResult() {
           b.date && `Date: ${b.date}`,
           b.timeSlot && `Time: ${b.timeSlot}`,
           b.name && `Name: ${b.name}`,
-          b.phone && `Phone: ${b.phone}`,
           b.neighborhood && `Address: ${b.neighborhood}`,
-          b.notes && `Notes: ${b.notes}`,
           `Payment reference: ${result?.reference ?? ""}`,
         ];
     const msg = lines.filter(Boolean).join("\n");
