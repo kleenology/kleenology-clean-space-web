@@ -24,6 +24,7 @@ import BlogPost from "./pages/BlogPost";
 import SelfInspection from "./pages/SelfInspection";
 import PrivacyPolicy from "./pages/PrivacyPolicy";
 import ReviewGate from "./pages/ReviewGate";
+import OfferLanding from "./pages/OfferLanding";
 import { PixelTracker } from "@/components/PixelTracker";
 import { WhatsAppChatWidget } from "@/components/WhatsAppChatWidget";
 import { PerformanceMonitor } from "@/components/PerformanceMonitor";
@@ -132,6 +133,7 @@ const App = () => {
               <Route path="/self-inspection" element={<SelfInspection />} />
               <Route path="/privacy-policy" element={<PrivacyPolicy />} />
               <Route path="/review" element={<ReviewGate />} />
+              <Route path="/offer" element={<OfferLanding />} />
               {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
               <Route path="*" element={<NotFound />} />
             </Routes>
