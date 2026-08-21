@@ -54,9 +54,9 @@ export default function OfferLanding() {
           <img
             src="/lovable-uploads/afda02d7-63e7-4998-92eb-dbe3d776cea3.png"
             alt="كلينولوجي"
-            className="mx-auto mt-6 h-20 w-auto"
-            width={160}
-            height={80}
+            className="mx-auto mt-6 h-28 w-auto"
+            width={224}
+            height={112}
           />
 
           <p className="mt-5 inline-block rounded-full bg-brand-blue-light/50 px-4 py-1.5 text-sm font-semibold text-brand-blue-dark">
