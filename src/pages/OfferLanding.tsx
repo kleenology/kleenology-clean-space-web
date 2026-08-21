@@ -63,9 +63,9 @@ export default function OfferLanding() {
           </p>
 
           <h1 className="mt-4 text-3xl font-extrabold leading-tight text-brand-blue-dark">
-            نظافة احترافية
+            الفرق يُرى
             <br />
-            بمستوى فندقي
+            في كل لمسة
           </h1>
 
           <p className="mx-auto mt-4 max-w-sm text-base leading-relaxed text-muted-foreground">
