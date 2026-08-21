@@ -3,6 +3,7 @@
         xmlns:image="http://www.google.com/schemas/sitemap-image/1.1">
   <url>
     <loc>https://kleenology.me/</loc>
+    <lastmod>2026-08-21</lastmod>
     <image:image>
       <image:loc>https://kleenology.me/logobg.png</image:loc>
       <image:title>Kleenology Professional Cleaning Services</image:title>
