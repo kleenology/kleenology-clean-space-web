@@ -70,8 +70,9 @@ export default function OfferLanding() {
           </h1>
 
           <p className="mx-auto mt-4 max-w-sm text-base leading-relaxed text-muted-foreground">
-            تنظيف عميق للمنازل والمكاتب في الرياض، بفريق معتمد ومواد آمنة — حتى يصير بيتك{" "}
-            <span className="font-bold text-foreground">أنظف وأريح</span>.
+            {/* الفريق والمواد مذكوران في البطاقات تحت مباشرة — لا تُعدهما هنا. */}
+            تنظيف عميق للمنازل والمكاتب في الرياض، بعناية{" "}
+            <span className="font-bold text-foreground">تُلاحظ في كل تفصيلة</span>.
           </p>
 
           {/* المزايا */}
