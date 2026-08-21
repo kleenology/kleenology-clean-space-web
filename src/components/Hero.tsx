@@ -1,6 +1,10 @@
 
 import heroBg from "@/assets/hero-background-white.jpg";
 import heroBgMobile from "@/assets/hero-background-mobile.jpg";
+
+// Darkens the photo so the white headline stays readable over it.
+const HERO_SCRIM =
+  "linear-gradient(180deg, rgba(20,30,48,0.50) 0%, rgba(20,30,48,0.38) 55%, rgba(20,30,48,0.45) 100%), linear-gradient(120deg, rgba(20,30,48,0.15) 30%, rgba(36,198,220,0.05))";
 import { Button } from "@/components/ui/button";
 import { MessageCircle, Users, Shield, Sparkles, Calendar } from "lucide-react";
 import { useCallback } from "react";
@@ -30,11 +34,19 @@ export const Hero = () => {
       id="home"
       className="relative min-h-[90vh] flex items-center justify-center overflow-hidden pt-24 pb-24 sm:pt-36 sm:pb-36"
     >
-      {/* Professional Background with Gradient Overlay */}
+      {/* Professional Background with Gradient Overlay.
+          Two layers so phones load the portrait crop instead of the wide one. */}
       <div
-        className="absolute inset-0 w-full h-full z-0 bg-cover bg-center bg-no-repeat scale-110 sm:scale-100"
+        className="absolute inset-0 w-full h-full z-0 bg-cover bg-center bg-no-repeat sm:hidden"
         style={{
-          backgroundImage: `linear-gradient(180deg, rgba(20,30,48,0.50) 0%, rgba(20,30,48,0.38) 55%, rgba(20,30,48,0.45) 100%), linear-gradient(120deg, rgba(20,30,48,0.15) 30%, rgba(36,198,220,0.05)), url(${heroBg})`,
+          backgroundImage: `${HERO_SCRIM}, url(${heroBgMobile})`,
+        }}
+        aria-hidden="true"
+      />
+      <div
+        className="absolute inset-0 w-full h-full z-0 bg-cover bg-center bg-no-repeat hidden sm:block"
+        style={{
+          backgroundImage: `${HERO_SCRIM}, url(${heroBg})`,
         }}
         aria-hidden="true"
       />
