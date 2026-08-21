@@ -3,7 +3,7 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { MessageCircle, Sparkles, Wind, Sofa, Home, Building2, Square, Zap, AppWindow } from "lucide-react";
 import deepCleaningImg from "@/assets/deep-cleaning.jpg";
-import furnitureCleaningImg from "@/assets/furniture-cleaning.jpg";
+import homeCleaningImg from "@/assets/home-cleaning.jpg";
 import rehabCleaningImg from "@/assets/rehab-cleaning.jpg";
 import carpetCleaningImg from "@/assets/carpet-cleaning.jpg";
 import windowsCleaningImg from "@/assets/windows-cleaning.jpg";
@@ -27,7 +27,7 @@ export const Services = () => {
     {
       title: t('services.popular.1'),
       description: t('services.description'),
-      image: furnitureCleaningImg,
+      image: homeCleaningImg,
       icon: Sofa
     },
     {
