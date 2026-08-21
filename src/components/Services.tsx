@@ -4,7 +4,7 @@ import { Button } from "@/components/ui/button";
 import { MessageCircle, Sparkles, Wind, Sofa, Home, Building2, Square, Zap, AppWindow } from "lucide-react";
 import deepCleaningImg from "@/assets/deep-cleaning.jpg";
 import furnitureCleaningImg from "@/assets/furniture-cleaning.jpg";
-import acCleaningImg from "@/assets/ac-cleaning.jpg";
+import rehabCleaningImg from "@/assets/rehab-cleaning.jpg";
 import carpetCleaningImg from "@/assets/carpet-cleaning.jpg";
 import windowsCleaningImg from "@/assets/windows-cleaning.jpg";
 import cleaningPattern from "@/assets/cleaning-pattern.jpg";
@@ -33,7 +33,7 @@ export const Services = () => {
     {
       title: t('services.popular.4'),
       description: t('services.description'),
-      image: acCleaningImg,
+      image: rehabCleaningImg,
       icon: Wind
     },
     {
