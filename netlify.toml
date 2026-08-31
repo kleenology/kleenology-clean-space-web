@@ -46,6 +46,16 @@
   status = 200
 
 [[redirects]]
+  from = "/api/pricing/login"
+  to = "/.netlify/functions/pricing-login"
+  status = 200
+
+[[redirects]]
+  from = "/api/pricing/rates"
+  to = "/.netlify/functions/pricing-rates"
+  status = 200
+
+[[redirects]]
   from = "/*"
   to = "/index.html"
   status = 200

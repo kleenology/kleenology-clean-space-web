@@ -1,4 +1,9 @@
+# قواعد الدوال أولاً — ملف _redirects تُطبَّق قواعده قبل netlify.toml،
+# ولو سبقته قاعدة /* لابتلعت مسارات /api/ وحوّلتها لصفحة الموقع.
+/api/pricing/login    /.netlify/functions/pricing-login    200
+/api/pricing/rates    /.netlify/functions/pricing-rates    200
+
 /*    /index.html   200
 /terms-and-conditions    /index.html   200
 /home-cleaning    /index.html   200
-/office-cleaning    /index.html   200 
+/office-cleaning    /index.html   200
