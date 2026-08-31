@@ -1,4 +1,4 @@
-import type { PricingRates, QuoteInput, QuoteResult } from "./types";
+import type { Catalogue, QuoteResult } from "./types";
 
 export interface CustomerInfo {
   name: string;
@@ -8,52 +8,46 @@ export interface CustomerInfo {
   notes: string;
 }
 
-const sar = (value: number) => `${value.toLocaleString("en-US")} ر.س`;
+const sar = (value: number) => {
+  const rounded = Math.round(value * 100) / 100;
+  return `${rounded.toLocaleString("en-US")} ر.س`;
+};
 
 /**
  * نص عرض السعر المُرسل للعميل.
  * لا يحتوي أي رقم داخلي — لا تكلفة عمالة ولا هامش ربح ولا عدد العمال.
  */
 export function buildCustomerQuote(
-  rates: PricingRates,
-  input: QuoteInput,
+  catalogue: Catalogue,
   result: QuoteResult,
   customer: CustomerInfo,
-  options: { itemized: boolean } = { itemized: true },
+  options: { showCodes: boolean } = { showCodes: false },
 ): string {
-  const property = rates.propertyTypes[input.propertyType];
-  const service = rates.serviceTypes.find((s) => s.key === input.serviceType);
-  const urgency = rates.urgencies.find((u) => u.key === input.urgency);
-
   const parts: string[] = [];
 
   parts.push(`مرحباً${customer.name ? ` ${customer.name}` : ""} 👋`);
   parts.push("هذا عرض السعر من *كلينولوجي* لخدمة التنظيف:\n");
 
-  parts.push("🏠 *تفاصيل المكان:*");
-  if (property) parts.push(`النوع: ${property.label}`);
-  if (input.areaSqm > 0) parts.push(`المساحة: ${input.areaSqm} م²`);
-  if (input.floors > 1) parts.push(`عدد الأدوار: ${input.floors}`);
-  if (service) parts.push(`الخدمة: ${service.label}`);
-  if (urgency && urgency.multiplier !== 1) parts.push(`الموعد: ${urgency.label}`);
-  if (customer.neighborhood) parts.push(`الموقع: ${customer.neighborhood}`);
-  if (customer.visitDate) parts.push(`تاريخ الزيارة: ${customer.visitDate}`);
+  if (customer.neighborhood) parts.push(`📍 الموقع: ${customer.neighborhood}`);
+  if (customer.visitDate) parts.push(`📅 تاريخ الزيارة: ${customer.visitDate}`);
+  if (customer.neighborhood || customer.visitDate) parts.push("");
 
-  if (options.itemized && result.lines.length > 0) {
-    parts.push("\n📋 *تفصيل الخدمة:*");
-    for (const line of result.lines) {
-      parts.push(`  • ${line.label}${line.detail ? ` (${line.detail})` : ""}`);
-    }
+  parts.push("📋 *الخدمات:*");
+  for (const line of result.lines) {
+    const code = options.showCodes ? ` [${line.code}]` : "";
+    const qty = line.qty > 1 ? ` ×${line.qty}` : "";
+    parts.push(`  • ${line.group} — ${line.label}${qty}${code}: ${sar(line.amount)}`);
   }
 
   parts.push("\n💰 *السعر:*");
-  parts.push(`الإجمالي قبل الضريبة: ${sar(result.beforeDiscount)}`);
   if (result.discountAmount > 0) {
+    parts.push(`الإجمالي قبل الخصم: ${sar(result.listTotal)}`);
     parts.push(`الخصم: −${sar(result.discountAmount)}`);
-    parts.push(`بعد الخصم: ${sar(result.netBeforeVat)}`);
   }
-  parts.push(`ضريبة القيمة المضافة (${Math.round(rates.vatRate * 100)}٪): ${sar(result.vatAmount)}`);
-  parts.push(`*الإجمالي النهائي: ${sar(result.total)}*`);
+  parts.push(`*الإجمالي: ${sar(result.total)}*`);
+  parts.push(
+    `_شامل ضريبة القيمة المضافة ${Math.round(catalogue.vatRate * 100)}٪ (${sar(result.vatAmount)})_`,
+  );
   parts.push(`العربون لتأكيد الحجز: ${sar(result.deposit)}`);
 
   if (customer.notes) parts.push(`\n📝 ملاحظات: ${customer.notes}`);
@@ -65,44 +59,41 @@ export function buildCustomerQuote(
 
 /** ملخص داخلي للمشرف — يشمل التكلفة وهامش الربح */
 export function buildInternalSummary(
-  rates: PricingRates,
-  input: QuoteInput,
+  catalogue: Catalogue,
   result: QuoteResult,
   customer: CustomerInfo,
+  crew: { workers: number; hours: number },
 ): string {
-  const property = rates.propertyTypes[input.propertyType];
-  const service = rates.serviceTypes.find((s) => s.key === input.serviceType);
-
   const lines: string[] = [];
   lines.push("🔒 ملخص تسعير داخلي — لا يُرسل للعميل");
-  lines.push(`التسعيرة: ${rates.version}`);
+  lines.push(`الكتالوج: ${catalogue.version}`);
   lines.push(`التاريخ: ${new Date().toLocaleDateString("en-GB")}`);
   lines.push("");
   lines.push(`العميل: ${customer.name || "—"} | ${customer.phone || "—"}`);
-  lines.push(`المكان: ${property?.label ?? "—"} — ${input.areaSqm} م² — ${input.floors} دور`);
-  lines.push(`الخدمة: ${service?.label ?? "—"}`);
+  if (customer.neighborhood) lines.push(`الموقع: ${customer.neighborhood}`);
   lines.push("");
   lines.push("— البنود —");
   for (const line of result.lines) {
-    lines.push(`${line.label}${line.detail ? ` (${line.detail})` : ""}: ${sar(line.amount)}`);
+    lines.push(
+      `${line.code} ${line.group} — ${line.label} ×${line.qty} @ ${sar(line.unitPrice)} = ${sar(line.amount)}`,
+    );
   }
   lines.push("");
-  lines.push(`مجموع البنود: ${sar(result.itemsSubtotal)}`);
-  lines.push(`معامل الخدمة: ×${result.serviceMultiplier}`);
-  lines.push(`معامل الاستعجال: ×${result.urgencyMultiplier}`);
-  if (result.minChargeApplied) lines.push(`رُفع للحد الأدنى: ${sar(rates.minCharge)}`);
-  if (result.discountAmount > 0) lines.push(`الخصم: −${sar(result.discountAmount)}`);
-  lines.push(`الصافي قبل الضريبة: ${sar(result.netBeforeVat)}`);
-  lines.push(`الضريبة: ${sar(result.vatAmount)}`);
-  lines.push(`الإجمالي: ${sar(result.total)}`);
+  lines.push(`قبل الخصم: ${sar(result.listTotal)}`);
+  lines.push(`الخصم: −${sar(result.discountAmount)}`);
+  lines.push(`الإجمالي (شامل الضريبة): ${sar(result.total)}`);
+  lines.push(`منه ضريبة: ${sar(result.vatAmount)}`);
+  lines.push(`الصافي بعد الضريبة: ${sar(result.netBeforeVat)}`);
   lines.push(`العربون: ${sar(result.deposit)}`);
   lines.push("");
   lines.push("— التكلفة —");
-  lines.push(`الطاقم: ${input.workers} عامل × ${input.hours} ساعة = ${sar(result.cost.labor)}`);
+  lines.push(`الطاقم: ${crew.workers} عامل × ${crew.hours} ساعة = ${sar(result.cost.labor)}`);
   lines.push(`النقل: ${sar(result.cost.transport)}`);
   lines.push(`المواد: ${sar(result.cost.supplies)}`);
   lines.push(`إجمالي التكلفة: ${sar(result.cost.total)}`);
-  lines.push(`الربح: ${sar(result.cost.profit)} (${Math.round(result.cost.marginPercent * 100)}٪)`);
+  lines.push(
+    `الربح: ${sar(result.cost.profit)} (${Math.round(result.cost.marginPercent * 100)}٪ من الصافي)`,
+  );
 
   return lines.join("\n");
 }

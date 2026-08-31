@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import { SEO } from "@/components/SEO";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -6,56 +6,41 @@ import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import {
   Calculator, Lock, LogOut, Loader2, Copy, MessageCircle, RotateCcw,
-  Home, Building2, LayoutGrid, AlertTriangle, TrendingUp, Minus, Plus,
+  AlertTriangle, TrendingUp, Minus, Plus, Search, X, Package, PlusCircle,
 } from "lucide-react";
 import { toast } from "sonner";
 import { cn } from "@/lib/utils";
-import { calculateQuote, suggestHours } from "@/lib/pricing/calculate";
+import { calculateQuote, flattenCatalogue } from "@/lib/pricing/calculate";
 import {
   buildCustomerQuote, buildInternalSummary, toWhatsAppNumber,
   type CustomerInfo,
 } from "@/lib/pricing/quoteMessage";
-import type { PricingRates, QuoteInput } from "@/lib/pricing/types";
+import type { Catalogue, QuoteInput } from "@/lib/pricing/types";
 
 const TOKEN_KEY = "kleenology_pricing_token";
 
-const PROPERTY_ICONS: Record<string, typeof Home> = {
-  villa: LayoutGrid,
-  apartment: Home,
-  office: Building2,
+const sar = (value: number) => {
+  const rounded = Math.round(value * 100) / 100;
+  return `${rounded.toLocaleString("en-US")} ر.س`;
 };
-
-const CONDITION_STYLES: Record<string, string> = {
-  clean:  "border-emerald-300 bg-emerald-50 text-emerald-700",
-  medium: "border-amber-300 bg-amber-50 text-amber-700",
-  deep:   "border-red-300 bg-red-50 text-red-700",
-};
-
-const sar = (value: number) => `${value.toLocaleString("en-US")} ر.س`;
 
 const emptyCustomer: CustomerInfo = {
   name: "", phone: "", neighborhood: "", visitDate: "", notes: "",
 };
 
-function buildInitialInput(rates: PricingRates): QuoteInput {
+function buildInitialInput(catalogue: Catalogue): QuoteInput {
   return {
-    propertyType: Object.keys(rates.propertyTypes)[0] ?? "",
-    areaSqm: 0,
-    floors: 1,
-    serviceType: rates.serviceTypes[0]?.key ?? "",
-    urgency: rates.urgencies[0]?.key ?? "",
-    rooms: [],
-    extras: [],
+    items: [],
     discountType: "percent",
-    discountValue: 0,
-    workers: rates.cost.defaultWorkers,
+    discountValue: catalogue.defaultDiscountPercent,
+    workers: catalogue.cost.defaultWorkers,
     hours: 0,
   };
 }
 
 /* ————————————————————————— شاشة الدخول ————————————————————————— */
 
-function LoginCard({ onSuccess }: { onSuccess: (token: string, rates: PricingRates) => void }) {
+function LoginCard({ onSuccess }: { onSuccess: (token: string, catalogue: Catalogue) => void }) {
   const [password, setPassword] = useState("");
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
@@ -73,8 +58,8 @@ function LoginCard({ onSuccess }: { onSuccess: (token: string, rates: PricingRat
       });
       const data = await res.json().catch(() => null);
 
-      if (res.ok && data?.token && data?.rates) {
-        onSuccess(data.token, data.rates);
+      if (res.ok && data?.token && data?.catalogue) {
+        onSuccess(data.token, data.catalogue);
         return;
       }
       if (res.status === 429) setError("محاولات كثيرة خاطئة. انتظر عشر دقائق ثم أعد المحاولة.");
@@ -90,34 +75,23 @@ function LoginCard({ onSuccess }: { onSuccess: (token: string, rates: PricingRat
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-muted/30 px-4">
-      <form
-        onSubmit={submit}
-        className="w-full max-w-sm bg-card border rounded-2xl shadow-sm p-7 text-center"
-      >
+      <form onSubmit={submit} className="w-full max-w-sm bg-card border rounded-2xl shadow-sm p-7 text-center">
         <div className="w-14 h-14 rounded-full bg-primary/10 text-primary flex items-center justify-center mx-auto mb-4">
           <Lock className="h-6 w-6" />
         </div>
         <h1 className="text-xl font-bold mb-1">تسعير كلينولوجي</h1>
-        <p className="text-sm text-muted-foreground mb-6">
-          صفحة داخلية لمشرف التسعير
-        </p>
+        <p className="text-sm text-muted-foreground mb-6">صفحة داخلية لمشرف التسعير</p>
 
         <div className="text-right space-y-2 mb-4">
           <Label htmlFor="password">كلمة المرور</Label>
           <Input
-            id="password"
-            type="password"
-            autoComplete="current-password"
-            value={password}
-            onChange={(e) => setPassword(e.target.value)}
-            className="text-center tracking-widest"
-            disabled={loading}
+            id="password" type="password" autoComplete="current-password"
+            value={password} onChange={(e) => setPassword(e.target.value)}
+            className="text-center tracking-widest" disabled={loading}
           />
         </div>
 
-        {error && (
-          <p className="text-sm text-destructive mb-4 leading-relaxed">{error}</p>
-        )}
+        {error && <p className="text-sm text-destructive mb-4 leading-relaxed">{error}</p>}
 
         <Button type="submit" className="w-full" disabled={loading || !password.trim()}>
           {loading ? <Loader2 className="h-4 w-4 animate-spin" /> : "دخول"}
@@ -129,46 +103,11 @@ function LoginCard({ onSuccess }: { onSuccess: (token: string, rates: PricingRat
 
 /* ————————————————————————— عناصر مساعدة ————————————————————————— */
 
-function Section({ title, children }: { title: string; children: React.ReactNode }) {
-  return (
-    <section className="bg-card border rounded-xl p-5">
-      <h2 className="font-bold mb-4">{title}</h2>
-      {children}
-    </section>
-  );
-}
-
-function Chip({
-  active, onClick, children, className,
-}: {
-  active: boolean;
-  onClick: () => void;
-  children: React.ReactNode;
-  className?: string;
-}) {
-  return (
-    <button
-      type="button"
-      onClick={onClick}
-      className={cn(
-        "px-3 py-2 rounded-lg border text-sm font-medium transition-colors",
-        active
-          ? "border-primary bg-primary/10 text-primary"
-          : "border-border bg-background hover:bg-muted",
-        className,
-      )}
-    >
-      {children}
-    </button>
-  );
-}
-
 function QtyStepper({ value, onChange }: { value: number; onChange: (n: number) => void }) {
   return (
-    <div className="flex items-center gap-1">
+    <div className="flex items-center gap-1 shrink-0">
       <button
-        type="button"
-        onClick={() => onChange(Math.max(1, value - 1))}
+        type="button" onClick={() => onChange(Math.max(1, value - 1))}
         className="w-7 h-7 rounded-md border flex items-center justify-center hover:bg-muted"
         aria-label="إنقاص"
       >
@@ -176,8 +115,7 @@ function QtyStepper({ value, onChange }: { value: number; onChange: (n: number) 
       </button>
       <span className="w-7 text-center text-sm font-semibold tabular-nums">{value}</span>
       <button
-        type="button"
-        onClick={() => onChange(value + 1)}
+        type="button" onClick={() => onChange(value + 1)}
         className="w-7 h-7 rounded-md border flex items-center justify-center hover:bg-muted"
         aria-label="زيادة"
       >
@@ -191,31 +129,30 @@ function QtyStepper({ value, onChange }: { value: number; onChange: (n: number) 
 
 export default function PricingAdmin() {
   const [token, setToken] = useState<string | null>(null);
-  const [rates, setRates] = useState<PricingRates | null>(null);
+  const [catalogue, setCatalogue] = useState<Catalogue | null>(null);
   const [restoring, setRestoring] = useState(true);
 
   const [input, setInput] = useState<QuoteInput | null>(null);
   const [customer, setCustomer] = useState<CustomerInfo>(emptyCustomer);
-  const [itemized, setItemized] = useState(true);
-  const hoursTouched = useRef(false);
+  const [search, setSearch] = useState("");
+  const [showCodes, setShowCodes] = useState(false);
 
-  const startSession = useCallback((newToken: string, newRates: PricingRates) => {
+  const startSession = useCallback((newToken: string, newCatalogue: Catalogue) => {
     sessionStorage.setItem(TOKEN_KEY, newToken);
     setToken(newToken);
-    setRates(newRates);
-    setInput((current) => current ?? buildInitialInput(newRates));
+    setCatalogue(newCatalogue);
+    setInput((current) => current ?? buildInitialInput(newCatalogue));
   }, []);
 
   const endSession = useCallback(() => {
     sessionStorage.removeItem(TOKEN_KEY);
     setToken(null);
-    setRates(null);
+    setCatalogue(null);
     setInput(null);
     setCustomer(emptyCustomer);
-    hoursTouched.current = false;
   }, []);
 
-  // استعادة الجلسة عند إعادة تحميل الصفحة — الخادم هو من يقرر صلاحية التوكن
+  // استعادة الجلسة عند إعادة التحميل — الخادم هو من يقرر صلاحية التوكن
   useEffect(() => {
     const saved = sessionStorage.getItem(TOKEN_KEY);
     if (!saved) {
@@ -223,18 +160,11 @@ export default function PricingAdmin() {
       return;
     }
     let cancelled = false;
-    fetch("/api/pricing/rates", { headers: { Authorization: `Bearer ${saved}` } })
+    fetch("/api/pricing/catalogue", { headers: { Authorization: `Bearer ${saved}` } })
       .then((res) => (res.ok ? res.json() : Promise.reject(new Error("unauthorized"))))
-      .then((data) => {
-        if (cancelled) return;
-        startSession(saved, data.rates);
-      })
-      .catch(() => {
-        if (!cancelled) sessionStorage.removeItem(TOKEN_KEY);
-      })
-      .finally(() => {
-        if (!cancelled) setRestoring(false);
-      });
+      .then((data) => { if (!cancelled) startSession(saved, data.catalogue); })
+      .catch(() => { if (!cancelled) sessionStorage.removeItem(TOKEN_KEY); })
+      .finally(() => { if (!cancelled) setRestoring(false); });
     return () => { cancelled = true; };
   }, [startSession]);
 
@@ -243,19 +173,19 @@ export default function PricingAdmin() {
   }, []);
 
   const quote = useMemo(
-    () => (rates && input ? calculateQuote(rates, input) : null),
-    [rates, input],
+    () => (catalogue && input ? calculateQuote(catalogue, input) : null),
+    [catalogue, input],
   );
 
-  // اقتراح عدد الساعات تلقائياً ما لم يعدّله المشرف بنفسه
-  useEffect(() => {
-    if (!rates || !input || hoursTouched.current) return;
-    const service = rates.serviceTypes.find((s) => s.key === input.serviceType);
-    const suggested = suggestHours(input.areaSqm, input.workers, service?.sqmPerWorkerHour ?? 0);
-    if (input.areaSqm > 0 && suggested !== input.hours) {
-      patch({ hours: suggested });
-    }
-  }, [rates, input, patch]);
+  // نتائج البحث عبر كل الكتالوج — الاسم أو المجموعة أو كود الخدمة
+  const searchResults = useMemo(() => {
+    if (!catalogue) return [];
+    const term = search.trim().toLowerCase();
+    if (!term) return [];
+    return flattenCatalogue(catalogue).filter((item) =>
+      `${item.group} ${item.label} ${item.code}`.toLowerCase().includes(term),
+    );
+  }, [catalogue, search]);
 
   if (restoring) {
     return (
@@ -265,59 +195,43 @@ export default function PricingAdmin() {
     );
   }
 
-  if (!token || !rates || !input || !quote) {
+  if (!token || !catalogue || !input || !quote) {
     return (
       <>
-        <SEO
-          title="تسعير كلينولوجي"
-          description="صفحة داخلية"
-          url="https://kleenology.me/admin/pricing"
-          noindex
-        />
-        <div dir="rtl">
-          <LoginCard onSuccess={startSession} />
-        </div>
+        <SEO title="تسعير كلينولوجي" description="صفحة داخلية"
+             url="https://kleenology.me/admin/pricing" noindex />
+        <div dir="rtl"><LoginCard onSuccess={startSession} /></div>
       </>
     );
   }
 
-  /* ——— معالجات النموذج ——— */
+  /* ——— معالجات ——— */
 
-  const toggleRoom = (key: string) => {
-    const exists = input.rooms.some((r) => r.key === key);
+  const qtyOf = (code: string) => input.items.find((i) => i.code === code)?.qty ?? 0;
+
+  const setQty = (code: string, qty: number) => {
+    if (qty <= 0) {
+      patch({ items: input.items.filter((i) => i.code !== code) });
+      return;
+    }
+    const exists = input.items.some((i) => i.code === code);
     patch({
-      rooms: exists
-        ? input.rooms.filter((r) => r.key !== key)
-        : [...input.rooms, { key, qty: 1, condition: rates.conditions[1]?.key ?? "medium" }],
+      items: exists
+        ? input.items.map((i) => (i.code === code ? { ...i, qty } : i))
+        : [...input.items, { code, qty }],
     });
   };
 
-  const updateRoom = (key: string, changes: Partial<{ qty: number; condition: string }>) => {
-    patch({ rooms: input.rooms.map((r) => (r.key === key ? { ...r, ...changes } : r)) });
-  };
-
-  const toggleExtra = (key: string) => {
-    const exists = input.extras.some((e) => e.key === key);
-    patch({
-      extras: exists
-        ? input.extras.filter((e) => e.key !== key)
-        : [...input.extras, { key, qty: 1 }],
-    });
-  };
-
-  const updateExtraQty = (key: string, qty: number) => {
-    patch({ extras: input.extras.map((e) => (e.key === key ? { ...e, qty } : e)) });
-  };
+  const toggleItem = (code: string) => setQty(code, qtyOf(code) > 0 ? 0 : 1);
 
   const resetForm = () => {
-    setInput(buildInitialInput(rates));
+    setInput(buildInitialInput(catalogue));
     setCustomer(emptyCustomer);
-    hoursTouched.current = false;
-    toast.success("تم تفريغ النموذج");
+    setSearch("");
+    toast.success("تم تفريغ العرض");
   };
 
-  const customerQuote = () =>
-    buildCustomerQuote(rates, input, quote, customer, { itemized });
+  const customerQuote = () => buildCustomerQuote(catalogue, quote, customer, { showCodes });
 
   const copy = async (text: string, message: string) => {
     try {
@@ -334,26 +248,55 @@ export default function PricingAdmin() {
       toast.error("أدخل رقم جوال العميل أولاً");
       return;
     }
-    window.open(
-      `https://wa.me/${number}?text=${encodeURIComponent(customerQuote())}`,
-      "_blank",
-    );
+    window.open(`https://wa.me/${number}?text=${encodeURIComponent(customerQuote())}`, "_blank");
   };
 
   const marginPct = Math.round(quote.cost.marginPercent * 100);
-  const service = rates.serviceTypes.find((s) => s.key === input.serviceType);
+  const discountPct = input.discountType === "percent"
+    ? input.discountValue
+    : quote.listTotal > 0 ? Math.round((quote.discountAmount / quote.listTotal) * 100) : 0;
+
+  const renderItemRow = (
+    item: { code: string; label: string; price: number; time: string; note?: string },
+    groupName?: string,
+  ) => {
+    const qty = qtyOf(item.code);
+    const selected = qty > 0;
+    return (
+      <div
+        key={item.code}
+        className={cn(
+          "flex items-center justify-between gap-3 rounded-lg border p-2.5 transition-colors",
+          selected ? "border-primary bg-primary/5" : "border-border bg-background",
+        )}
+      >
+        <button
+          type="button"
+          onClick={() => toggleItem(item.code)}
+          className="text-right min-w-0 flex-1"
+        >
+          <div className="text-sm font-medium truncate">
+            {groupName && <span className="text-muted-foreground">{groupName} — </span>}
+            {item.label}
+          </div>
+          <div className="text-[11px] text-muted-foreground">
+            {sar(item.price)} · {item.code} · {item.time}
+          </div>
+          {item.note && (
+            <div className="text-[11px] text-amber-600 mt-0.5">ملاحظة: {item.note}</div>
+          )}
+        </button>
+        {selected && <QtyStepper value={qty} onChange={(n) => setQty(item.code, n)} />}
+      </div>
+    );
+  };
 
   return (
     <>
-      <SEO
-        title="تسعير كلينولوجي"
-        description="صفحة داخلية"
-        url="https://kleenology.me/admin/pricing"
-        noindex
-      />
+      <SEO title="تسعير كلينولوجي" description="صفحة داخلية"
+           url="https://kleenology.me/admin/pricing" noindex />
 
       <div dir="rtl" className="min-h-screen bg-muted/30 pb-16">
-        {/* الشريط العلوي */}
         <header className="bg-card border-b sticky top-0 z-20">
           <div className="max-w-6xl mx-auto px-4 h-16 flex items-center justify-between gap-3">
             <div className="flex items-center gap-2.5 min-w-0">
@@ -362,9 +305,7 @@ export default function PricingAdmin() {
               </div>
               <div className="min-w-0">
                 <h1 className="font-bold leading-tight truncate">تسعير كلينولوجي</h1>
-                <p className="text-[11px] text-muted-foreground truncate">
-                  التسعيرة {rates.version}
-                </p>
+                <p className="text-[11px] text-muted-foreground truncate">{catalogue.version}</p>
               </div>
             </div>
             <div className="flex items-center gap-2">
@@ -381,404 +322,217 @@ export default function PricingAdmin() {
         </header>
 
         <main className="max-w-6xl mx-auto px-4 pt-6 grid lg:grid-cols-[1fr_360px] gap-6 items-start">
-          {/* ——— عمود المدخلات ——— */}
+          {/* ——— عمود الاختيار ——— */}
           <div className="space-y-5">
-            <Section title="نوع العقار">
-              <div className="grid grid-cols-3 gap-2 mb-4">
-                {Object.entries(rates.propertyTypes).map(([key, type]) => {
-                  const Icon = PROPERTY_ICONS[key] ?? Home;
-                  return (
-                    <Chip
-                      key={key}
-                      active={input.propertyType === key}
-                      onClick={() => patch({ propertyType: key })}
-                      className="flex flex-col items-center gap-1.5 py-3"
-                    >
-                      <Icon className="h-5 w-5" />
-                      <span className="text-xs leading-tight text-center">{type.label}</span>
-                    </Chip>
-                  );
-                })}
-              </div>
-
-              <div className="grid grid-cols-2 gap-3">
-                <div className="space-y-1.5">
-                  <Label htmlFor="area">المساحة (م²)</Label>
-                  <Input
-                    id="area"
-                    inputMode="numeric"
-                    value={input.areaSqm || ""}
-                    onChange={(e) => patch({ areaSqm: Number(e.target.value.replace(/\D/g, "")) || 0 })}
-                    placeholder="مثال: 250"
-                  />
-                </div>
-                <div className="space-y-1.5">
-                  <Label htmlFor="floors">عدد الأدوار</Label>
-                  <Input
-                    id="floors"
-                    inputMode="numeric"
-                    value={input.floors}
-                    onChange={(e) => patch({ floors: Math.max(1, Number(e.target.value.replace(/\D/g, "")) || 1) })}
-                  />
-                </div>
-              </div>
-            </Section>
-
-            <Section title="نوع الخدمة والموعد">
-              <div className="flex flex-wrap gap-2 mb-4">
-                {rates.serviceTypes.map((type) => (
-                  <Chip
-                    key={type.key}
-                    active={input.serviceType === type.key}
-                    onClick={() => patch({ serviceType: type.key })}
-                  >
-                    {type.label}
-                    <span className="text-[11px] opacity-70 mr-1.5">×{type.multiplier}</span>
-                  </Chip>
-                ))}
-              </div>
-              <div className="flex flex-wrap gap-2">
-                {rates.urgencies.map((urgency) => (
-                  <Chip
-                    key={urgency.key}
-                    active={input.urgency === urgency.key}
-                    onClick={() => patch({ urgency: urgency.key })}
-                  >
-                    {urgency.label}
-                    {urgency.multiplier !== 1 && (
-                      <span className="text-[11px] opacity-70 mr-1.5">
-                        +{Math.round((urgency.multiplier - 1) * 100)}٪
-                      </span>
-                    )}
-                  </Chip>
-                ))}
-              </div>
-            </Section>
-
-            <Section title="الغرف وحالتها">
-              <div className="flex flex-wrap gap-2 mb-4">
-                {rates.rooms.map((room) => (
-                  <Chip
-                    key={room.key}
-                    active={input.rooms.some((r) => r.key === room.key)}
-                    onClick={() => toggleRoom(room.key)}
-                  >
-                    {room.label}
-                  </Chip>
-                ))}
-              </div>
-
-              {input.rooms.length === 0 ? (
-                <p className="text-sm text-muted-foreground">اختر الغرف المشمولة في الخدمة.</p>
-              ) : (
-                <div className="space-y-2">
-                  {input.rooms.map((selected) => {
-                    const room = rates.rooms.find((r) => r.key === selected.key);
-                    if (!room) return null;
-                    return (
-                      <div
-                        key={selected.key}
-                        className="flex flex-wrap items-center justify-between gap-3 border rounded-lg p-3 bg-background"
-                      >
-                        <span className="font-medium text-sm">{room.label}</span>
-                        <div className="flex items-center gap-3">
-                          <div className="flex gap-1">
-                            {rates.conditions.map((condition) => (
-                              <button
-                                key={condition.key}
-                                type="button"
-                                onClick={() => updateRoom(selected.key, { condition: condition.key })}
-                                className={cn(
-                                  "px-2 py-1 rounded-md border text-[11px] font-medium transition-colors",
-                                  selected.condition === condition.key
-                                    ? CONDITION_STYLES[condition.key]
-                                    : "border-border text-muted-foreground hover:bg-muted",
-                                )}
-                              >
-                                {condition.label}
-                              </button>
-                            ))}
-                          </div>
-                          <QtyStepper
-                            value={selected.qty}
-                            onChange={(qty) => updateRoom(selected.key, { qty })}
-                          />
-                        </div>
-                      </div>
-                    );
-                  })}
-                </div>
-              )}
-            </Section>
-
-            <Section title="إضافات">
-              <div className="flex flex-wrap gap-2 mb-4">
-                {rates.extras.map((extra) => (
-                  <Chip
-                    key={extra.key}
-                    active={input.extras.some((e) => e.key === extra.key)}
-                    onClick={() => toggleExtra(extra.key)}
-                  >
-                    {extra.label}
-                  </Chip>
-                ))}
-              </div>
-
-              {input.extras.length > 0 && (
-                <div className="space-y-2">
-                  {input.extras.map((selected) => {
-                    const extra = rates.extras.find((e) => e.key === selected.key);
-                    if (!extra) return null;
-                    return (
-                      <div
-                        key={selected.key}
-                        className="flex items-center justify-between gap-3 border rounded-lg p-3 bg-background"
-                      >
-                        <span className="text-sm">
-                          <span className="font-medium">{extra.label}</span>
-                          <span className="text-muted-foreground text-xs mr-2">
-                            {extra.price} ر.س / {extra.unit}
-                          </span>
-                        </span>
-                        <QtyStepper
-                          value={selected.qty}
-                          onChange={(qty) => updateExtraQty(selected.key, qty)}
-                        />
-                      </div>
-                    );
-                  })}
-                </div>
-              )}
-            </Section>
-
-            <Section title="الخصم">
-              <div className="flex items-end gap-3">
-                <div className="flex gap-2">
-                  <Chip
-                    active={input.discountType === "percent"}
-                    onClick={() => patch({ discountType: "percent" })}
-                  >
-                    نسبة ٪
-                  </Chip>
-                  <Chip
-                    active={input.discountType === "fixed"}
-                    onClick={() => patch({ discountType: "fixed" })}
-                  >
-                    مبلغ ر.س
-                  </Chip>
-                </div>
-                <div className="flex-1 space-y-1.5">
-                  <Label htmlFor="discount">القيمة</Label>
-                  <Input
-                    id="discount"
-                    inputMode="numeric"
-                    value={input.discountValue || ""}
-                    onChange={(e) =>
-                      patch({ discountValue: Number(e.target.value.replace(/\D/g, "")) || 0 })
-                    }
-                    placeholder="0"
-                  />
-                </div>
-              </div>
-            </Section>
-
-            <Section title="الطاقم والتكلفة (داخلي)">
-              <div className="grid grid-cols-2 gap-3">
-                <div className="space-y-1.5">
-                  <Label htmlFor="workers">عدد العمال</Label>
-                  <Input
-                    id="workers"
-                    inputMode="numeric"
-                    value={input.workers}
-                    onChange={(e) =>
-                      patch({ workers: Math.max(1, Number(e.target.value.replace(/\D/g, "")) || 1) })
-                    }
-                  />
-                </div>
-                <div className="space-y-1.5">
-                  <Label htmlFor="hours">عدد الساعات</Label>
-                  <Input
-                    id="hours"
-                    inputMode="decimal"
-                    value={input.hours || ""}
-                    onChange={(e) => {
-                      hoursTouched.current = true;
-                      patch({ hours: Number(e.target.value.replace(/[^\d.]/g, "")) || 0 });
-                    }}
-                  />
-                </div>
-              </div>
-              <p className="text-xs text-muted-foreground mt-2.5 leading-relaxed">
-                المقترح لهذه المساحة: <strong>{quote.suggestedHours} ساعة</strong>
-                {service && ` (${service.label} — ${service.sqmPerWorkerHour} م² للعامل في الساعة)`}
-                {hoursTouched.current && (
+            {/* البحث */}
+            <div className="bg-card border rounded-xl p-4">
+              <div className="relative">
+                <Search className="absolute right-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground pointer-events-none" />
+                <Input
+                  value={search}
+                  onChange={(e) => setSearch(e.target.value)}
+                  placeholder="ابحث في الكتالوج — اسم الخدمة أو كود FAC"
+                  className="pr-9 pl-9"
+                />
+                {search && (
                   <button
                     type="button"
-                    className="text-primary underline mr-2"
-                    onClick={() => {
-                      hoursTouched.current = false;
-                      patch({ hours: quote.suggestedHours });
-                    }}
+                    onClick={() => setSearch("")}
+                    className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground"
+                    aria-label="مسح البحث"
                   >
-                    استخدم المقترح
+                    <X className="h-4 w-4" />
                   </button>
                 )}
-              </p>
-            </Section>
+              </div>
 
-            <Section title="بيانات العميل">
+              {search && (
+                <div className="mt-3 space-y-1.5">
+                  {searchResults.length === 0 ? (
+                    <p className="text-sm text-muted-foreground py-2">لا توجد نتائج.</p>
+                  ) : (
+                    searchResults.map((item) => renderItemRow(item, item.group))
+                  )}
+                </div>
+              )}
+            </div>
+
+            {!search && catalogue.groups.map((group) => (
+              <section key={group.name} className="bg-card border rounded-xl p-5">
+                <h2 className="font-bold mb-3 flex items-center gap-2">
+                  {group.kind === "package"
+                    ? <Package className="h-4 w-4 text-primary" />
+                    : <PlusCircle className="h-4 w-4 text-muted-foreground" />}
+                  {group.name}
+                  <span className="text-[11px] font-normal text-muted-foreground">
+                    {group.kind === "package" ? "باقة أساسية" : "بند إضافي"}
+                  </span>
+                </h2>
+                <div className="grid sm:grid-cols-2 gap-2">
+                  {group.items.map((item) => renderItemRow(item))}
+                </div>
+              </section>
+            ))}
+
+            <section className="bg-card border rounded-xl p-5">
+              <h2 className="font-bold mb-4">بيانات العميل</h2>
               <div className="grid sm:grid-cols-2 gap-3">
                 <div className="space-y-1.5">
                   <Label htmlFor="name">الاسم</Label>
-                  <Input
-                    id="name"
-                    value={customer.name}
-                    onChange={(e) => setCustomer({ ...customer, name: e.target.value })}
-                  />
+                  <Input id="name" value={customer.name}
+                         onChange={(e) => setCustomer({ ...customer, name: e.target.value })} />
                 </div>
                 <div className="space-y-1.5">
                   <Label htmlFor="phone">الجوال</Label>
-                  <Input
-                    id="phone"
-                    inputMode="tel"
-                    placeholder="05xxxxxxxx"
-                    value={customer.phone}
-                    onChange={(e) => setCustomer({ ...customer, phone: e.target.value })}
-                  />
+                  <Input id="phone" inputMode="tel" placeholder="05xxxxxxxx" value={customer.phone}
+                         onChange={(e) => setCustomer({ ...customer, phone: e.target.value })} />
                 </div>
                 <div className="space-y-1.5">
                   <Label htmlFor="neighborhood">الحي / الموقع</Label>
-                  <Input
-                    id="neighborhood"
-                    value={customer.neighborhood}
-                    onChange={(e) => setCustomer({ ...customer, neighborhood: e.target.value })}
-                  />
+                  <Input id="neighborhood" value={customer.neighborhood}
+                         onChange={(e) => setCustomer({ ...customer, neighborhood: e.target.value })} />
                 </div>
                 <div className="space-y-1.5">
                   <Label htmlFor="visitDate">تاريخ الزيارة</Label>
-                  <Input
-                    id="visitDate"
-                    type="date"
-                    value={customer.visitDate}
-                    onChange={(e) => setCustomer({ ...customer, visitDate: e.target.value })}
-                  />
+                  <Input id="visitDate" type="date" value={customer.visitDate}
+                         onChange={(e) => setCustomer({ ...customer, visitDate: e.target.value })} />
                 </div>
               </div>
               <div className="space-y-1.5 mt-3">
                 <Label htmlFor="notes">ملاحظات تظهر للعميل</Label>
-                <Textarea
-                  id="notes"
-                  rows={2}
-                  value={customer.notes}
-                  onChange={(e) => setCustomer({ ...customer, notes: e.target.value })}
-                />
+                <Textarea id="notes" rows={2} value={customer.notes}
+                          onChange={(e) => setCustomer({ ...customer, notes: e.target.value })} />
               </div>
-            </Section>
+            </section>
           </div>
 
           {/* ——— عمود النتيجة ——— */}
           <aside className="lg:sticky lg:top-20 space-y-4">
             <div className="bg-card border rounded-xl overflow-hidden">
               <div className="p-5">
-                <h2 className="font-bold mb-3">تفصيل السعر</h2>
+                <h2 className="font-bold mb-3">
+                  العرض
+                  {quote.lines.length > 0 && (
+                    <span className="text-xs font-normal text-muted-foreground mr-2">
+                      {quote.lines.length} بند
+                    </span>
+                  )}
+                </h2>
 
                 {quote.lines.length === 0 ? (
-                  <p className="text-sm text-muted-foreground">
-                    أدخل المساحة واختر الغرف ليظهر السعر.
-                  </p>
+                  <p className="text-sm text-muted-foreground">اختر باقة أو بنداً من الكتالوج.</p>
                 ) : (
                   <div className="space-y-1.5 text-sm">
-                    {quote.lines.map((line, index) => (
-                      <div key={index} className="flex justify-between gap-3">
+                    {quote.lines.map((line) => (
+                      <div key={line.code} className="flex justify-between gap-3">
                         <span className="text-muted-foreground min-w-0">
-                          {line.label}
-                          {line.detail && (
-                            <span className="block text-[11px] opacity-70">{line.detail}</span>
-                          )}
+                          {line.label}{line.qty > 1 && ` ×${line.qty}`}
+                          <span className="block text-[11px] opacity-70">{line.group}</span>
                         </span>
                         <span className="tabular-nums shrink-0">{sar(line.amount)}</span>
                       </div>
                     ))}
                   </div>
                 )}
+              </div>
 
-                <div className="border-t mt-4 pt-3 space-y-1.5 text-sm">
-                  <div className="flex justify-between">
-                    <span className="text-muted-foreground">مجموع البنود</span>
-                    <span className="tabular-nums">{sar(quote.itemsSubtotal)}</span>
-                  </div>
-                  {quote.serviceMultiplier !== 1 && (
-                    <div className="flex justify-between">
-                      <span className="text-muted-foreground">معامل الخدمة</span>
-                      <span className="tabular-nums">×{quote.serviceMultiplier}</span>
-                    </div>
-                  )}
-                  {quote.urgencyMultiplier !== 1 && (
-                    <div className="flex justify-between">
-                      <span className="text-muted-foreground">معامل الاستعجال</span>
-                      <span className="tabular-nums">×{quote.urgencyMultiplier}</span>
-                    </div>
-                  )}
-                  {quote.minChargeApplied && (
-                    <div className="flex justify-between text-amber-600">
-                      <span>رُفع للحد الأدنى</span>
-                      <span className="tabular-nums">{sar(rates.minCharge)}</span>
-                    </div>
-                  )}
-                  {quote.discountAmount > 0 && (
-                    <div className="flex justify-between text-emerald-600">
-                      <span>الخصم</span>
-                      <span className="tabular-nums">−{sar(quote.discountAmount)}</span>
-                    </div>
-                  )}
-                  <div className="flex justify-between">
-                    <span className="text-muted-foreground">الصافي قبل الضريبة</span>
-                    <span className="tabular-nums">{sar(quote.netBeforeVat)}</span>
-                  </div>
-                  <div className="flex justify-between">
-                    <span className="text-muted-foreground">
-                      ضريبة {Math.round(rates.vatRate * 100)}٪
-                    </span>
-                    <span className="tabular-nums">{sar(quote.vatAmount)}</span>
+              {/* الخصم */}
+              <div className="px-5 py-4 border-t bg-muted/30">
+                <div className="flex items-center justify-between gap-2 mb-2">
+                  <Label className="text-sm">الخصم</Label>
+                  <div className="flex gap-1">
+                    {(["percent", "fixed"] as const).map((type) => (
+                      <button
+                        key={type} type="button"
+                        onClick={() => patch({ discountType: type, discountValue: 0 })}
+                        className={cn(
+                          "px-2 py-1 rounded-md border text-[11px] font-medium",
+                          input.discountType === type
+                            ? "border-primary bg-primary/10 text-primary"
+                            : "border-border text-muted-foreground hover:bg-muted",
+                        )}
+                      >
+                        {type === "percent" ? "نسبة ٪" : "مبلغ ر.س"}
+                      </button>
+                    ))}
                   </div>
                 </div>
+                <Input
+                  inputMode="decimal"
+                  value={input.discountValue || ""}
+                  placeholder="0"
+                  onChange={(e) =>
+                    patch({ discountValue: Number(e.target.value.replace(/[^\d.]/g, "")) || 0 })
+                  }
+                />
+                {input.discountType === "percent" && input.discountValue !== catalogue.defaultDiscountPercent && (
+                  <button
+                    type="button"
+                    className="text-[11px] text-primary underline mt-1.5"
+                    onClick={() => patch({ discountValue: catalogue.defaultDiscountPercent })}
+                  >
+                    رجّع الخصم المعتاد ({catalogue.defaultDiscountPercent}٪)
+                  </button>
+                )}
+              </div>
+
+              <div className="px-5 py-3 border-t space-y-1.5 text-sm">
+                <div className="flex justify-between">
+                  <span className="text-muted-foreground">قبل الخصم</span>
+                  <span className="tabular-nums">{sar(quote.listTotal)}</span>
+                </div>
+                {quote.discountAmount > 0 && (
+                  <div className="flex justify-between text-emerald-600">
+                    <span>الخصم ({discountPct}٪)</span>
+                    <span className="tabular-nums">−{sar(quote.discountAmount)}</span>
+                  </div>
+                )}
               </div>
 
               <div className="bg-primary/10 px-5 py-4 border-t">
                 <div className="flex justify-between items-baseline">
-                  <span className="font-bold">الإجمالي النهائي</span>
-                  <span className="text-2xl font-bold text-primary tabular-nums">
-                    {sar(quote.total)}
-                  </span>
+                  <span className="font-bold">الإجمالي</span>
+                  <span className="text-2xl font-bold text-primary tabular-nums">{sar(quote.total)}</span>
                 </div>
-                <div className="flex justify-between text-sm text-muted-foreground mt-1">
-                  <span>العربون ({Math.round(rates.depositPercent * 100)}٪)</span>
+                <p className="text-[11px] text-muted-foreground mt-1">
+                  شامل ضريبة {Math.round(catalogue.vatRate * 100)}٪ ({sar(quote.vatAmount)}) ·
+                  الصافي {sar(quote.netBeforeVat)}
+                </p>
+                <div className="flex justify-between text-sm text-muted-foreground mt-1.5">
+                  <span>العربون ({Math.round(catalogue.depositPercent * 100)}٪)</span>
                   <span className="tabular-nums">{sar(quote.deposit)}</span>
                 </div>
               </div>
             </div>
 
-            {/* الربحية — داخلي */}
-            <div
-              className={cn(
-                "border rounded-xl p-5",
-                quote.cost.belowMinimum ? "border-red-300 bg-red-50" : "border-emerald-300 bg-emerald-50",
-              )}
-            >
+            {/* الربحية */}
+            <div className={cn(
+              "border rounded-xl p-5",
+              quote.cost.belowMinimum ? "border-red-300 bg-red-50" : "border-emerald-300 bg-emerald-50",
+            )}>
               <div className="flex items-center gap-2 mb-3">
-                {quote.cost.belowMinimum ? (
-                  <AlertTriangle className="h-4 w-4 text-red-600" />
-                ) : (
-                  <TrendingUp className="h-4 w-4 text-emerald-600" />
-                )}
+                {quote.cost.belowMinimum
+                  ? <AlertTriangle className="h-4 w-4 text-red-600" />
+                  : <TrendingUp className="h-4 w-4 text-emerald-600" />}
                 <h2 className="font-bold text-sm">الربحية — داخلي فقط</h2>
+              </div>
+
+              <div className="grid grid-cols-2 gap-2 mb-3">
+                <div className="space-y-1">
+                  <Label htmlFor="workers" className="text-xs">عدد العمال</Label>
+                  <Input id="workers" inputMode="numeric" className="h-8" value={input.workers}
+                         onChange={(e) => patch({ workers: Math.max(1, Number(e.target.value.replace(/\D/g, "")) || 1) })} />
+                </div>
+                <div className="space-y-1">
+                  <Label htmlFor="hours" className="text-xs">عدد الساعات</Label>
+                  <Input id="hours" inputMode="decimal" className="h-8" value={input.hours || ""}
+                         onChange={(e) => patch({ hours: Number(e.target.value.replace(/[^\d.]/g, "")) || 0 })} />
+                </div>
               </div>
 
               <div className="space-y-1.5 text-sm">
                 <div className="flex justify-between">
-                  <span className="text-muted-foreground">
-                    العمالة ({input.workers}×{input.hours} ساعة)
-                  </span>
+                  <span className="text-muted-foreground">العمالة</span>
                   <span className="tabular-nums">{sar(quote.cost.labor)}</span>
                 </div>
                 <div className="flex justify-between">
@@ -793,60 +547,49 @@ export default function PricingAdmin() {
                   <span>إجمالي التكلفة</span>
                   <span className="tabular-nums">{sar(quote.cost.total)}</span>
                 </div>
-                <div
-                  className={cn(
-                    "flex justify-between font-bold",
-                    quote.cost.belowMinimum ? "text-red-700" : "text-emerald-700",
-                  )}
-                >
+                <div className={cn(
+                  "flex justify-between font-bold",
+                  quote.cost.belowMinimum ? "text-red-700" : "text-emerald-700",
+                )}>
                   <span>الربح</span>
-                  <span className="tabular-nums">
-                    {sar(quote.cost.profit)} ({marginPct}٪)
-                  </span>
+                  <span className="tabular-nums">{sar(quote.cost.profit)} ({marginPct}٪)</span>
                 </div>
               </div>
 
               {quote.cost.belowMinimum && (
                 <p className="text-xs text-red-700 mt-3 leading-relaxed">
-                  الهامش أقل من الحد المقبول ({Math.round(rates.cost.minMarginPercent * 100)}٪).
+                  الهامش أقل من الحد المقبول ({Math.round(catalogue.cost.minMarginPercent * 100)}٪).
                   راجع الخصم أو عدد الساعات قبل إرسال العرض.
                 </p>
               )}
+              <p className="text-[11px] text-muted-foreground mt-2 leading-relaxed">
+                الهامش محسوب على الصافي بعد استبعاد الضريبة.
+              </p>
             </div>
 
             {/* الإرسال */}
             <div className="bg-card border rounded-xl p-5 space-y-3">
               <label className="flex items-center gap-2 text-sm cursor-pointer">
-                <input
-                  type="checkbox"
-                  checked={itemized}
-                  onChange={(e) => setItemized(e.target.checked)}
-                  className="rounded border-border"
-                />
-                إظهار تفصيل البنود للعميل
+                <input type="checkbox" checked={showCodes}
+                       onChange={(e) => setShowCodes(e.target.checked)}
+                       className="rounded border-border" />
+                إظهار أكواد الخدمات للعميل
               </label>
 
               <Button className="w-full" onClick={sendToCustomer} disabled={quote.total <= 0}>
                 <MessageCircle className="h-4 w-4 ml-2" />
                 إرسال العرض واتساب
               </Button>
-              <Button
-                variant="outline"
-                className="w-full"
-                onClick={() => copy(customerQuote(), "تم نسخ عرض العميل")}
-                disabled={quote.total <= 0}
-              >
+              <Button variant="outline" className="w-full" disabled={quote.total <= 0}
+                      onClick={() => copy(customerQuote(), "تم نسخ عرض العميل")}>
                 <Copy className="h-4 w-4 ml-2" />
                 نسخ عرض العميل
               </Button>
-              <Button
-                variant="ghost"
-                className="w-full"
-                onClick={() =>
-                  copy(buildInternalSummary(rates, input, quote, customer), "تم نسخ الملخص الداخلي")
-                }
-                disabled={quote.total <= 0}
-              >
+              <Button variant="ghost" className="w-full" disabled={quote.total <= 0}
+                      onClick={() => copy(
+                        buildInternalSummary(catalogue, quote, customer,
+                          { workers: input.workers, hours: input.hours }),
+                        "تم نسخ الملخص الداخلي")}>
                 <Copy className="h-4 w-4 ml-2" />
                 نسخ الملخص الداخلي
               </Button>

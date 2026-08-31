@@ -1,49 +1,22 @@
-// أنواع جدول الأسعار كما يصل من الخادم (netlify/lib/pricing-rates.mjs)
-// الجدول لا يوجد في كود الواجهة — يُجلب بعد تسجيل دخول المشرف فقط.
+// أنواع كتالوج الأسعار كما يصل من الخادم (netlify/lib/pricing-catalogue.mjs)
+// الكتالوج لا يوجد في كود الواجهة — يُجلب بعد تسجيل دخول المشرف فقط.
 
-export interface AreaTier {
-  /** الحد الأعلى للشريحة بالمتر المربع، و null يعني الشريحة الأخيرة بلا حد */
-  upTo: number | null;
-  perSqm: number;
-}
-
-export interface PropertyTypeRate {
+export interface CatalogueItem {
+  /** كود الخدمة في قائمة الأسعار الرسمية، مثل FAC-006 */
+  code: string;
   label: string;
-  base: number;
-  floorFee: number;
-  areaTiers: AreaTier[];
-}
-
-export interface RoomRate {
-  key: string;
-  label: string;
+  /** السعر قبل الخصم كما في القائمة — شامل ضريبة القيمة المضافة */
   price: number;
+  /** عمود "الوقت المتوقع" كما ورد في القائمة (للاطلاع فقط) */
+  time: string;
+  note?: string;
 }
 
-export interface ConditionRate {
-  key: string;
-  label: string;
-  multiplier: number;
-}
-
-export interface ServiceTypeRate {
-  key: string;
-  label: string;
-  multiplier: number;
-  sqmPerWorkerHour: number;
-}
-
-export interface UrgencyRate {
-  key: string;
-  label: string;
-  multiplier: number;
-}
-
-export interface ExtraRate {
-  key: string;
-  label: string;
-  price: number;
-  unit: string;
+export interface CatalogueGroup {
+  name: string;
+  /** package: باقة أساسية | addon: بند إضافي */
+  kind: "package" | "addon";
+  items: CatalogueItem[];
 }
 
 export interface CostRates {
@@ -54,66 +27,50 @@ export interface CostRates {
   defaultWorkers: number;
 }
 
-export interface PricingRates {
+export interface Catalogue {
   version: string;
   vatRate: number;
-  minCharge: number;
+  pricesIncludeVat: boolean;
+  defaultDiscountPercent: number;
   depositPercent: number;
-  propertyTypes: Record<string, PropertyTypeRate>;
-  rooms: RoomRate[];
-  conditions: ConditionRate[];
-  serviceTypes: ServiceTypeRate[];
-  urgencies: UrgencyRate[];
-  extras: ExtraRate[];
   cost: CostRates;
+  groups: CatalogueGroup[];
 }
 
-export interface RoomInput {
-  key: string;
-  qty: number;
-  condition: string;
-}
-
-export interface ExtraInput {
-  key: string;
+/** بند مختار في عرض السعر */
+export interface SelectedItem {
+  code: string;
   qty: number;
 }
 
 export interface QuoteInput {
-  propertyType: string;
-  areaSqm: number;
-  floors: number;
-  serviceType: string;
-  urgency: string;
-  rooms: RoomInput[];
-  extras: ExtraInput[];
+  items: SelectedItem[];
   discountType: "percent" | "fixed";
   discountValue: number;
   workers: number;
   hours: number;
 }
 
-export interface LineItem {
+export interface QuoteLine {
+  code: string;
+  group: string;
   label: string;
-  detail?: string;
+  unitPrice: number;
+  qty: number;
   amount: number;
+  time: string;
 }
 
 export interface QuoteResult {
-  lines: LineItem[];
-  /** مجموع البنود قبل معاملي الخدمة والاستعجال */
-  itemsSubtotal: number;
-  serviceMultiplier: number;
-  urgencyMultiplier: number;
-  /** القيمة بعد المعاملات وقبل تطبيق الحد الأدنى */
-  beforeMinCharge: number;
-  /** هل رُفع السعر إلى الحد الأدنى؟ */
-  minChargeApplied: boolean;
-  beforeDiscount: number;
+  lines: QuoteLine[];
+  /** مجموع أسعار القائمة قبل الخصم (شامل الضريبة) */
+  listTotal: number;
   discountAmount: number;
+  /** المبلغ الذي يدفعه العميل فعلاً — شامل الضريبة */
+  total: number;
+  /** الصافي بعد استخراج الضريبة من داخل المبلغ */
   netBeforeVat: number;
   vatAmount: number;
-  total: number;
   deposit: number;
   cost: {
     labor: number;
@@ -121,10 +78,8 @@ export interface QuoteResult {
     supplies: number;
     total: number;
     profit: number;
-    /** هامش الربح كنسبة من صافي السعر قبل الضريبة */
+    /** هامش الربح كنسبة من الصافي بعد استبعاد الضريبة */
     marginPercent: number;
     belowMinimum: boolean;
   };
-  /** عدد الساعات المقترح لطاقم بالحجم المُدخل */
-  suggestedHours: number;
 }

@@ -11,7 +11,7 @@ import {
   clearFailures,
   jsonResponse,
 } from "../lib/admin-auth.mjs";
-import { RATES } from "../lib/pricing-rates.mjs";
+import { CATALOGUE } from "../lib/pricing-catalogue.mjs";
 
 export default async (request) => {
   if (request.method !== "POST") {
@@ -41,5 +41,5 @@ export default async (request) => {
 
   clearFailures(key);
   const { token, expiresAt } = createToken();
-  return jsonResponse({ token, expiresAt, rates: RATES });
+  return jsonResponse({ token, expiresAt, catalogue: CATALOGUE });
 };

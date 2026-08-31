@@ -51,8 +51,8 @@
   status = 200
 
 [[redirects]]
-  from = "/api/pricing/rates"
-  to = "/.netlify/functions/pricing-rates"
+  from = "/api/pricing/catalogue"
+  to = "/.netlify/functions/pricing-catalogue"
   status = 200
 
 [[redirects]]

@@ -1,8 +1,8 @@
-// جدول الأسعار — لا يُسلَّم إلا لجلسة مشرف صالحة
+// كتالوج الأسعار — لا يُسلَّم إلا لجلسة مشرف صالحة
 // تستدعيه الصفحة عند إعادة التحميل للتأكد أن الجلسة لا تزال سارية
 
 import { isConfigured, requireSession, jsonResponse } from "../lib/admin-auth.mjs";
-import { RATES } from "../lib/pricing-rates.mjs";
+import { CATALOGUE } from "../lib/pricing-catalogue.mjs";
 
 export default async (request) => {
   if (request.method !== "GET") {
@@ -18,5 +18,5 @@ export default async (request) => {
     return jsonResponse({ error: "unauthorized" }, 401);
   }
 
-  return jsonResponse({ expiresAt, rates: RATES });
+  return jsonResponse({ expiresAt, catalogue: CATALOGUE });
 };
