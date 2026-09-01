@@ -563,6 +563,11 @@ export default function PricingAdmin() {
                 </p>
               )}
               <p className="text-[11px] text-muted-foreground mt-2 leading-relaxed">
+                أجر الساعة {sar(quote.hourlyWage)} — مشتق من رواتب{" "}
+                {catalogue.cost.monthlyPayroll.toLocaleString("en-US")} ر.س شهرياً لفريق{" "}
+                {catalogue.cost.crewSize} عمال بنسبة استغلال{" "}
+                {Math.round(catalogue.cost.utilization * 100)}٪.
+                <br />
                 الهامش محسوب على الصافي بعد استبعاد الضريبة.
               </p>
             </div>

@@ -20,7 +20,13 @@ export interface CatalogueGroup {
 }
 
 export interface CostRates {
-  hourlyWagePerWorker: number;
+  /** إجمالي رواتب الفريق شهرياً */
+  monthlyPayroll: number;
+  crewSize: number;
+  workingDaysPerMonth: number;
+  hoursPerDay: number;
+  /** نسبة الساعات المقضية فعلاً في المواقع من الساعات المدفوعة */
+  utilization: number;
   transport: number;
   suppliesPercent: number;
   minMarginPercent: number;
@@ -72,6 +78,8 @@ export interface QuoteResult {
   netBeforeVat: number;
   vatAmount: number;
   deposit: number;
+  /** أجر ساعة العامل الواحد المشتق من الرواتب */
+  hourlyWage: number;
   cost: {
     labor: number;
     transport: number;
