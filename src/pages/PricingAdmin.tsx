@@ -254,10 +254,12 @@ export default function PricingAdmin() {
   const marginPct = Math.round(quote.cost.marginPercent * 100);
   const discountPct = input.discountType === "percent"
     ? input.discountValue
-    : quote.listTotal > 0 ? Math.round((quote.discountAmount / quote.listTotal) * 100) : 0;
+    : quote.discountableTotal > 0
+        ? Math.round((quote.discountAmount / quote.discountableTotal) * 100)
+        : 0;
 
   const renderItemRow = (
-    item: { code: string; label: string; price: number; time: string; note?: string },
+    item: { code: string; label: string; price: number; time: string; note?: string; noDiscount?: boolean },
     groupName?: string,
   ) => {
     const qty = qtyOf(item.code);
@@ -281,6 +283,9 @@ export default function PricingAdmin() {
           </div>
           <div className="text-[11px] text-muted-foreground">
             {sar(item.price)} · {item.code} · {item.time}
+            {item.noDiscount && (
+              <span className="mr-1.5 text-amber-600 font-medium">· سعر ثابت بلا خصم</span>
+            )}
           </div>
           {item.note && (
             <div className="text-[11px] text-amber-600 mt-0.5">ملاحظة: {item.note}</div>
@@ -331,7 +336,7 @@ export default function PricingAdmin() {
                 <Input
                   value={search}
                   onChange={(e) => setSearch(e.target.value)}
-                  placeholder="ابحث في الكتالوج — اسم الخدمة أو كود FAC"
+                  placeholder="ابحث في الكتالوج — اسم الخدمة أو كود KLN"
                   className="pr-9 pl-9"
                 />
                 {search && (
@@ -481,6 +486,12 @@ export default function PricingAdmin() {
                   <span className="text-muted-foreground">قبل الخصم</span>
                   <span className="tabular-nums">{sar(quote.listTotal)}</span>
                 </div>
+                {quote.fixedTotal > 0 && (
+                  <div className="flex justify-between text-amber-600">
+                    <span>منها بسعر ثابت (بلا خصم)</span>
+                    <span className="tabular-nums">{sar(quote.fixedTotal)}</span>
+                  </div>
+                )}
                 {quote.discountAmount > 0 && (
                   <div className="flex justify-between text-emerald-600">
                     <span>الخصم ({discountPct}٪)</span>

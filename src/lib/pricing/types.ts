@@ -2,13 +2,15 @@
 // الكتالوج لا يوجد في كود الواجهة — يُجلب بعد تسجيل دخول المشرف فقط.
 
 export interface CatalogueItem {
-  /** كود الخدمة في قائمة الأسعار الرسمية، مثل FAC-006 */
+  /** كود خدمة كلينولوجي، مثل KLN-006 */
   code: string;
   label: string;
   /** السعر قبل الخصم كما في القائمة — شامل ضريبة القيمة المضافة */
   price: number;
   /** عمود "الوقت المتوقع" كما ورد في القائمة (للاطلاع فقط) */
   time: string;
+  /** بند بسعر ثابت لا يدخل في خصم العرض */
+  noDiscount?: boolean;
   note?: string;
 }
 
@@ -65,12 +67,17 @@ export interface QuoteLine {
   qty: number;
   amount: number;
   time: string;
+  noDiscount: boolean;
 }
 
 export interface QuoteResult {
   lines: QuoteLine[];
   /** مجموع أسعار القائمة قبل الخصم (شامل الضريبة) */
   listTotal: number;
+  /** الجزء الذي يسري عليه الخصم */
+  discountableTotal: number;
+  /** الجزء ذو السعر الثابت الذي لا يسري عليه الخصم */
+  fixedTotal: number;
   discountAmount: number;
   /** المبلغ الذي يدفعه العميل فعلاً — شامل الضريبة */
   total: number;

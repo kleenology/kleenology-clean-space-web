@@ -42,7 +42,11 @@ export function buildCustomerQuote(
   parts.push("\n💰 *السعر:*");
   if (result.discountAmount > 0) {
     parts.push(`الإجمالي قبل الخصم: ${sar(result.listTotal)}`);
-    parts.push(`الخصم: −${sar(result.discountAmount)}`);
+    parts.push(
+      result.fixedTotal > 0
+        ? `الخصم: −${sar(result.discountAmount)} (لا يشمل البنود ذات السعر الثابت)`
+        : `الخصم: −${sar(result.discountAmount)}`,
+    );
   }
   parts.push(`*الإجمالي: ${sar(result.total)}*`);
   parts.push(
@@ -80,6 +84,10 @@ export function buildInternalSummary(
   }
   lines.push("");
   lines.push(`قبل الخصم: ${sar(result.listTotal)}`);
+  if (result.fixedTotal > 0) {
+    lines.push(`  منها قابل للخصم: ${sar(result.discountableTotal)}`);
+    lines.push(`  منها بسعر ثابت: ${sar(result.fixedTotal)}`);
+  }
   lines.push(`الخصم: −${sar(result.discountAmount)}`);
   lines.push(`الإجمالي (شامل الضريبة): ${sar(result.total)}`);
   lines.push(`منه ضريبة: ${sar(result.vatAmount)}`);

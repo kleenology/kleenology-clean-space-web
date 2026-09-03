@@ -55,16 +55,23 @@ export function calculateQuote(catalogue: Catalogue, input: QuoteInput): QuoteRe
       qty: selected.qty,
       amount: round(item.price * selected.qty),
       time: item.time,
+      noDiscount: item.noDiscount === true,
     });
   }
 
   const listTotal = round(lines.reduce((sum, line) => sum + line.amount, 0));
 
+  // بعض البنود بسعر ثابت لا يسري عليه الخصم، فالخصم يُحسب على ما عداها فقط
+  const discountableTotal = round(
+    lines.filter((line) => !line.noDiscount).reduce((sum, line) => sum + line.amount, 0),
+  );
+  const fixedTotal = round(listTotal - discountableTotal);
+
   const rawDiscount =
     input.discountType === "percent"
-      ? listTotal * (Math.max(0, input.discountValue) / 100)
+      ? discountableTotal * (Math.max(0, input.discountValue) / 100)
       : Math.max(0, input.discountValue);
-  const discountAmount = round(Math.min(rawDiscount, listTotal));
+  const discountAmount = round(Math.min(rawDiscount, discountableTotal));
 
   // ما يدفعه العميل فعلاً — شامل الضريبة
   const total = round(listTotal - discountAmount);
@@ -87,6 +94,8 @@ export function calculateQuote(catalogue: Catalogue, input: QuoteInput): QuoteRe
   return {
     lines,
     listTotal,
+    discountableTotal,
+    fixedTotal,
     hourlyWage: round(wage),
     discountAmount,
     total,
