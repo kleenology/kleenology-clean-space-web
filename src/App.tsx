@@ -25,6 +25,7 @@ import SelfInspection from "./pages/SelfInspection";
 import PrivacyPolicy from "./pages/PrivacyPolicy";
 import ReviewGate from "./pages/ReviewGate";
 import OfferLanding from "./pages/OfferLanding";
+import PricingAdmin from "./pages/PricingAdmin";
 import { PixelTracker } from "@/components/PixelTracker";
 import { WhatsAppChatWidget } from "@/components/WhatsAppChatWidget";
 import { PerformanceMonitor } from "@/components/PerformanceMonitor";
@@ -133,6 +134,8 @@ const App = () => {
               <Route path="/privacy-policy" element={<PrivacyPolicy />} />
               <Route path="/review" element={<ReviewGate />} />
               <Route path="/offer" element={<OfferLanding />} />
+              {/* صفحة داخلية لمشرف التسعير — محمية بكلمة مرور ومحجوبة عن محركات البحث */}
+              <Route path="/admin/pricing" element={<PricingAdmin />} />
               {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
               <Route path="*" element={<NotFound />} />
             </Routes>
