@@ -128,7 +128,8 @@ export default function PricingAdmin() {
   const [input, setInput] = useState<QuoteInput | null>(null);
   const [customer, setCustomer] = useState<CustomerInfo>(emptyCustomer);
   const [search, setSearch] = useState("");
-  const [mode, setMode] = useState<"quote" | "inspection">("quote");
+  // لا وضع مختاراً عند الدخول — المشرف يقرر أولاً ماذا يفعل
+  const [mode, setMode] = useState<"quote" | "inspection" | null>(null);
   const [openGroup, setOpenGroup] = useState<string | null>(null);
   const openPanelRef = useRef<HTMLElement | null>(null);
   const [showCodes, setShowCodes] = useState(false);
@@ -309,10 +310,12 @@ export default function PricingAdmin() {
               </div>
             </div>
             <div className="flex items-center gap-2">
-              <Button variant="ghost" size="sm" onClick={resetForm}>
-                <RotateCcw className="h-4 w-4 sm:ml-1.5" />
-                <span className="hidden sm:inline">تفريغ</span>
-              </Button>
+              {mode === "quote" && (
+                <Button variant="ghost" size="sm" onClick={resetForm}>
+                  <RotateCcw className="h-4 w-4 sm:ml-1.5" />
+                  <span className="hidden sm:inline">تفريغ</span>
+                </Button>
+              )}
               <Button variant="outline" size="sm" onClick={endSession}>
                 <LogOut className="h-4 w-4 sm:ml-1.5" />
                 <span className="hidden sm:inline">خروج</span>
@@ -320,7 +323,8 @@ export default function PricingAdmin() {
             </div>
           </div>
 
-          {/* تبويبا الوضع */}
+          {/* تبويبا الوضع — لا يظهران قبل الاختيار الأول */}
+          {mode !== null && (
           <div className="border-t flex">
             {([
               { key: "quote", label: "تسعير", Icon: Calculator },
@@ -342,6 +346,7 @@ export default function PricingAdmin() {
               </button>
             ))}
           </div>
+          )}
 
           {/* شريط السعر — يبقى ظاهراً مهما نزل المشرف في الكتالوج */}
           {mode === "quote" && (
@@ -371,7 +376,38 @@ export default function PricingAdmin() {
           )}
         </header>
 
-        {mode === "inspection" ? (
+        {mode === null ? (
+          <main className="max-w-md mx-auto px-4 pt-10">
+            <p className="text-center text-muted-foreground mb-6">وش تبي تسوي؟</p>
+            <div className="space-y-3">
+              {([
+                {
+                  key: "quote", Icon: Calculator, label: "تسعير",
+                  desc: "اختر الباقات والبنود من قائمة الأسعار واطلع بعرض جاهز للعميل",
+                },
+                {
+                  key: "inspection", Icon: ClipboardList, label: "معاينة ميدانية",
+                  desc: "سجّل معاينة الموقع بالمستويات والغرف وأرسل التقرير",
+                },
+              ] as const).map(({ key, Icon, label, desc }) => (
+                <button
+                  key={key}
+                  type="button"
+                  onClick={() => setMode(key)}
+                  className="w-full text-right bg-card border rounded-xl p-5 hover:border-primary hover:bg-primary/5 transition-colors"
+                >
+                  <div className="flex items-center gap-3 mb-1.5">
+                    <div className="w-10 h-10 rounded-lg bg-primary/10 text-primary flex items-center justify-center shrink-0">
+                      <Icon className="h-5 w-5" />
+                    </div>
+                    <span className="font-bold text-lg">{label}</span>
+                  </div>
+                  <p className="text-sm text-muted-foreground leading-relaxed">{desc}</p>
+                </button>
+              ))}
+            </div>
+          </main>
+        ) : mode === "inspection" ? (
           <main className="max-w-2xl mx-auto px-4 pt-6">
             <InspectionForm />
           </main>
