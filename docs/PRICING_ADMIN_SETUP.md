@@ -127,10 +127,38 @@ netlify/lib/pricing-catalogue.mjs
 | `netlify/lib/admin-auth.mjs` | التحقق من كلمة المرور وتوقيع الجلسات |
 | `netlify/functions/pricing-login.mjs` | `POST /api/pricing/login` — دخول |
 | `netlify/functions/pricing-catalogue.mjs` | `GET /api/pricing/catalogue` — استعادة الجلسة |
+| `netlify/functions/pricing-inspections.mjs` | `/api/pricing/inspections` — حفظ المعاينات وقراءتها وحذفها |
+| `src/lib/pricing/inspectionReport.ts` | نموذج المعاينة وصياغة التقرير |
+| `src/lib/pricing/inspectionsApi.ts` | نداءات السجل من الواجهة |
+| `src/components/pricing/InspectionForm.tsx` | واجهة المعاينة الميدانية |
 | `src/lib/pricing/calculate.ts` | محرّك الحساب |
 | `src/lib/pricing/quoteMessage.ts` | صياغة نص العرض والملخص الداخلي |
 | `src/lib/pricing/types.ts` | أنواع الكتالوج ونتيجة العرض |
 | `src/pages/PricingAdmin.tsx` | واجهة الصفحة |
+
+---
+
+## ٦. سجل المعاينات
+
+المعاينات الميدانية تُحفظ في **Netlify Blobs** — تخزين مدمج في Netlify لا
+يحتاج قاعدة بيانات ولا إعداداً إضافياً في الغالب. اسم المخزن
+`pricing-inspections`.
+
+| الزر | ماذا يفعل |
+|---|---|
+| **حفظ** | يحفظ المعاينة الحالية ويعطيها مفتاحاً |
+| **تحديث المحفوظة** | يظهر بدل «حفظ» بعد الحفظ، ويكتب فوق نفس المعاينة بدل إنشاء نسخة |
+| **المعاينات المحفوظة** | يفتح السجل — اضغط أي معاينة لتُفتح في النموذج، أو 🗑 لحذفها |
+
+المفتاح يبدأ بالطابع الزمني، فترتيب المفاتيح تنازلياً يعطي الأحدث أولاً بلا
+قراءة كل السجلات. القائمة تعرض آخر ٥٠ معاينة.
+
+**كل العمليات تتطلب جلسة مشرف صالحة** — لا قراءة ولا كتابة ولا حذف بلا توكن.
+
+**إن ظهر «التخزين غير متاح»** فغالباً Netlify Blobs غير مفعّل على الموقع.
+فعّله من لوحة Netlify ثم أعد النشر.
+
+**تنبيه:** الحذف نهائي ولا تراجع عنه.
 
 ---
 

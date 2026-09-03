@@ -3,7 +3,9 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
-import { Copy, Loader2, MapPin, MessageCircle, Minus, Plus, Trash2, X } from "lucide-react";
+import {
+  Copy, FileText, Loader2, MapPin, MessageCircle, Minus, Plus, RefreshCw, Save, Trash2, X,
+} from "lucide-react";
 import { toast } from "sonner";
 import { cn } from "@/lib/utils";
 import {
@@ -12,6 +14,10 @@ import {
   type Inspection, type Level,
 } from "@/lib/pricing/inspectionReport";
 import { toWhatsAppNumber } from "@/lib/pricing/quoteMessage";
+import {
+  deleteInspection, listInspections, loadInspection, saveInspection,
+  InspectionsError, type SavedInspectionSummary,
+} from "@/lib/pricing/inspectionsApi";
 
 const SUPERVISOR_KEY = "kleenology_supervisor_name";
 
@@ -46,7 +52,7 @@ function Stepper({ value, onChange }: { value: number; onChange: (n: number) => 
   );
 }
 
-export function InspectionForm() {
+export function InspectionForm({ token }: { token: string }) {
   // اسم المشرف يُحفظ محلياً — يكتبه مرة واحدة لا مع كل معاينة
   const [data, setData] = useState<Inspection>(() =>
     emptyInspection(localStorage.getItem(SUPERVISOR_KEY) ?? ""),
@@ -55,6 +61,13 @@ export function InspectionForm() {
   const [customLevel, setCustomLevel] = useState("");
   const openLevelRef = useRef<HTMLDivElement | null>(null);
   const [locating, setLocating] = useState(false);
+
+  // سجل المعاينات المحفوظة
+  const [savedId, setSavedId] = useState<string | null>(null);
+  const [saving, setSaving] = useState(false);
+  const [showSaved, setShowSaved] = useState(false);
+  const [saved, setSaved] = useState<SavedInspectionSummary[] | null>(null);
+  const [loadingList, setLoadingList] = useState(false);
 
   useEffect(() => {
     if (data.supervisor.trim()) localStorage.setItem(SUPERVISOR_KEY, data.supervisor.trim());
@@ -136,6 +149,66 @@ export function InspectionForm() {
     );
   };
 
+  const refreshSaved = async () => {
+    setLoadingList(true);
+    try {
+      const { inspections } = await listInspections(token);
+      setSaved(inspections);
+    } catch (error) {
+      setSaved([]);
+      toast.error(error instanceof InspectionsError ? error.message : "تعذّر جلب المعاينات");
+    } finally {
+      setLoadingList(false);
+    }
+  };
+
+  const openSaved = async () => {
+    const next = !showSaved;
+    setShowSaved(next);
+    if (next && saved === null) await refreshSaved();
+  };
+
+  const save = async () => {
+    setSaving(true);
+    try {
+      // الحفظ فوق معاينة مفتوحة يحدّثها بدل إنشاء نسخة ثانية منها
+      const { id } = await saveInspection(token, data, savedId ?? undefined);
+      setSavedId(id);
+      setSaved(null);
+      toast.success(savedId ? "تم تحديث المعاينة" : "تم حفظ المعاينة");
+    } catch (error) {
+      toast.error(error instanceof InspectionsError ? error.message : "تعذّر الحفظ");
+    } finally {
+      setSaving(false);
+    }
+  };
+
+  const open = async (id: string) => {
+    try {
+      const { inspection } = await loadInspection(token, id);
+      const { id: loadedId, ...rest } = inspection;
+      setData({ ...emptyInspection(), ...rest });
+      setSavedId(loadedId);
+      setShowSaved(false);
+      setOpenLevel(null);
+      toast.success("فُتحت المعاينة");
+    } catch (error) {
+      toast.error(error instanceof InspectionsError ? error.message : "تعذّر الفتح");
+    }
+  };
+
+  const remove = async (id: string, label: string) => {
+    if (!window.confirm(`حذف معاينة ${label}؟ لا يمكن التراجع.`)) return;
+    try {
+      await deleteInspection(token, id);
+      setSaved((list) => (list ?? []).filter((item) => item.id !== id));
+      if (savedId === id) setSavedId(null);
+      toast.success("تم الحذف");
+    } catch (error) {
+      toast.error(error instanceof InspectionsError ? error.message : "تعذّر الحذف");
+    }
+  };
+
   const report = () => buildInspectionReport(data);
 
   const copyReport = () => copyText(report(), "تم نسخ تقرير المعاينة");
@@ -148,6 +221,7 @@ export function InspectionForm() {
 
   const reset = () => {
     setData(emptyInspection(data.supervisor));
+    setSavedId(null);
     setOpenLevel(null);
     toast.success("تم تفريغ المعاينة");
   };
@@ -156,6 +230,69 @@ export function InspectionForm() {
 
   return (
     <div className="space-y-4">
+      <div className="bg-card border rounded-xl overflow-hidden">
+        <div className="flex items-center justify-between gap-2 p-4">
+          <button type="button" onClick={openSaved}
+                  className="flex items-center gap-2 font-bold text-sm">
+            <FileText className="h-4 w-4 text-primary" />
+            المعاينات المحفوظة
+            {saved && <span className="text-muted-foreground font-normal">({saved.length})</span>}
+          </button>
+          <div className="flex items-center gap-2">
+            {savedId && (
+              <span className="text-[11px] text-emerald-700 bg-emerald-50 border border-emerald-200 rounded px-1.5 py-0.5">
+                محفوظة
+              </span>
+            )}
+            {showSaved && (
+              <button type="button" onClick={refreshSaved} disabled={loadingList}
+                      className="text-muted-foreground hover:text-foreground" aria-label="تحديث القائمة">
+                <RefreshCw className={cn("h-4 w-4", loadingList && "animate-spin")} />
+              </button>
+            )}
+          </div>
+        </div>
+
+        {showSaved && (
+          <div className="border-t p-3 space-y-2">
+            {loadingList && saved === null ? (
+              <div className="flex justify-center py-4">
+                <Loader2 className="h-5 w-5 animate-spin text-primary" />
+              </div>
+            ) : (saved?.length ?? 0) === 0 ? (
+              <p className="text-sm text-muted-foreground py-2 text-center">
+                ما فيه معاينات محفوظة بعد.
+              </p>
+            ) : (
+              saved!.map((item) => {
+                const label = item.customerName || item.location || item.date || "بلا اسم";
+                return (
+                  <div key={item.id}
+                       className="flex items-center justify-between gap-2 border rounded-lg p-2.5">
+                    <button type="button" onClick={() => open(item.id)}
+                            className="text-right min-w-0 flex-1">
+                      <div className="text-sm font-medium truncate">{label}</div>
+                      <div className="text-[11px] text-muted-foreground truncate">
+                        {[item.date, item.serviceType, `${item.levelCount} مستوى`, `${item.roomCount} غرفة`]
+                          .filter(Boolean).join(" · ")}
+                      </div>
+                      {item.supervisor && (
+                        <div className="text-[11px] text-muted-foreground">المشرف: {item.supervisor}</div>
+                      )}
+                    </button>
+                    <button type="button" onClick={() => remove(item.id, label)}
+                            className="text-muted-foreground hover:text-destructive shrink-0"
+                            aria-label={`حذف معاينة ${label}`}>
+                      <Trash2 className="h-4 w-4" />
+                    </button>
+                  </div>
+                );
+              })
+            )}
+          </div>
+        )}
+      </div>
+
       <Section title="بيانات المعاينة">
         <div className="grid sm:grid-cols-2 gap-3">
           <div className="space-y-1.5">
@@ -389,10 +526,16 @@ export function InspectionForm() {
           <MessageCircle className="h-4 w-4 ml-2" />
           إرسال التقرير واتساب
         </Button>
-        <Button variant="outline" className="w-full" onClick={copyReport}>
-          <Copy className="h-4 w-4 ml-2" />
-          نسخ التقرير
-        </Button>
+        <div className="grid grid-cols-2 gap-2">
+          <Button variant="outline" onClick={copyReport}>
+            <Copy className="h-4 w-4 ml-2" />
+            نسخ التقرير
+          </Button>
+          <Button variant="outline" onClick={save} disabled={saving}>
+            {saving ? <Loader2 className="h-4 w-4 ml-2 animate-spin" /> : <Save className="h-4 w-4 ml-2" />}
+            {savedId ? "تحديث المحفوظة" : "حفظ"}
+          </Button>
+        </div>
       </div>
     </div>
   );

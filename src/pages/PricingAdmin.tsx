@@ -409,7 +409,7 @@ export default function PricingAdmin() {
           </main>
         ) : mode === "inspection" ? (
           <main className="max-w-2xl mx-auto px-4 pt-6">
-            <InspectionForm />
+            <InspectionForm token={token} />
           </main>
         ) : (
         <main className="max-w-6xl mx-auto px-4 pt-6 grid lg:grid-cols-[1fr_360px] gap-6 items-start">
