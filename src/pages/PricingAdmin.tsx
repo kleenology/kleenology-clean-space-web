@@ -6,7 +6,7 @@ import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import {
   Calculator, Lock, LogOut, Loader2, Copy, MessageCircle, RotateCcw,
-  Minus, Plus, Search, X, Package, PlusCircle,
+  Minus, Plus, Search, X, Package, PlusCircle, ClipboardList,
 } from "lucide-react";
 import { toast } from "sonner";
 import { cn } from "@/lib/utils";
@@ -16,6 +16,7 @@ import {
   type CustomerInfo,
 } from "@/lib/pricing/quoteMessage";
 import type { Catalogue, QuoteInput } from "@/lib/pricing/types";
+import { InspectionForm } from "@/components/pricing/InspectionForm";
 
 const TOKEN_KEY = "kleenology_pricing_token";
 
@@ -127,6 +128,7 @@ export default function PricingAdmin() {
   const [input, setInput] = useState<QuoteInput | null>(null);
   const [customer, setCustomer] = useState<CustomerInfo>(emptyCustomer);
   const [search, setSearch] = useState("");
+  const [mode, setMode] = useState<"quote" | "inspection">("quote");
   const [openGroup, setOpenGroup] = useState<string | null>(null);
   const openPanelRef = useRef<HTMLElement | null>(null);
   const [showCodes, setShowCodes] = useState(false);
@@ -318,7 +320,31 @@ export default function PricingAdmin() {
             </div>
           </div>
 
+          {/* تبويبا الوضع */}
+          <div className="border-t flex">
+            {([
+              { key: "quote", label: "تسعير", Icon: Calculator },
+              { key: "inspection", label: "معاينة ميدانية", Icon: ClipboardList },
+            ] as const).map(({ key, label, Icon }) => (
+              <button
+                key={key}
+                type="button"
+                onClick={() => setMode(key)}
+                className={cn(
+                  "flex-1 flex items-center justify-center gap-1.5 py-2.5 text-sm font-medium border-b-2 transition-colors",
+                  mode === key
+                    ? "border-primary text-primary bg-primary/5"
+                    : "border-transparent text-muted-foreground hover:bg-muted",
+                )}
+              >
+                <Icon className="h-4 w-4" />
+                {label}
+              </button>
+            ))}
+          </div>
+
           {/* شريط السعر — يبقى ظاهراً مهما نزل المشرف في الكتالوج */}
+          {mode === "quote" && (
           <div className="bg-primary/10 border-t">
             <div className="max-w-6xl mx-auto px-4 py-2.5 flex items-center justify-between gap-3">
               <div className="flex items-baseline gap-2 min-w-0">
@@ -342,8 +368,14 @@ export default function PricingAdmin() {
               </div>
             </div>
           </div>
+          )}
         </header>
 
+        {mode === "inspection" ? (
+          <main className="max-w-2xl mx-auto px-4 pt-6">
+            <InspectionForm />
+          </main>
+        ) : (
         <main className="max-w-6xl mx-auto px-4 pt-6 grid lg:grid-cols-[1fr_360px] gap-6 items-start">
           {/* ——— عمود الاختيار ——— */}
           <div className="space-y-5">
@@ -582,6 +614,7 @@ export default function PricingAdmin() {
             </div>
           </aside>
         </main>
+        )}
       </div>
     </>
   );
