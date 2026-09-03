@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { SEO } from "@/components/SEO";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -127,6 +127,8 @@ export default function PricingAdmin() {
   const [input, setInput] = useState<QuoteInput | null>(null);
   const [customer, setCustomer] = useState<CustomerInfo>(emptyCustomer);
   const [search, setSearch] = useState("");
+  const [openGroup, setOpenGroup] = useState<string | null>(null);
+  const openPanelRef = useRef<HTMLElement | null>(null);
   const [showCodes, setShowCodes] = useState(false);
 
   const startSession = useCallback((newToken: string, newCatalogue: Catalogue) => {
@@ -159,6 +161,10 @@ export default function PricingAdmin() {
       .finally(() => { if (!cancelled) setRestoring(false); });
     return () => { cancelled = true; };
   }, [startSession]);
+
+  useEffect(() => {
+    if (openGroup) openPanelRef.current?.scrollIntoView({ behavior: "smooth", block: "start" });
+  }, [openGroup]);
 
   const patch = useCallback((changes: Partial<QuoteInput>) => {
     setInput((current) => (current ? { ...current, ...changes } : current));
@@ -220,6 +226,7 @@ export default function PricingAdmin() {
     setInput(emptyInput);
     setCustomer(emptyCustomer);
     setSearch("");
+    setOpenGroup(null);
     toast.success("تم تفريغ العرض");
   };
 
@@ -373,22 +380,82 @@ export default function PricingAdmin() {
               )}
             </div>
 
-            {!search && catalogue.groups.map((group) => (
-              <section key={group.name} className="bg-card border rounded-xl p-5">
-                <h2 className="font-bold mb-3 flex items-center gap-2">
-                  {group.kind === "package"
-                    ? <Package className="h-4 w-4 text-primary" />
-                    : <PlusCircle className="h-4 w-4 text-muted-foreground" />}
-                  {group.name}
-                  <span className="text-[11px] font-normal text-muted-foreground">
-                    {group.kind === "package" ? "باقة أساسية" : "بند إضافي"}
-                  </span>
-                </h2>
-                <div className="grid sm:grid-cols-2 gap-2">
-                  {group.items.map((item) => renderItemRow(item))}
+            {!search && (
+              <>
+                {/* بلاطات المجموعات — الضغط على بلاطة يفتح بنودها بالأسفل */}
+                <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
+                  {catalogue.groups.map((group) => {
+                    const chosen = group.items.filter((item) => qtyOf(item.code) > 0).length;
+                    const isOpen = openGroup === group.name;
+                    return (
+                      <button
+                        key={group.name}
+                        type="button"
+                        onClick={() => setOpenGroup(isOpen ? null : group.name)}
+                        className={cn(
+                          "relative text-right rounded-xl border p-3 transition-colors",
+                          isOpen
+                            ? "border-primary bg-primary/10"
+                            : chosen > 0
+                              ? "border-primary/40 bg-primary/5 hover:bg-primary/10"
+                              : "border-border bg-card hover:bg-muted",
+                        )}
+                      >
+                        <div className="flex items-start gap-2">
+                          {group.kind === "package"
+                            ? <Package className="h-4 w-4 text-primary shrink-0 mt-0.5" />
+                            : <PlusCircle className="h-4 w-4 text-muted-foreground shrink-0 mt-0.5" />}
+                          <span className="text-sm font-medium leading-tight">{group.name}</span>
+                        </div>
+                        <div className="text-[11px] text-muted-foreground mt-1.5 pr-6">
+                          {group.items.length} بند
+                        </div>
+                        {chosen > 0 && (
+                          <span className="absolute top-2 left-2 min-w-5 h-5 px-1 rounded-full bg-primary text-primary-foreground text-[11px] font-bold flex items-center justify-center">
+                            {chosen}
+                          </span>
+                        )}
+                      </button>
+                    );
+                  })}
                 </div>
-              </section>
-            ))}
+
+                {/* بنود المجموعة المفتوحة */}
+                {openGroup && (() => {
+                  const group = catalogue.groups.find((g) => g.name === openGroup);
+                  if (!group) return null;
+                  return (
+                    <section
+                      ref={openPanelRef}
+                      className="bg-card border-2 border-primary/30 rounded-xl p-5 scroll-mt-32"
+                    >
+                      <div className="flex items-center justify-between gap-3 mb-3">
+                        <h2 className="font-bold flex items-center gap-2 min-w-0">
+                          {group.kind === "package"
+                            ? <Package className="h-4 w-4 text-primary shrink-0" />
+                            : <PlusCircle className="h-4 w-4 text-muted-foreground shrink-0" />}
+                          <span className="truncate">{group.name}</span>
+                          <span className="text-[11px] font-normal text-muted-foreground shrink-0">
+                            {group.kind === "package" ? "باقة أساسية" : "بند إضافي"}
+                          </span>
+                        </h2>
+                        <button
+                          type="button"
+                          onClick={() => setOpenGroup(null)}
+                          className="text-muted-foreground hover:text-foreground shrink-0"
+                          aria-label="إغلاق المجموعة"
+                        >
+                          <X className="h-4 w-4" />
+                        </button>
+                      </div>
+                      <div className="grid sm:grid-cols-2 gap-2">
+                        {group.items.map((item) => renderItemRow(item))}
+                      </div>
+                    </section>
+                  );
+                })()}
+              </>
+            )}
 
             <section className="bg-card border rounded-xl p-5">
               <h2 className="font-bold mb-4">بيانات العميل</h2>
