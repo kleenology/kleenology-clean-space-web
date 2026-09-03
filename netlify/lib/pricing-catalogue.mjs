@@ -28,7 +28,8 @@ export const CATALOGUE = {
       name: "استديو",
       kind: "package",
       items: [
-        { code: "KLN-005", label: "مؤثث وغير مؤثث", price: 500, time: "1-3 ساعة" },
+        { code: "KLN-005", label: "غير مؤثث", price: 500, time: "1-3 ساعة" },
+        { code: "KLN-081", label: "مؤثث", price: 650, time: "1-3 ساعة" },
       ],
     },
     {
