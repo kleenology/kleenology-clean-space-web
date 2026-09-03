@@ -25,7 +25,10 @@
       "/about",
       "/booking"
     ],
-    "puppeteerArgs": ["--no-sandbox", "--disable-setuid-sandbox"],
+    "puppeteerArgs": [
+      "--no-sandbox",
+      "--disable-setuid-sandbox"
+    ],
     "headless": true,
     "inlineCss": false,
     "skipThirdPartyRequests": true,
@@ -38,6 +41,7 @@
   },
   "dependencies": {
     "@hookform/resolvers": "^3.9.0",
+    "@netlify/blobs": "^11.0.3",
     "@radix-ui/react-accordion": "^1.2.0",
     "@radix-ui/react-alert-dialog": "^1.1.1",
     "@radix-ui/react-aspect-ratio": "^1.1.0",
