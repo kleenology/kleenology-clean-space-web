@@ -17,6 +17,8 @@ export interface Inspection {
   customerName: string;
   phone: string;
   location: string;
+  /** رابط الموقع على خرائط قوقل — يُلتقط من الجوال أو يُلصق يدوياً */
+  mapsUrl: string;
   date: string;
   time: string;
   siteType: string;
@@ -69,6 +71,11 @@ export const ROOM_PRESETS = [
   "مخزن",
 ];
 
+/** رابط خرائط قوقل من إحداثيات الجهاز */
+export function mapsLink(lat: number, lng: number): string {
+  return `https://www.google.com/maps?q=${lat.toFixed(6)},${lng.toFixed(6)}`;
+}
+
 /** تاريخ اليوم بصيغة yyyy-mm-dd لحقل التاريخ */
 export function today(): string {
   const d = new Date();
@@ -88,6 +95,7 @@ export function emptyInspection(supervisor = ""): Inspection {
     customerName: "",
     phone: "",
     location: "",
+    mapsUrl: "",
     date: today(),
     time: now(),
     siteType: "",
@@ -123,6 +131,7 @@ export function buildInspectionReport(inspection: Inspection): string {
   parts.push(`العميل: ${dash(inspection.customerName)}`);
   parts.push(`رقم التواصل: ${dash(inspection.phone)}`);
   parts.push(`الموقع / العنوان: ${dash(inspection.location)}`);
+  if (inspection.mapsUrl.trim()) parts.push(`الموقع على الخريطة: ${inspection.mapsUrl.trim()}`);
   parts.push(`تاريخ المعاينة: ${dash(inspection.date)}`);
   parts.push(`الوقت: ${dash(inspection.time)}`);
   parts.push(`نوع الموقع: ${dash(inspection.siteType)}`);

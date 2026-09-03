@@ -3,11 +3,11 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
-import { Copy, MessageCircle, Minus, Plus, Trash2, X } from "lucide-react";
+import { Copy, Loader2, MapPin, MessageCircle, Minus, Plus, Trash2, X } from "lucide-react";
 import { toast } from "sonner";
 import { cn } from "@/lib/utils";
 import {
-  buildInspectionReport, emptyInspection, totalRooms,
+  buildInspectionReport, emptyInspection, mapsLink, totalRooms,
   LEVEL_PRESETS, ROOM_PRESETS, SERVICE_TYPES,
   type Inspection, type Level,
 } from "@/lib/pricing/inspectionReport";
@@ -54,6 +54,7 @@ export function InspectionForm() {
   const [openLevel, setOpenLevel] = useState<string | null>(null);
   const [customLevel, setCustomLevel] = useState("");
   const openLevelRef = useRef<HTMLDivElement | null>(null);
+  const [locating, setLocating] = useState(false);
 
   useEffect(() => {
     if (data.supervisor.trim()) localStorage.setItem(SUPERVISOR_KEY, data.supervisor.trim());
@@ -101,16 +102,43 @@ export function InspectionForm() {
   const qtyOf = (level: Level, label: string) =>
     level.rooms.find((r) => r.label === label)?.qty ?? 0;
 
-  const report = () => buildInspectionReport(data);
-
-  const copyReport = async () => {
+  const copyText = async (text: string, message: string) => {
     try {
-      await navigator.clipboard.writeText(report());
-      toast.success("تم نسخ تقرير المعاينة");
+      await navigator.clipboard.writeText(text);
+      toast.success(message);
     } catch {
       toast.error("تعذّر النسخ — انسخ النص يدوياً");
     }
   };
+
+  // التقاط الإحداثيات من الجهاز أسرع من فتح الخرائط ونسخ الرابط والرجوع
+  const locate = () => {
+    if (!navigator.geolocation) {
+      toast.error("جهازك لا يدعم تحديد الموقع — الصق الرابط يدوياً");
+      return;
+    }
+    setLocating(true);
+    navigator.geolocation.getCurrentPosition(
+      ({ coords }) => {
+        patch({ mapsUrl: mapsLink(coords.latitude, coords.longitude) });
+        setLocating(false);
+        toast.success("تم تحديد الموقع");
+      },
+      (error) => {
+        setLocating(false);
+        toast.error(
+          error.code === error.PERMISSION_DENIED
+            ? "رُفض إذن الموقع — فعّله من إعدادات المتصفح أو الصق الرابط يدوياً"
+            : "تعذّر تحديد الموقع — الصق الرابط يدوياً",
+        );
+      },
+      { enableHighAccuracy: true, timeout: 10000, maximumAge: 0 },
+    );
+  };
+
+  const report = () => buildInspectionReport(data);
+
+  const copyReport = () => copyText(report(), "تم نسخ تقرير المعاينة");
 
   const sendReport = () => {
     const number = toWhatsAppNumber(data.phone);
@@ -145,6 +173,34 @@ export function InspectionForm() {
             <Input id="i-loc" value={data.location}
                    onChange={(e) => patch({ location: e.target.value })} />
           </div>
+          <div className="space-y-1.5 sm:col-span-2">
+            <Label htmlFor="i-maps">الموقع على خرائط قوقل</Label>
+            <div className="flex gap-2">
+              <Input
+                id="i-maps" inputMode="url" dir="ltr" className="text-left"
+                placeholder="https://maps.google.com/…"
+                value={data.mapsUrl}
+                onChange={(e) => patch({ mapsUrl: e.target.value })}
+              />
+              <Button type="button" variant="outline" onClick={locate} disabled={locating}
+                      className="shrink-0" aria-label="تحديد موقعي الحالي">
+                {locating ? <Loader2 className="h-4 w-4 animate-spin" /> : <MapPin className="h-4 w-4" />}
+              </Button>
+              <Button
+                type="button" variant="outline" className="shrink-0"
+                disabled={!data.mapsUrl.trim()}
+                onClick={() => copyText(data.mapsUrl.trim(), "تم نسخ رابط الموقع")}
+                aria-label="نسخ رابط الموقع"
+              >
+                <Copy className="h-4 w-4" />
+              </Button>
+            </div>
+            <p className="text-[11px] text-muted-foreground">
+              اضغط 📍 ليأخذ موقعك الحالي، أو الصق رابطاً من تطبيق الخرائط. زر النسخ
+              يعطيك الرابط وحده لإرساله للقروب.
+            </p>
+          </div>
+
           <div className="space-y-1.5">
             <Label htmlFor="i-date">تاريخ المعاينة</Label>
             <Input id="i-date" type="date" value={data.date}
