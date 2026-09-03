@@ -6,7 +6,7 @@ import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import {
   Calculator, Lock, LogOut, Loader2, Copy, MessageCircle, RotateCcw,
-  Minus, Plus, Search, X, Package, PlusCircle, ClipboardList,
+  Minus, Plus, Search, X, Package, PlusCircle, ClipboardList, Eye, EyeOff,
 } from "lucide-react";
 import { toast } from "sonner";
 import { cn } from "@/lib/utils";
@@ -35,6 +35,7 @@ const emptyInput: QuoteInput = { items: [] };
 
 function LoginCard({ onSuccess }: { onSuccess: (token: string, catalogue: Catalogue) => void }) {
   const [password, setPassword] = useState("");
+  const [show, setShow] = useState(false);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
 
@@ -67,28 +68,66 @@ function LoginCard({ onSuccess }: { onSuccess: (token: string, catalogue: Catalo
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-muted/30 px-4">
-      <form onSubmit={submit} className="w-full max-w-sm bg-card border rounded-2xl shadow-sm p-7 text-center">
-        <div className="w-14 h-14 rounded-full bg-primary/10 text-primary flex items-center justify-center mx-auto mb-4">
-          <Lock className="h-6 w-6" />
-        </div>
-        <h1 className="text-xl font-bold mb-1">تسعير كلينولوجي</h1>
-        <p className="text-sm text-muted-foreground mb-6">صفحة داخلية لمشرف التسعير</p>
+    <div className="min-h-screen relative flex items-center justify-center px-5 py-10 overflow-hidden bg-gradient-to-br from-brand-blue to-brand-blue-dark">
+      {/* فقاعات خفيفة تعطي إحساس النظافة بلا تشتيت */}
+      <div className="absolute -top-24 -right-16 w-72 h-72 rounded-full bg-white/10" aria-hidden />
+      <div className="absolute -bottom-28 -left-20 w-96 h-96 rounded-full bg-white/5" aria-hidden />
 
-        <div className="text-right space-y-2 mb-4">
+      <form
+        onSubmit={submit}
+        className="relative w-full max-w-sm bg-card rounded-2xl shadow-2xl px-6 py-8 sm:px-8"
+      >
+        <img
+          src="/logo.png"
+          alt="كلينولوجي"
+          className="h-16 mx-auto mb-5 object-contain"
+          width={240}
+          height={64}
+        />
+
+        <div className="text-center mb-6">
+          <h1 className="text-lg font-bold">أداة التسعير والمعاينة</h1>
+          <p className="text-sm text-muted-foreground mt-0.5">للاستخدام الداخلي فقط</p>
+        </div>
+
+        <div className="space-y-2 mb-5">
           <Label htmlFor="password">كلمة المرور</Label>
-          <Input
-            id="password" type="password" autoComplete="current-password"
-            value={password} onChange={(e) => setPassword(e.target.value)}
-            className="text-center tracking-widest" disabled={loading}
-          />
+          <div className="relative">
+            <Input
+              id="password"
+              type={show ? "text" : "password"}
+              autoComplete="current-password"
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
+              className="h-12 text-center tracking-widest pl-11"
+              disabled={loading}
+            />
+            {/* إظهار الحرف يمنع الأخطاء المتكررة عند الكتابة على الجوال */}
+            <button
+              type="button"
+              onClick={() => setShow((v) => !v)}
+              className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground"
+              aria-label={show ? "إخفاء كلمة المرور" : "إظهار كلمة المرور"}
+            >
+              {show ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+            </button>
+          </div>
         </div>
 
-        {error && <p className="text-sm text-destructive mb-4 leading-relaxed">{error}</p>}
+        {error && (
+          <p className="text-sm text-destructive text-center mb-4 leading-relaxed bg-destructive/5 border border-destructive/20 rounded-lg py-2 px-3">
+            {error}
+          </p>
+        )}
 
-        <Button type="submit" className="w-full" disabled={loading || !password.trim()}>
-          {loading ? <Loader2 className="h-4 w-4 animate-spin" /> : "دخول"}
+        <Button type="submit" className="w-full h-12 text-base" disabled={loading || !password.trim()}>
+          {loading ? <Loader2 className="h-5 w-5 animate-spin" /> : "دخول"}
         </Button>
+
+        <p className="text-[11px] text-muted-foreground text-center mt-5 flex items-center justify-center gap-1.5">
+          <Lock className="h-3 w-3" />
+          صفحة محمية — الأسعار لا تغادر الخادم قبل الدخول
+        </p>
       </form>
     </div>
   );
