@@ -61,12 +61,11 @@ export function buildCustomerQuote(
   return parts.join("\n");
 }
 
-/** ملخص داخلي للمشرف — يشمل التكلفة وهامش الربح */
+/** ملخص داخلي للمشرف — بأكواد الخدمات وتفكيك الضريبة */
 export function buildInternalSummary(
   catalogue: Catalogue,
   result: QuoteResult,
   customer: CustomerInfo,
-  crew: { workers: number; hours: number },
 ): string {
   const lines: string[] = [];
   lines.push("🔒 ملخص تسعير داخلي — لا يُرسل للعميل");
@@ -93,15 +92,6 @@ export function buildInternalSummary(
   lines.push(`منه ضريبة: ${sar(result.vatAmount)}`);
   lines.push(`الصافي بعد الضريبة: ${sar(result.netBeforeVat)}`);
   lines.push(`العربون: ${sar(result.deposit)}`);
-  lines.push("");
-  lines.push("— التكلفة —");
-  lines.push(`الطاقم: ${crew.workers} عامل × ${crew.hours} ساعة = ${sar(result.cost.labor)}`);
-  lines.push(`النقل: ${sar(result.cost.transport)}`);
-  lines.push(`المواد: ${sar(result.cost.supplies)}`);
-  lines.push(`إجمالي التكلفة: ${sar(result.cost.total)}`);
-  lines.push(
-    `الربح: ${sar(result.cost.profit)} (${Math.round(result.cost.marginPercent * 100)}٪ من الصافي)`,
-  );
 
   return lines.join("\n");
 }

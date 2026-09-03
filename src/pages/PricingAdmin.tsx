@@ -6,7 +6,7 @@ import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import {
   Calculator, Lock, LogOut, Loader2, Copy, MessageCircle, RotateCcw,
-  AlertTriangle, TrendingUp, Minus, Plus, Search, X, Package, PlusCircle,
+  Minus, Plus, Search, X, Package, PlusCircle,
 } from "lucide-react";
 import { toast } from "sonner";
 import { cn } from "@/lib/utils";
@@ -28,15 +28,7 @@ const emptyCustomer: CustomerInfo = {
   name: "", phone: "", neighborhood: "", visitDate: "", notes: "",
 };
 
-function buildInitialInput(catalogue: Catalogue): QuoteInput {
-  return {
-    items: [],
-    discountType: "percent",
-    discountValue: catalogue.defaultDiscountPercent,
-    workers: catalogue.cost.defaultWorkers,
-    hours: 0,
-  };
-}
+const emptyInput: QuoteInput = { items: [] };
 
 /* ————————————————————————— شاشة الدخول ————————————————————————— */
 
@@ -141,7 +133,7 @@ export default function PricingAdmin() {
     sessionStorage.setItem(TOKEN_KEY, newToken);
     setToken(newToken);
     setCatalogue(newCatalogue);
-    setInput((current) => current ?? buildInitialInput(newCatalogue));
+    setInput((current) => current ?? emptyInput);
   }, []);
 
   const endSession = useCallback(() => {
@@ -207,8 +199,6 @@ export default function PricingAdmin() {
 
   /* ——— معالجات ——— */
 
-  const marginPct = Math.round(quote.cost.marginPercent * 100);
-
   const qtyOf = (code: string) => input.items.find((i) => i.code === code)?.qty ?? 0;
 
   const setQty = (code: string, qty: number) => {
@@ -227,7 +217,7 @@ export default function PricingAdmin() {
   const toggleItem = (code: string) => setQty(code, qtyOf(code) > 0 ? 0 : 1);
 
   const resetForm = () => {
-    setInput(buildInitialInput(catalogue));
+    setInput(emptyInput);
     setCustomer(emptyCustomer);
     setSearch("");
     toast.success("تم تفريغ العرض");
@@ -253,11 +243,6 @@ export default function PricingAdmin() {
     window.open(`https://wa.me/${number}?text=${encodeURIComponent(customerQuote())}`, "_blank");
   };
 
-  const discountPct = input.discountType === "percent"
-    ? input.discountValue
-    : quote.discountableTotal > 0
-        ? Math.round((quote.discountAmount / quote.discountableTotal) * 100)
-        : 0;
 
   const renderItemRow = (
     item: { code: string; label: string; price: number; time: string; note?: string; noDiscount?: boolean },
@@ -342,16 +327,9 @@ export default function PricingAdmin() {
               </div>
               <div className="flex items-center gap-2 text-[11px] text-muted-foreground shrink-0">
                 {quote.lines.length > 0 && <span>{quote.lines.length} بند</span>}
-                {quote.total > 0 && (
-                  <span
-                    className={cn(
-                      "px-1.5 py-0.5 rounded font-semibold",
-                      quote.cost.belowMinimum
-                        ? "bg-red-100 text-red-700"
-                        : "bg-emerald-100 text-emerald-700",
-                    )}
-                  >
-                    هامش {marginPct}٪
+                {quote.discountAmount > 0 && (
+                  <span className="px-1.5 py-0.5 rounded font-semibold bg-emerald-100 text-emerald-700">
+                    خصم {catalogue.discountPercent}٪
                   </span>
                 )}
               </div>
@@ -474,46 +452,6 @@ export default function PricingAdmin() {
                 )}
               </div>
 
-              {/* الخصم */}
-              <div className="px-5 py-4 border-t bg-muted/30">
-                <div className="flex items-center justify-between gap-2 mb-2">
-                  <Label className="text-sm">الخصم</Label>
-                  <div className="flex gap-1">
-                    {(["percent", "fixed"] as const).map((type) => (
-                      <button
-                        key={type} type="button"
-                        onClick={() => patch({ discountType: type, discountValue: 0 })}
-                        className={cn(
-                          "px-2 py-1 rounded-md border text-[11px] font-medium",
-                          input.discountType === type
-                            ? "border-primary bg-primary/10 text-primary"
-                            : "border-border text-muted-foreground hover:bg-muted",
-                        )}
-                      >
-                        {type === "percent" ? "نسبة ٪" : "مبلغ ر.س"}
-                      </button>
-                    ))}
-                  </div>
-                </div>
-                <Input
-                  inputMode="decimal"
-                  value={input.discountValue || ""}
-                  placeholder="0"
-                  onChange={(e) =>
-                    patch({ discountValue: Number(e.target.value.replace(/[^\d.]/g, "")) || 0 })
-                  }
-                />
-                {input.discountType === "percent" && input.discountValue !== catalogue.defaultDiscountPercent && (
-                  <button
-                    type="button"
-                    className="text-[11px] text-primary underline mt-1.5"
-                    onClick={() => patch({ discountValue: catalogue.defaultDiscountPercent })}
-                  >
-                    رجّع الخصم المعتاد ({catalogue.defaultDiscountPercent}٪)
-                  </button>
-                )}
-              </div>
-
               <div className="px-5 py-3 border-t space-y-1.5 text-sm">
                 <div className="flex justify-between">
                   <span className="text-muted-foreground">قبل الخصم</span>
@@ -527,7 +465,7 @@ export default function PricingAdmin() {
                 )}
                 {quote.discountAmount > 0 && (
                   <div className="flex justify-between text-emerald-600">
-                    <span>الخصم ({discountPct}٪)</span>
+                    <span>الخصم ({catalogue.discountPercent}٪)</span>
                     <span className="tabular-nums">−{sar(quote.discountAmount)}</span>
                   </div>
                 )}
@@ -547,73 +485,6 @@ export default function PricingAdmin() {
                   <span className="tabular-nums">{sar(quote.deposit)}</span>
                 </div>
               </div>
-            </div>
-
-            {/* الربحية */}
-            <div className={cn(
-              "border rounded-xl p-5",
-              quote.cost.belowMinimum ? "border-red-300 bg-red-50" : "border-emerald-300 bg-emerald-50",
-            )}>
-              <div className="flex items-center gap-2 mb-3">
-                {quote.cost.belowMinimum
-                  ? <AlertTriangle className="h-4 w-4 text-red-600" />
-                  : <TrendingUp className="h-4 w-4 text-emerald-600" />}
-                <h2 className="font-bold text-sm">الربحية — داخلي فقط</h2>
-              </div>
-
-              <div className="grid grid-cols-2 gap-2 mb-3">
-                <div className="space-y-1">
-                  <Label htmlFor="workers" className="text-xs">عدد العمال</Label>
-                  <Input id="workers" inputMode="numeric" className="h-8" value={input.workers}
-                         onChange={(e) => patch({ workers: Math.max(1, Number(e.target.value.replace(/\D/g, "")) || 1) })} />
-                </div>
-                <div className="space-y-1">
-                  <Label htmlFor="hours" className="text-xs">عدد الساعات</Label>
-                  <Input id="hours" inputMode="decimal" className="h-8" value={input.hours || ""}
-                         onChange={(e) => patch({ hours: Number(e.target.value.replace(/[^\d.]/g, "")) || 0 })} />
-                </div>
-              </div>
-
-              <div className="space-y-1.5 text-sm">
-                <div className="flex justify-between">
-                  <span className="text-muted-foreground">العمالة</span>
-                  <span className="tabular-nums">{sar(quote.cost.labor)}</span>
-                </div>
-                <div className="flex justify-between">
-                  <span className="text-muted-foreground">النقل</span>
-                  <span className="tabular-nums">{sar(quote.cost.transport)}</span>
-                </div>
-                <div className="flex justify-between">
-                  <span className="text-muted-foreground">المواد</span>
-                  <span className="tabular-nums">{sar(quote.cost.supplies)}</span>
-                </div>
-                <div className="flex justify-between border-t pt-1.5 font-medium">
-                  <span>إجمالي التكلفة</span>
-                  <span className="tabular-nums">{sar(quote.cost.total)}</span>
-                </div>
-                <div className={cn(
-                  "flex justify-between font-bold",
-                  quote.cost.belowMinimum ? "text-red-700" : "text-emerald-700",
-                )}>
-                  <span>الربح</span>
-                  <span className="tabular-nums">{sar(quote.cost.profit)} ({marginPct}٪)</span>
-                </div>
-              </div>
-
-              {quote.cost.belowMinimum && (
-                <p className="text-xs text-red-700 mt-3 leading-relaxed">
-                  الهامش أقل من الحد المقبول ({Math.round(catalogue.cost.minMarginPercent * 100)}٪).
-                  راجع الخصم أو عدد الساعات قبل إرسال العرض.
-                </p>
-              )}
-              <p className="text-[11px] text-muted-foreground mt-2 leading-relaxed">
-                أجر الساعة {sar(quote.hourlyWage)} — مشتق من رواتب{" "}
-                {catalogue.cost.monthlyPayroll.toLocaleString("en-US")} ر.س شهرياً لفريق{" "}
-                {catalogue.cost.crewSize} عمال بنسبة استغلال{" "}
-                {Math.round(catalogue.cost.utilization * 100)}٪.
-                <br />
-                الهامش محسوب على الصافي بعد استبعاد الضريبة.
-              </p>
             </div>
 
             {/* الإرسال */}
@@ -636,8 +507,7 @@ export default function PricingAdmin() {
               </Button>
               <Button variant="ghost" className="w-full" disabled={quote.total <= 0}
                       onClick={() => copy(
-                        buildInternalSummary(catalogue, quote, customer,
-                          { workers: input.workers, hours: input.hours }),
+                        buildInternalSummary(catalogue, quote, customer),
                         "تم نسخ الملخص الداخلي")}>
                 <Copy className="h-4 w-4 ml-2" />
                 نسخ الملخص الداخلي

@@ -21,22 +21,6 @@ export function findItem(catalogue: Catalogue, code: string) {
 }
 
 /**
- * أجر ساعة العامل الواحد، مشتقاً من الرواتب الشهرية الفعلية.
- *
- * القسمة على الساعات المُنتِجة فقط (لا كل الساعات المدفوعة): الراتب يُدفع
- * كاملاً سواء كان العامل في موقع أو ينتظر، فتحميل الساعة المُباعة نصيبها من
- * وقت الانتظار هو ما يعطي تكلفة صادقة.
- */
-export function hourlyWage(catalogue: Catalogue): number {
-  const c = catalogue.cost;
-  // ساعات العمل المُنتِجة التي يشتريها إجمالي الراتب الشهري
-  const productiveHours =
-    c.crewSize * c.workingDaysPerMonth * c.hoursPerDay * c.utilization;
-  if (productiveHours <= 0) return 0;
-  return c.monthlyPayroll / productiveHours;
-}
-
-/**
  * أسعار القائمة شاملة ضريبة القيمة المضافة، فالضريبة تُستخرج من داخل المبلغ
  * ولا تُضاف فوقه: الصافي = المبلغ ÷ (1 + نسبة الضريبة).
  */
@@ -67,11 +51,7 @@ export function calculateQuote(catalogue: Catalogue, input: QuoteInput): QuoteRe
   );
   const fixedTotal = round(listTotal - discountableTotal);
 
-  const rawDiscount =
-    input.discountType === "percent"
-      ? discountableTotal * (Math.max(0, input.discountValue) / 100)
-      : Math.max(0, input.discountValue);
-  const discountAmount = round(Math.min(rawDiscount, discountableTotal));
+  const discountAmount = round(discountableTotal * (catalogue.discountPercent / 100));
 
   // ما يدفعه العميل فعلاً — شامل الضريبة
   const total = round(listTotal - discountAmount);
@@ -81,35 +61,15 @@ export function calculateQuote(catalogue: Catalogue, input: QuoteInput): QuoteRe
     : total;
   const vatAmount = round(total - netBeforeVat);
 
-  const workers = Math.max(1, input.workers || 1);
-  const hours = Math.max(0, input.hours || 0);
-  const wage = hourlyWage(catalogue);
-  const labor = round(workers * hours * wage);
-  const supplies = round(netBeforeVat * catalogue.cost.suppliesPercent);
-  const costTotal = round(labor + catalogue.cost.transport + supplies);
-  const profit = round(netBeforeVat - costTotal);
-  // الضريبة ليست إيراداً للشركة، فالهامش يُحسب على الصافي بعد استبعادها
-  const marginPercent = netBeforeVat > 0 ? profit / netBeforeVat : 0;
-
   return {
     lines,
     listTotal,
     discountableTotal,
     fixedTotal,
-    hourlyWage: round(wage),
     discountAmount,
     total,
     netBeforeVat,
     vatAmount,
     deposit: round(total * catalogue.depositPercent),
-    cost: {
-      labor,
-      transport: catalogue.cost.transport,
-      supplies,
-      total: costTotal,
-      profit,
-      marginPercent,
-      belowMinimum: netBeforeVat > 0 && marginPercent < catalogue.cost.minMarginPercent,
-    },
   };
 }

@@ -21,27 +21,13 @@ export interface CatalogueGroup {
   items: CatalogueItem[];
 }
 
-export interface CostRates {
-  /** إجمالي رواتب الفريق شهرياً */
-  monthlyPayroll: number;
-  crewSize: number;
-  workingDaysPerMonth: number;
-  hoursPerDay: number;
-  /** نسبة الساعات المقضية فعلاً في المواقع من الساعات المدفوعة */
-  utilization: number;
-  transport: number;
-  suppliesPercent: number;
-  minMarginPercent: number;
-  defaultWorkers: number;
-}
-
 export interface Catalogue {
   version: string;
   vatRate: number;
   pricesIncludeVat: boolean;
-  defaultDiscountPercent: number;
+  /** خصم ثابت يُطبَّق على كل عرض */
+  discountPercent: number;
   depositPercent: number;
-  cost: CostRates;
   groups: CatalogueGroup[];
 }
 
@@ -53,10 +39,6 @@ export interface SelectedItem {
 
 export interface QuoteInput {
   items: SelectedItem[];
-  discountType: "percent" | "fixed";
-  discountValue: number;
-  workers: number;
-  hours: number;
 }
 
 export interface QuoteLine {
@@ -85,16 +67,4 @@ export interface QuoteResult {
   netBeforeVat: number;
   vatAmount: number;
   deposit: number;
-  /** أجر ساعة العامل الواحد المشتق من الرواتب */
-  hourlyWage: number;
-  cost: {
-    labor: number;
-    transport: number;
-    supplies: number;
-    total: number;
-    profit: number;
-    /** هامش الربح كنسبة من الصافي بعد استبعاد الضريبة */
-    marginPercent: number;
-    belowMinimum: boolean;
-  };
 }
