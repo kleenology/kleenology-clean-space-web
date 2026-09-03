@@ -18,6 +18,8 @@ import {
 import type { Catalogue, QuoteInput } from "@/lib/pricing/types";
 import { InspectionForm } from "@/components/pricing/InspectionForm";
 
+// التوكن في localStorage لا sessionStorage: الأخير ينمسح بإغلاق التبويب،
+// فيضطر المشرف لكتابة كلمة المرور كل مرة يفتح فيها الأداة على جواله.
 const TOKEN_KEY = "kleenology_pricing_token";
 
 const sar = (value: number) => {
@@ -174,14 +176,14 @@ export default function PricingAdmin() {
   const [showCodes, setShowCodes] = useState(false);
 
   const startSession = useCallback((newToken: string, newCatalogue: Catalogue) => {
-    sessionStorage.setItem(TOKEN_KEY, newToken);
+    localStorage.setItem(TOKEN_KEY, newToken);
     setToken(newToken);
     setCatalogue(newCatalogue);
     setInput((current) => current ?? emptyInput);
   }, []);
 
   const endSession = useCallback(() => {
-    sessionStorage.removeItem(TOKEN_KEY);
+    localStorage.removeItem(TOKEN_KEY);
     setToken(null);
     setCatalogue(null);
     setInput(null);
@@ -190,7 +192,7 @@ export default function PricingAdmin() {
 
   // استعادة الجلسة عند إعادة التحميل — الخادم هو من يقرر صلاحية التوكن
   useEffect(() => {
-    const saved = sessionStorage.getItem(TOKEN_KEY);
+    const saved = localStorage.getItem(TOKEN_KEY);
     if (!saved) {
       setRestoring(false);
       return;
@@ -199,7 +201,7 @@ export default function PricingAdmin() {
     fetch("/api/pricing/catalogue", { headers: { Authorization: `Bearer ${saved}` } })
       .then((res) => (res.ok ? res.json() : Promise.reject(new Error("unauthorized"))))
       .then((data) => { if (!cancelled) startSession(saved, data.catalogue); })
-      .catch(() => { if (!cancelled) sessionStorage.removeItem(TOKEN_KEY); })
+      .catch(() => { if (!cancelled) localStorage.removeItem(TOKEN_KEY); })
       .finally(() => { if (!cancelled) setRestoring(false); });
     return () => { cancelled = true; };
   }, [startSession]);
@@ -350,12 +352,12 @@ export default function PricingAdmin() {
             </div>
             <div className="flex items-center gap-2">
               {mode === "quote" && (
-                <Button variant="ghost" size="sm" onClick={resetForm}>
+                <Button variant="ghost" size="sm" onClick={resetForm} aria-label="تفريغ">
                   <RotateCcw className="h-4 w-4 sm:ml-1.5" />
                   <span className="hidden sm:inline">تفريغ</span>
                 </Button>
               )}
-              <Button variant="outline" size="sm" onClick={endSession}>
+              <Button variant="outline" size="sm" onClick={endSession} aria-label="خروج">
                 <LogOut className="h-4 w-4 sm:ml-1.5" />
                 <span className="hidden sm:inline">خروج</span>
               </Button>

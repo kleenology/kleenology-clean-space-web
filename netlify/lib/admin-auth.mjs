@@ -3,7 +3,14 @@
 
 import crypto from "node:crypto";
 
-const SESSION_HOURS = 12;
+// الجلسة طويلة عمداً: المشرف يفتح الأداة عدة مرات يومياً في الموقع، وكتابة
+// كلمة المرور كل مرة على الجوال متعبة. يمكن ضبطها بمتغير PRICING_SESSION_DAYS.
+const DEFAULT_SESSION_DAYS = 30;
+
+function sessionDays() {
+  const raw = Number(process.env.PRICING_SESSION_DAYS);
+  return Number.isFinite(raw) && raw > 0 ? raw : DEFAULT_SESSION_DAYS;
+}
 const MAX_ATTEMPTS = 8;          // محاولات فاشلة مسموحة لكل عنوان IP
 const ATTEMPT_WINDOW_MS = 10 * 60 * 1000;
 
@@ -46,7 +53,7 @@ export function checkPassword(candidate) {
 }
 
 export function createToken() {
-  const expiresAt = Date.now() + SESSION_HOURS * 60 * 60 * 1000;
+  const expiresAt = Date.now() + sessionDays() * 24 * 60 * 60 * 1000;
   const payload = Buffer.from(JSON.stringify({ exp: expiresAt })).toString("base64url");
   return { token: `${payload}.${sign(payload)}`, expiresAt };
 }
