@@ -207,6 +207,8 @@ export default function PricingAdmin() {
 
   /* ——— معالجات ——— */
 
+  const marginPct = Math.round(quote.cost.marginPercent * 100);
+
   const qtyOf = (code: string) => input.items.find((i) => i.code === code)?.qty ?? 0;
 
   const setQty = (code: string, qty: number) => {
@@ -251,7 +253,6 @@ export default function PricingAdmin() {
     window.open(`https://wa.me/${number}?text=${encodeURIComponent(customerQuote())}`, "_blank");
   };
 
-  const marginPct = Math.round(quote.cost.marginPercent * 100);
   const discountPct = input.discountType === "percent"
     ? input.discountValue
     : quote.discountableTotal > 0
@@ -322,6 +323,38 @@ export default function PricingAdmin() {
                 <LogOut className="h-4 w-4 sm:ml-1.5" />
                 <span className="hidden sm:inline">خروج</span>
               </Button>
+            </div>
+          </div>
+
+          {/* شريط السعر — يبقى ظاهراً مهما نزل المشرف في الكتالوج */}
+          <div className="bg-primary/10 border-t">
+            <div className="max-w-6xl mx-auto px-4 py-2.5 flex items-center justify-between gap-3">
+              <div className="flex items-baseline gap-2 min-w-0">
+                <span className="text-sm font-bold shrink-0">الإجمالي</span>
+                <span className="text-xl font-bold text-primary tabular-nums">
+                  {sar(quote.total)}
+                </span>
+                {quote.discountAmount > 0 && (
+                  <span className="text-xs text-muted-foreground line-through tabular-nums hidden sm:inline">
+                    {sar(quote.listTotal)}
+                  </span>
+                )}
+              </div>
+              <div className="flex items-center gap-2 text-[11px] text-muted-foreground shrink-0">
+                {quote.lines.length > 0 && <span>{quote.lines.length} بند</span>}
+                {quote.total > 0 && (
+                  <span
+                    className={cn(
+                      "px-1.5 py-0.5 rounded font-semibold",
+                      quote.cost.belowMinimum
+                        ? "bg-red-100 text-red-700"
+                        : "bg-emerald-100 text-emerald-700",
+                    )}
+                  >
+                    هامش {marginPct}٪
+                  </span>
+                )}
+              </div>
             </div>
           </div>
         </header>
@@ -412,7 +445,7 @@ export default function PricingAdmin() {
           </div>
 
           {/* ——— عمود النتيجة ——— */}
-          <aside className="lg:sticky lg:top-20 space-y-4">
+          <aside className="lg:sticky lg:top-32 space-y-4">
             <div className="bg-card border rounded-xl overflow-hidden">
               <div className="p-5">
                 <h2 className="font-bold mb-3">

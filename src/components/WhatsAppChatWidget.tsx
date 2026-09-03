@@ -19,8 +19,9 @@ type QuickReply = {
 const WHATSAPP_NUMBER = "966537519929";
 
 // صفحات الإعلانات تحمل أزرار واتساب واتصال خاصة بها في متن الصفحة،
-// والودجت يجلس فوقها في نفس الزاوية ويغطيها.
-const HIDDEN_ON_PATHS = ["/offer"];
+// والودجت يجلس فوقها في نفس الزاوية ويغطيها. وصفحة التسعير داخلية للمشرف
+// لا للعملاء، والودجت يغطي فيها الإجمالي وأزرار الإرسال.
+const HIDDEN_ON_PATHS = ["/offer", "/admin/pricing"];
 
 const fmt = () =>
   new Date().toLocaleTimeString("ar-SA", { hour: "2-digit", minute: "2-digit" });
