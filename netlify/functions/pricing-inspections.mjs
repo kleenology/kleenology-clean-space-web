@@ -1,22 +1,12 @@
 // سجل المعاينات الميدانية — يُحفظ في Netlify Blobs
 // كل العمليات تتطلب جلسة مشرف صالحة؛ لا شيء منها متاح للعامة.
 
-import { getStore } from "@netlify/blobs";
 import { isConfigured, requireSession, jsonResponse } from "../lib/admin-auth.mjs";
+import {
+  recordStore, recentKeys, summarizeKeys, newKey, MAX_BODY_BYTES,
+} from "../lib/blob-records.mjs";
 
 const STORE = "pricing-inspections";
-const MAX_LIST = 50;
-const MAX_BODY_BYTES = 64 * 1024;
-
-// المفتاح يبدأ بالطابع الزمني، فترتيب المفاتيح تنازلياً = الأحدث أولاً
-// بلا حاجة لقراءة كل معاينة لمعرفة تاريخها.
-function newKey() {
-  return `${new Date().toISOString()}-${Math.random().toString(36).slice(2, 8)}`;
-}
-
-function store() {
-  return getStore({ name: STORE, consistency: "strong" });
-}
 
 /** ملخّص خفيف لعرض القائمة بلا تحميل التفاصيل كاملة */
 function summarize(key, record) {
@@ -51,7 +41,7 @@ export default async (request) => {
   const id = url.searchParams.get("id");
 
   try {
-    const blobs = store();
+    const blobs = recordStore(STORE);
 
     if (request.method === "GET") {
       if (id) {
@@ -60,23 +50,11 @@ export default async (request) => {
         return jsonResponse({ inspection: { ...record, id } });
       }
 
-      const { blobs: entries } = await blobs.list();
-      const keys = entries
-        .map((entry) => entry.key)
-        .sort((a, b) => b.localeCompare(a))
-        .slice(0, MAX_LIST);
-
-      const records = await Promise.all(
-        keys.map(async (key) => {
-          const record = await blobs.get(key, { type: "json" }).catch(() => null);
-          return record ? summarize(key, record) : null;
-        }),
-      );
-
+      const { keys, total } = await recentKeys(blobs);
       return jsonResponse({
-        inspections: records.filter(Boolean),
-        total: entries.length,
-        truncated: entries.length > MAX_LIST,
+        inspections: await summarizeKeys(blobs, keys, summarize),
+        total,
+        truncated: total > keys.length,
       });
     }
 
