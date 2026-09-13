@@ -17,6 +17,7 @@ import {
 } from "@/lib/pricing/quoteMessage";
 import type { Catalogue, QuoteInput } from "@/lib/pricing/types";
 import { LoginCard } from "@/components/pricing/LoginCard";
+import { CustomerSearch } from "@/components/pricing/CustomerSearch";
 import { InspectionForm } from "@/components/pricing/InspectionForm";
 import { QualityControlForm } from "@/components/pricing/QualityControlForm";
 
@@ -72,6 +73,7 @@ export default function PricingAdmin() {
   // لا وضع مختاراً عند الدخول — المشرف يقرر أولاً ماذا يفعل
   const [mode, setMode] = useState<"quote" | "inspection" | "qc" | null>(null);
   const [openGroup, setOpenGroup] = useState<string | null>(null);
+  const [openInspectionId, setOpenInspectionId] = useState<string | null>(null);
   const openPanelRef = useRef<HTMLElement | null>(null);
   const [showCodes, setShowCodes] = useState(false);
 
@@ -319,7 +321,17 @@ export default function PricingAdmin() {
         </header>
 
         {mode === null ? (
-          <main className="max-w-4xl mx-auto px-4 pt-10">
+          <main className="max-w-4xl mx-auto px-4 pt-8 space-y-6">
+            {/* البحث أولاً: أكثر ما يُفتح له هذا الشاشة شكوى تحتاج ملف عميل */}
+            <CustomerSearch
+              token={token}
+              onOpenInspection={(inspectionId) => {
+                setOpenInspectionId(inspectionId);
+                setMode("inspection");
+              }}
+            />
+
+            <div>
             <p className="text-center text-muted-foreground mb-6">وش تبي تسوي؟</p>
             <div className="grid gap-3 sm:grid-cols-3">
               {([
@@ -352,10 +364,11 @@ export default function PricingAdmin() {
                 </button>
               ))}
             </div>
+            </div>
           </main>
         ) : mode === "inspection" ? (
           <main className="max-w-6xl mx-auto px-4 pt-6">
-            <InspectionForm token={token} />
+            <InspectionForm token={token} openId={openInspectionId} />
           </main>
         ) : mode === "qc" ? (
           <main className="max-w-6xl mx-auto px-4 pt-6">

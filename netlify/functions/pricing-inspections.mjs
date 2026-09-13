@@ -3,7 +3,7 @@
 
 import { isConfigured, requireSession, jsonResponse } from "../lib/admin-auth.mjs";
 import {
-  recordStore, recentKeys, summarizeKeys, newKey, MAX_BODY_BYTES,
+  recordStore, recentKeys, summarizeKeys, searchRecords, newKey, MAX_BODY_BYTES,
 } from "../lib/blob-records.mjs";
 
 const STORE = "pricing-inspections";
@@ -14,6 +14,7 @@ function summarize(key, record) {
   return {
     id: key,
     customerName: record?.customerName ?? "",
+    phone: record?.phone ?? "",
     location: record?.location ?? "",
     date: record?.date ?? "",
     time: record?.time ?? "",
@@ -39,6 +40,7 @@ export default async (request) => {
 
   const url = new URL(request.url);
   const id = url.searchParams.get("id");
+  const query = url.searchParams.get("q");
 
   try {
     const blobs = recordStore(STORE);
@@ -48,6 +50,11 @@ export default async (request) => {
         const record = await blobs.get(id, { type: "json" });
         if (!record) return jsonResponse({ error: "not_found" }, 404);
         return jsonResponse({ inspection: { ...record, id } });
+      }
+
+      if (query?.trim()) {
+        const { matches, total } = await searchRecords(blobs, query, summarize);
+        return jsonResponse({ inspections: matches, total, searched: true });
       }
 
       const { keys, total } = await recentKeys(blobs);

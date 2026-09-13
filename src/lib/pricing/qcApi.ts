@@ -6,6 +6,7 @@ const PHOTO_ENDPOINT = "/api/pricing/qc-photo";
 export interface SavedCheckSummary {
   id: string;
   customerName: string;
+  phone: string;
   location: string;
   date: string;
   supervisor: string;
@@ -50,6 +51,13 @@ async function call<T>(token: string, url: string, init: RequestInit = {}): Prom
 
 export function listChecks(token: string) {
   return call<{ checks: SavedCheckSummary[]; total: number; truncated: boolean }>(token, ENDPOINT);
+}
+
+/** يبحث في كل الفحوصات المحفوظة لا آخر خمسين */
+export function searchChecks(token: string, query: string) {
+  return call<{ checks: SavedCheckSummary[]; total: number }>(
+    token, `${ENDPOINT}?q=${encodeURIComponent(query)}`,
+  );
 }
 
 export function loadCheck(token: string, id: string) {
