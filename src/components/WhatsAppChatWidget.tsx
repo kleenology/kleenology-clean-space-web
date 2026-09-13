@@ -19,9 +19,12 @@ type QuickReply = {
 const WHATSAPP_NUMBER = "966537519929";
 
 // صفحات الإعلانات تحمل أزرار واتساب واتصال خاصة بها في متن الصفحة،
-// والودجت يجلس فوقها في نفس الزاوية ويغطيها. وصفحة التسعير داخلية للمشرف
-// لا للعملاء، والودجت يغطي فيها الإجمالي وأزرار الإرسال.
-const HIDDEN_ON_PATHS = ["/offer", "/admin/pricing"];
+// والودجت يجلس فوقها في نفس الزاوية ويغطيها.
+const HIDDEN_ON_PATHS = ["/offer"];
+
+// كل ما تحت /admin/ صفحات داخلية لا يفتحها عميل، والودجت يغطي فيها
+// الأزرار والأرقام. البادئة تشمل الصفحات الفرعية تلقائياً.
+const HIDDEN_PREFIXES = ["/admin/"];
 
 const fmt = () =>
   new Date().toLocaleTimeString("ar-SA", { hour: "2-digit", minute: "2-digit" });
@@ -196,6 +199,7 @@ export const WhatsAppChatWidget = () => {
 
   // بعد كل الخطّافات، حتى لا يتغير ترتيب استدعائها بين الصفحات
   if (HIDDEN_ON_PATHS.includes(pathname)) return null;
+  if (HIDDEN_PREFIXES.some((prefix) => pathname.startsWith(prefix))) return null;
 
   return (
     <div className="fixed bottom-6 left-6 z-50 flex flex-col items-start gap-3">

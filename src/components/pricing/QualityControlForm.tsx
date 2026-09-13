@@ -4,22 +4,23 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import {
-  Camera, Copy, FileText, Loader2, MessageCircle, RefreshCw, Save, Trash2, X,
+  Camera, Copy, FileText, Link2, Loader2, PenLine, RefreshCw, Save, Trash2, X,
 } from "lucide-react";
 import { toast } from "sonner";
 import { cn } from "@/lib/utils";
 import { CHECKLIST, VERDICTS, type Verdict } from "@/lib/pricing/qcChecklist";
 import {
-  buildCustomerReport, buildInternalReport, emptyCheck, scoreOf,
+  buildManagementReport, emptyCheck, reportUrl, scoreOf,
   type QualityCheck,
 } from "@/lib/pricing/qcReport";
 import {
-  deleteCheck, deletePhoto, listChecks, loadCheck, saveCheck, uploadPhoto,
+  deleteCheck, deletePhoto, listChecks, loadCheck, saveCheck, uploadBlob, uploadPhoto,
   QcError, type SavedCheckSummary,
 } from "@/lib/pricing/qcApi";
-import { toWhatsAppNumber } from "@/lib/pricing/quoteMessage";
 import { today, now } from "@/lib/pricing/inspectionReport";
 import { AuthImage } from "./AuthImage";
+import { PhotoLightbox } from "./PhotoLightbox";
+import { SignaturePad } from "./SignaturePad";
 
 const SUPERVISOR_KEY = "kleenology_supervisor_name";
 
@@ -49,6 +50,9 @@ export function QualityControlForm({ token }: { token: string }) {
   const [showSaved, setShowSaved] = useState(false);
   const [saved, setSaved] = useState<SavedCheckSummary[] | null>(null);
   const [loadingList, setLoadingList] = useState(false);
+  const [viewerIndex, setViewerIndex] = useState<number | null>(null);
+  const [signing, setSigning] = useState(false);
+  const [signPadOpen, setSignPadOpen] = useState(false);
   const fileRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
@@ -180,16 +184,36 @@ export function QualityControlForm({ token }: { token: string }) {
     }
   };
 
-  const sendToCustomer = () => {
-    const number = toWhatsAppNumber(data.phone);
-    const text = encodeURIComponent(buildCustomerReport(data));
-    window.open(number ? `https://wa.me/${number}?text=${text}` : `https://wa.me/?text=${text}`, "_blank");
+  const saveSignature = async (blob: Blob) => {
+    setSigning(true);
+    try {
+      const { key } = await uploadBlob(token, blob, "image/png");
+      patch({ signatureKey: key, signedAt: new Date().toISOString() });
+      setSignPadOpen(false);
+      toast.success("اعتُمد توقيع العميل");
+    } catch (error) {
+      toast.error(error instanceof QcError ? error.message : "تعذّر حفظ التوقيع");
+    } finally {
+      setSigning(false);
+    }
+  };
+
+  const clearSignature = () => {
+    const key = data.signatureKey;
+    patch({ signatureKey: undefined, signedAt: undefined });
+    if (key) deletePhoto(token, key).catch(() => {});
+  };
+
+  const copyLink = () => {
+    if (!savedId) return;
+    copy(reportUrl(savedId), "تم نسخ رابط التقرير");
   };
 
   const reset = () => {
     setData(emptyCheck(data.supervisor, today(), now()));
     setSavedId(null);
     setOpenSection(CHECKLIST[0]?.key ?? null);
+    setViewerIndex(null);
     toast.success("تم تفريغ الفحص");
   };
 
@@ -361,14 +385,18 @@ export function QualityControlForm({ token }: { token: string }) {
         </Button>
         <p className="text-[11px] text-muted-foreground mt-2">
           تُصغَّر الصور على جوالك قبل الرفع، فلا تستهلك باقتك ولا تبطئ الحفظ.
+          اضغط أي صورة لتكبيرها.
         </p>
 
         {data.photos.length > 0 && (
           <div className="grid grid-cols-3 gap-2 mt-3">
-            {data.photos.map((photo) => (
+            {data.photos.map((photo, index) => (
               <div key={photo.key} className="relative aspect-square rounded-lg overflow-hidden border">
-                <AuthImage token={token} photoKey={photo.key} alt="صورة الفحص"
-                           className="w-full h-full object-cover" />
+                <button type="button" onClick={() => setViewerIndex(index)}
+                        className="block w-full h-full" aria-label={`فتح الصورة ${index + 1}`}>
+                  <AuthImage token={token} photoKey={photo.key} alt="صورة الفحص"
+                             className="w-full h-full object-cover" />
+                </button>
                 <button type="button" onClick={() => removePhoto(photo.key)}
                         className="absolute top-1 left-1 w-6 h-6 rounded-full bg-black/60 text-white flex items-center justify-center"
                         aria-label="حذف الصورة">
@@ -377,6 +405,35 @@ export function QualityControlForm({ token }: { token: string }) {
               </div>
             ))}
           </div>
+        )}
+      </Section>
+
+      <Section title="توقيع العميل">
+        {data.signatureKey ? (
+          <div className="space-y-2">
+            <div className="rounded-lg border bg-white overflow-hidden">
+              <AuthImage token={token} photoKey={data.signatureKey} alt="توقيع العميل"
+                         className="w-full h-40 object-contain" />
+            </div>
+            <div className="flex items-center justify-between text-[11px] text-muted-foreground">
+              <span className="text-emerald-700 font-medium">✅ مُعتمد</span>
+              <button type="button" onClick={clearSignature} className="underline hover:text-foreground">
+                إعادة التوقيع
+              </button>
+            </div>
+          </div>
+        ) : (
+          <>
+            <p className="text-xs text-muted-foreground mb-3 flex items-center gap-1.5">
+              <PenLine className="h-3.5 w-3.5" />
+              أعطِ الجوال للعميل ليوقّع بعد اطلاعه على الفحص — اختياري.
+            </p>
+            <Button type="button" variant="outline" className="w-full h-12"
+                    onClick={() => setSignPadOpen(true)}>
+              <PenLine className="h-4 w-4 ml-2" />
+              فتح شاشة التوقيع
+            </Button>
+          </>
         )}
       </Section>
 
@@ -415,22 +472,44 @@ export function QualityControlForm({ token }: { token: string }) {
           </div>
         )}
 
-        <Button className="w-full" onClick={sendToCustomer} disabled={score.checked === 0}>
-          <MessageCircle className="h-4 w-4 ml-2" />
-          إرسال تقرير العميل
+        <Button className="w-full" onClick={save} disabled={saving}>
+          {saving ? <Loader2 className="h-4 w-4 ml-2 animate-spin" /> : <Save className="h-4 w-4 ml-2" />}
+          {savedId ? "تحديث الفحص" : "حفظ الفحص"}
         </Button>
         <div className="grid grid-cols-2 gap-2">
-          <Button variant="outline" disabled={score.checked === 0}
-                  onClick={() => copy(buildInternalReport(data), "تم نسخ التقرير الداخلي")}>
-            <Copy className="h-4 w-4 ml-2" />
-            تقرير داخلي
+          <Button variant="outline" onClick={copyLink} disabled={!savedId}>
+            <Link2 className="h-4 w-4 ml-2" />
+            نسخ الرابط
           </Button>
-          <Button variant="outline" onClick={save} disabled={saving}>
-            {saving ? <Loader2 className="h-4 w-4 ml-2 animate-spin" /> : <Save className="h-4 w-4 ml-2" />}
-            {savedId ? "تحديث" : "حفظ"}
+          <Button variant="outline" disabled={score.checked === 0}
+                  onClick={() => copy(buildManagementReport(data), "تم نسخ تقرير الإدارة")}>
+            <Copy className="h-4 w-4 ml-2" />
+            نسخ التقرير
           </Button>
         </div>
+        {!savedId && (
+          <p className="text-[11px] text-muted-foreground text-center">
+            احفظ الفحص أولاً ليصير له رابط.
+          </p>
+        )}
       </div>
+      {signPadOpen && (
+        <SignaturePad
+          onSave={saveSignature}
+          onCancel={() => setSignPadOpen(false)}
+          saving={signing}
+        />
+      )}
+
+      {viewerIndex !== null && (
+        <PhotoLightbox
+          token={token}
+          keys={data.photos.map((p) => p.key)}
+          index={viewerIndex}
+          onClose={() => setViewerIndex(null)}
+          onIndexChange={setViewerIndex}
+        />
+      )}
     </div>
   );
 }

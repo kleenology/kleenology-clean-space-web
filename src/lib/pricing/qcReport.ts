@@ -24,6 +24,9 @@ export interface QualityCheck {
   results: QcResults;
   photos: QcPhoto[];
   notes: string;
+  /** مفتاح صورة توقيع العميل — اختياري، فقد لا يكون العميل حاضراً */
+  signatureKey?: string;
+  signedAt?: string;
   savedAt?: string;
 }
 
@@ -77,51 +80,12 @@ const dash = (value: string) => (value.trim() ? value.trim() : "—");
 const verdictLabel = (verdict: Verdict) =>
   VERDICTS.find((v) => v.key === verdict)?.label ?? verdict;
 
-/**
- * تقرير العميل — يؤكد أن الفحص تم ونتيجته، بلا سرد كل بند.
- * البنود المعلّقة تُذكر لأن العميل يحق له يعرف ما الذي سيُعاد.
- */
-export function buildCustomerReport(check: QualityCheck): string {
-  const score = scoreOf(check);
-  const parts: string[] = [];
-
-  parts.push("✨ *تقرير فحص الجودة — كلينولوجي*");
-  parts.push("");
-  if (check.customerName.trim()) parts.push(`العميل: ${check.customerName.trim()}`);
-  if (check.location.trim()) parts.push(`الموقع: ${check.location.trim()}`);
-  parts.push(`تاريخ الفحص: ${dash(check.date)} ${check.time.trim()}`.trim());
-  parts.push("");
-  parts.push(`تم فحص ${score.checked} بنداً، اجتاز منها ${score.passed} — *${score.percent}٪*`);
-
-  if (score.pending.length > 0) {
-    parts.push("");
-    parts.push("🔧 *بنود سنعيد العمل عليها:*");
-    for (const item of score.pending) {
-      parts.push(`  • ${item.label}`);
-    }
-  } else {
-    parts.push("");
-    parts.push("✅ كل البنود مقبولة — المكان جاهز للتسليم.");
-  }
-
-  if (check.notes.trim()) {
-    parts.push("");
-    parts.push(`📝 ${check.notes.trim()}`);
-  }
-
-  parts.push("");
-  parts.push(`المشرف: ${dash(check.supervisor)}`);
-  parts.push("شكراً لثقتكم بكلينولوجي 🤍");
-
-  return parts.join("\n");
-}
-
-/** تقرير داخلي — كل بند بحكمه وملاحظته، لمتابعة الفريق */
-export function buildInternalReport(check: QualityCheck): string {
+/** تقرير الإدارة — كل بند بحكمه وملاحظته، لمتابعة الفريق */
+export function buildManagementReport(check: QualityCheck): string {
   const score = scoreOf(check);
   const lines: string[] = [];
 
-  lines.push("🔒 فحص جودة — تقرير داخلي");
+  lines.push("🔒 فحص جودة — تقرير الإدارة");
   lines.push(`العميل: ${dash(check.customerName)} | ${dash(check.phone)}`);
   lines.push(`الموقع: ${dash(check.location)}`);
   lines.push(`التاريخ: ${dash(check.date)} ${check.time.trim()}`.trim());
@@ -131,6 +95,7 @@ export function buildInternalReport(check: QualityCheck): string {
     `النتيجة: ${score.passed} مقبول · ${score.redo} يحتاج إعادة · ${score.missed} لم يُنفَّذ — ${score.percent}٪`,
   );
   if (check.photos.length > 0) lines.push(`الصور المرفقة: ${check.photos.length}`);
+  lines.push(check.signatureKey ? "توقيع العميل: مُعتمد ✅" : "توقيع العميل: لم يُوقَّع");
 
   for (const section of CHECKLIST) {
     const rows = section.items
@@ -175,4 +140,9 @@ export function emptyCheck(supervisor = "", date = "", time = ""): QualityCheck 
     photos: [],
     notes: "",
   };
+}
+
+/** رابط صفحة التقرير الكامل — محمي بنفس كلمة مرور الأداة */
+export function reportUrl(id: string): string {
+  return `${window.location.origin}/admin/pricing/qc/${encodeURIComponent(id)}`;
 }

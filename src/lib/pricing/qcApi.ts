@@ -104,13 +104,18 @@ export async function compressImage(file: File): Promise<Blob> {
   return blob ?? file;
 }
 
-export async function uploadPhoto(token: string, file: File) {
-  const blob = await compressImage(file);
+/** يرفع بيانات صورة جاهزة — يستخدمه التوقيع الذي لا يحتاج ضغطاً */
+export function uploadBlob(token: string, blob: Blob, type: string) {
   return call<{ key: string; bytes: number }>(token, PHOTO_ENDPOINT, {
     method: "POST",
-    headers: { "Content-Type": blob.type || "image/jpeg" },
+    headers: { "Content-Type": type },
     body: blob,
   });
+}
+
+export async function uploadPhoto(token: string, file: File) {
+  const blob = await compressImage(file);
+  return uploadBlob(token, blob, blob.type || "image/jpeg");
 }
 
 export function deletePhoto(token: string, key: string) {
