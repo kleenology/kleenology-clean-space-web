@@ -319,9 +319,9 @@ export default function PricingAdmin() {
         </header>
 
         {mode === null ? (
-          <main className="max-w-md mx-auto px-4 pt-10">
+          <main className="max-w-4xl mx-auto px-4 pt-10">
             <p className="text-center text-muted-foreground mb-6">وش تبي تسوي؟</p>
-            <div className="space-y-3">
+            <div className="grid gap-3 sm:grid-cols-3">
               {([
                 {
                   key: "quote", Icon: Calculator, label: "تسعير",
@@ -340,7 +340,7 @@ export default function PricingAdmin() {
                   key={key}
                   type="button"
                   onClick={() => setMode(key)}
-                  className="w-full text-right bg-card border rounded-xl p-5 hover:border-primary hover:bg-primary/5 transition-colors"
+                  className="w-full h-full text-right bg-card border rounded-xl p-5 hover:border-primary hover:bg-primary/5 transition-colors"
                 >
                   <div className="flex items-center gap-3 mb-1.5">
                     <div className="w-10 h-10 rounded-lg bg-primary/10 text-primary flex items-center justify-center shrink-0">
@@ -354,11 +354,11 @@ export default function PricingAdmin() {
             </div>
           </main>
         ) : mode === "inspection" ? (
-          <main className="max-w-2xl mx-auto px-4 pt-6">
+          <main className="max-w-6xl mx-auto px-4 pt-6">
             <InspectionForm token={token} />
           </main>
         ) : mode === "qc" ? (
-          <main className="max-w-2xl mx-auto px-4 pt-6">
+          <main className="max-w-6xl mx-auto px-4 pt-6">
             <QualityControlForm token={token} />
           </main>
         ) : (

@@ -109,7 +109,7 @@ export default function QcReport() {
       {seo}
       <div dir="rtl" className="min-h-screen bg-muted/30 pb-16">
         <header className="bg-card border-b sticky top-0 z-20">
-          <div className="max-w-2xl mx-auto px-4 h-16 flex items-center justify-between gap-3">
+          <div className="max-w-5xl mx-auto px-4 h-16 flex items-center justify-between gap-3">
             <div className="flex items-center gap-2.5 min-w-0">
               <div className="w-9 h-9 rounded-lg bg-primary/10 text-primary flex items-center justify-center shrink-0">
                 <ShieldCheck className="h-5 w-5" />
@@ -127,7 +127,8 @@ export default function QcReport() {
           </div>
         </header>
 
-        <main className="max-w-2xl mx-auto px-4 pt-6 space-y-4">
+        <main className="max-w-5xl mx-auto px-4 pt-6 space-y-4">
+          <div className="grid gap-4 md:grid-cols-[220px_1fr] md:items-start">
           {/* النتيجة */}
           <div className="bg-card border rounded-xl p-5 text-center">
             <div className={cn(
@@ -159,6 +160,7 @@ export default function QcReport() {
               ))}
             </dl>
           </section>
+          </div>
 
           {score.pending.length > 0 && (
             <section className="border border-amber-300 bg-amber-50 rounded-xl p-5">
@@ -183,7 +185,7 @@ export default function QcReport() {
             return (
               <section key={section.key} className="bg-card border rounded-xl p-5">
                 <h2 className="font-bold mb-3">{section.title}</h2>
-                <ul className="space-y-1.5">
+                <ul className="grid gap-1.5 md:grid-cols-2">
                   {rows.map(({ item, result }) => {
                     const verdict = VERDICTS.find((v) => v.key === result!.verdict);
                     return (
@@ -213,7 +215,7 @@ export default function QcReport() {
           {photoKeys.length > 0 && (
             <section className="bg-card border rounded-xl p-5">
               <h2 className="font-bold mb-3">الصور ({photoKeys.length})</h2>
-              <div className="grid grid-cols-3 gap-2">
+              <div className="grid grid-cols-3 sm:grid-cols-4 lg:grid-cols-6 gap-2">
                 {photoKeys.map((key, index) => (
                   <button key={key} type="button" onClick={() => setViewerIndex(index)}
                           className="aspect-square rounded-lg overflow-hidden border"
