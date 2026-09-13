@@ -3,7 +3,7 @@
 
 import { isConfigured, requireSession, jsonResponse } from "../lib/admin-auth.mjs";
 import {
-  recordStore, recentKeys, summarizeKeys, newKey, MAX_BODY_BYTES,
+  recordStore, recentKeys, summarizeKeys, searchRecords, newKey, MAX_BODY_BYTES,
 } from "../lib/blob-records.mjs";
 
 const STORE = "pricing-quality-checks";
@@ -17,6 +17,7 @@ function summarize(key, record) {
   return {
     id: key,
     customerName: record?.customerName ?? "",
+    phone: record?.phone ?? "",
     location: record?.location ?? "",
     date: record?.date ?? "",
     supervisor: record?.supervisor ?? "",
@@ -32,7 +33,9 @@ export default async (request) => {
   if (!isConfigured()) return jsonResponse({ error: "not_configured" }, 503);
   if (!requireSession(request)) return jsonResponse({ error: "unauthorized" }, 401);
 
-  const id = new URL(request.url).searchParams.get("id");
+  const url = new URL(request.url);
+  const id = url.searchParams.get("id");
+  const query = url.searchParams.get("q");
 
   try {
     const store = recordStore(STORE);
@@ -43,6 +46,11 @@ export default async (request) => {
         if (!record) return jsonResponse({ error: "not_found" }, 404);
         return jsonResponse({ check: { ...record, id } });
       }
+      if (query?.trim()) {
+        const { matches, total } = await searchRecords(store, query, summarize);
+        return jsonResponse({ checks: matches, total, searched: true });
+      }
+
       const { keys, total } = await recentKeys(store);
       return jsonResponse({
         checks: await summarizeKeys(store, keys, summarize),

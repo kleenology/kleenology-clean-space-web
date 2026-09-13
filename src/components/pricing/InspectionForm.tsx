@@ -52,7 +52,13 @@ function Stepper({ value, onChange }: { value: number; onChange: (n: number) => 
   );
 }
 
-export function InspectionForm({ token }: { token: string }) {
+export function InspectionForm({
+  token, openId,
+}: {
+  token: string;
+  /** معاينة تُفتح مباشرة — يمرّرها البحث عن العميل */
+  openId?: string | null;
+}) {
   // اسم المشرف يُحفظ محلياً — يكتبه مرة واحدة لا مع كل معاينة
   const [data, setData] = useState<Inspection>(() =>
     emptyInspection(localStorage.getItem(SUPERVISOR_KEY) ?? ""),
@@ -196,6 +202,25 @@ export function InspectionForm({ token }: { token: string }) {
       toast.error(error instanceof InspectionsError ? error.message : "تعذّر الفتح");
     }
   };
+
+  // فتح معاينة جاءت من البحث عن العميل
+  useEffect(() => {
+    if (!openId) return;
+    let cancelled = false;
+    loadInspection(token, openId)
+      .then(({ inspection }) => {
+        if (cancelled) return;
+        const { id: loadedId, ...rest } = inspection;
+        setData({ ...emptyInspection(), ...rest });
+        setSavedId(loadedId);
+      })
+      .catch((error) => {
+        if (!cancelled) {
+          toast.error(error instanceof InspectionsError ? error.message : "تعذّر فتح المعاينة");
+        }
+      });
+    return () => { cancelled = true; };
+  }, [token, openId]);
 
   const remove = async (id: string, label: string) => {
     if (!window.confirm(`حذف معاينة ${label}؟ لا يمكن التراجع.`)) return;

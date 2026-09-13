@@ -6,6 +6,7 @@ const ENDPOINT = "/api/pricing/inspections";
 export interface SavedInspectionSummary {
   id: string;
   customerName: string;
+  phone: string;
   location: string;
   date: string;
   time: string;
@@ -61,6 +62,11 @@ async function request<T>(
 
 export function listInspections(token: string) {
   return request<ListResult>(token);
+}
+
+/** يبحث في كل المعاينات المحفوظة لا آخر خمسين */
+export function searchInspections(token: string, query: string) {
+  return request<ListResult>(token, { query: `?q=${encodeURIComponent(query)}` });
 }
 
 export function loadInspection(token: string, id: string) {
