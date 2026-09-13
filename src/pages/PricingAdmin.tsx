@@ -1,4 +1,5 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { useSearchParams } from "react-router-dom";
 import { SEO } from "@/components/SEO";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -6,7 +7,7 @@ import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import {
   Calculator, LogOut, Loader2, Copy, MessageCircle, RotateCcw,
-  Minus, Plus, Search, X, Package, PlusCircle, ClipboardList, ShieldCheck,
+  Minus, Plus, Search, X, Package, PlusCircle, ClipboardList, ShieldCheck, ArrowRight,
 } from "lucide-react";
 import { toast } from "sonner";
 import { cn } from "@/lib/utils";
@@ -74,6 +75,9 @@ export default function PricingAdmin() {
   const [mode, setMode] = useState<"quote" | "inspection" | "qc" | null>(null);
   const [openGroup, setOpenGroup] = useState<string | null>(null);
   const [openInspectionId, setOpenInspectionId] = useState<string | null>(null);
+  // البحث في الرابط: يعود كما هو بعد فتح سجل، ويصلح للحفظ والمشاركة
+  const [searchParams, setSearchParams] = useSearchParams();
+  const customerQuery = searchParams.get("q") ?? "";
   const openPanelRef = useRef<HTMLElement | null>(null);
   const [showCodes, setShowCodes] = useState(false);
 
@@ -244,9 +248,20 @@ export default function PricingAdmin() {
         <header className="bg-card border-b sticky top-0 z-20">
           <div className="max-w-6xl mx-auto px-4 h-16 flex items-center justify-between gap-3">
             <div className="flex items-center gap-2.5 min-w-0">
-              <div className="w-9 h-9 rounded-lg bg-primary/10 text-primary flex items-center justify-center shrink-0">
-                <Calculator className="h-5 w-5" />
-              </div>
+              {mode !== null ? (
+                <button
+                  type="button"
+                  onClick={() => { setMode(null); setOpenInspectionId(null); }}
+                  className="w-9 h-9 rounded-lg border flex items-center justify-center shrink-0 hover:bg-muted"
+                  aria-label="رجوع للبحث"
+                >
+                  <ArrowRight className="h-5 w-5" />
+                </button>
+              ) : (
+                <div className="w-9 h-9 rounded-lg bg-primary/10 text-primary flex items-center justify-center shrink-0">
+                  <Calculator className="h-5 w-5" />
+                </div>
+              )}
               <div className="min-w-0">
                 <h1 className="font-bold leading-tight truncate">تسعير كلينولوجي</h1>
                 <p className="text-[11px] text-muted-foreground truncate">{catalogue.version}</p>
@@ -325,6 +340,10 @@ export default function PricingAdmin() {
             {/* البحث أولاً: أكثر ما يُفتح له هذا الشاشة شكوى تحتاج ملف عميل */}
             <CustomerSearch
               token={token}
+              initialQuery={customerQuery}
+              onQueryChange={(next) => {
+                setSearchParams(next ? { q: next } : {}, { replace: true });
+              }}
               onOpenInspection={(inspectionId) => {
                 setOpenInspectionId(inspectionId);
                 setMode("inspection");
