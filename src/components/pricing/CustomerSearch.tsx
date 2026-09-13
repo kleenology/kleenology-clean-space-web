@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { Link } from "react-router-dom";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
@@ -20,18 +20,21 @@ interface Results {
  * وتوقيعه ومعايناته — بدل التنقيب في سجل مرتّب بالتاريخ.
  */
 export function CustomerSearch({
-  token, onOpenInspection,
+  token, onOpenInspection, initialQuery = "", onQueryChange,
 }: {
   token: string;
   onOpenInspection: (id: string) => void;
+  /** بحث محفوظ في الرابط — يُعاد تشغيله عند العودة من سجل فُتح */
+  initialQuery?: string;
+  onQueryChange: (query: string) => void;
 }) {
-  const [query, setQuery] = useState("");
+  const [query, setQuery] = useState(initialQuery);
   const [results, setResults] = useState<Results | null>(null);
   const [searching, setSearching] = useState(false);
 
-  const run = async (event?: React.FormEvent) => {
-    event?.preventDefault();
-    const term = query.trim();
+  const runRef = useRef<((term: string) => Promise<void>) | null>(null);
+
+  const search = async (term: string) => {
     if (!term || searching) return;
     setSearching(true);
     try {
@@ -51,10 +54,27 @@ export function CustomerSearch({
       setSearching(false);
     }
   };
+  runRef.current = search;
+
+  const run = (event?: React.FormEvent) => {
+    event?.preventDefault();
+    const term = query.trim();
+    if (!term) return;
+    onQueryChange(term);
+    void search(term);
+  };
+
+  // العودة من سجل فُتح تستأنف البحث نفسه بدل مربع فارغ
+  useEffect(() => {
+    if (initialQuery.trim()) void runRef.current?.(initialQuery.trim());
+    // مرة واحدة عند التركيب بالبحث القادم من الرابط
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   const clear = () => {
     setQuery("");
     setResults(null);
+    onQueryChange("");
   };
 
   const count = results ? results.checks.length + results.inspections.length : 0;
@@ -97,7 +117,7 @@ export function CustomerSearch({
                 {results.checks.map((item) => (
                   <Link
                     key={item.id}
-                    to={`/admin/pricing/qc/${encodeURIComponent(item.id)}`}
+                    to={`/admin/pricing/qc/${encodeURIComponent(item.id)}?q=${encodeURIComponent(query.trim())}`}
                     className="flex items-center gap-3 border rounded-lg p-3 hover:border-primary hover:bg-primary/5 transition-colors"
                   >
                     <ShieldCheck className="h-4 w-4 text-primary shrink-0" />

@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useState } from "react";
-import { useParams, Link } from "react-router-dom";
+import { useParams, useSearchParams, Link } from "react-router-dom";
 import { SEO } from "@/components/SEO";
 import { Button } from "@/components/ui/button";
 import { ArrowRight, Copy, Loader2, ShieldCheck } from "lucide-react";
@@ -26,6 +26,11 @@ const VERDICT_STYLE = {
  */
 export default function QcReport() {
   const { id = "" } = useParams();
+  // البحث الذي أوصل إلى هنا، ليعود إليه زر الرجوع بدل مربع فارغ
+  const [searchParams] = useSearchParams();
+  const backTo = searchParams.get("q")
+    ? `/admin/pricing?q=${encodeURIComponent(searchParams.get("q")!)}`
+    : "/admin/pricing";
   const [token, setToken] = useState<string | null>(() => localStorage.getItem(TOKEN_KEY));
   const [check, setCheck] = useState<QualityCheck | null>(null);
   const [error, setError] = useState("");
@@ -94,7 +99,7 @@ export default function QcReport() {
         <div dir="rtl" className="min-h-screen flex flex-col items-center justify-center gap-4 px-4 text-center">
           <p className="text-muted-foreground">{error || "التقرير غير موجود"}</p>
           <Button asChild variant="outline">
-            <Link to="/admin/pricing">رجوع للأداة</Link>
+            <Link to={backTo}>رجوع</Link>
           </Button>
         </div>
       </>
@@ -122,7 +127,7 @@ export default function QcReport() {
               </div>
             </div>
             <Button asChild variant="ghost" size="sm" aria-label="رجوع">
-              <Link to="/admin/pricing"><ArrowRight className="h-4 w-4" /></Link>
+              <Link to={backTo}><ArrowRight className="h-4 w-4" /></Link>
             </Button>
           </div>
         </header>
