@@ -133,6 +133,14 @@ netlify/lib/pricing-catalogue.mjs
 | `netlify/functions/pricing-login.mjs` | `POST /api/pricing/login` — دخول |
 | `netlify/functions/pricing-catalogue.mjs` | `GET /api/pricing/catalogue` — استعادة الجلسة |
 | `netlify/functions/pricing-inspections.mjs` | `/api/pricing/inspections` — حفظ المعاينات وقراءتها وحذفها |
+| `netlify/functions/pricing-qc.mjs` | `/api/pricing/qc` — سجل فحوصات الجودة |
+| `netlify/functions/pricing-qc-photo.mjs` | `/api/pricing/qc-photo` — رفع صور الفحص وجلبها |
+| `netlify/lib/blob-records.mjs` | أدوات مشتركة لسجلات Blobs |
+| `src/lib/pricing/qcChecklist.ts` | **بنود فحص الجودة — هنا تعدّلها** |
+| `src/lib/pricing/qcReport.ts` | حساب النتيجة وصياغة التقريرين |
+| `src/lib/pricing/qcApi.ts` | نداءات الفحص وضغط الصور |
+| `src/components/pricing/QualityControlForm.tsx` | واجهة فحص الجودة |
+| `src/components/pricing/AuthImage.tsx` | عرض صورة محمية بالجلسة |
 | `src/lib/pricing/inspectionReport.ts` | نموذج المعاينة وصياغة التقرير |
 | `src/lib/pricing/inspectionsApi.ts` | نداءات السجل من الواجهة |
 | `src/components/pricing/InspectionForm.tsx` | واجهة المعاينة الميدانية |
@@ -140,6 +148,41 @@ netlify/lib/pricing-catalogue.mjs
 | `src/lib/pricing/quoteMessage.ts` | صياغة نص العرض والملخص الداخلي |
 | `src/lib/pricing/types.ts` | أنواع الكتالوج ونتيجة العرض |
 | `src/pages/PricingAdmin.tsx` | واجهة الصفحة |
+
+---
+
+## ٦. فحص الجودة
+
+التبويب الثالث: يعبّيه المشرف بعد انتهاء الشغل وقبل التسليم للعميل.
+
+**قائمة الفحص** في `src/lib/pricing/qcChecklist.ts` — أربعة أقسام (عام، المطبخ،
+الحمامات، التسليم) و٣٠ بنداً. البنود ليست سرية فتبقى في كود الواجهة؛ لتعديلها
+عدّل الملف وانشر.
+
+لكل بند ثلاثة أحكام: **مقبول** / **يحتاج إعادة** / **لم يُنفَّذ**، والضغط على
+نفس الحكم مرة ثانية يلغيه فيرجع البند غير مفحوص. البنود غير المقبولة تفتح خانة
+ملاحظة. زر **الكل مقبول** يعلّم القسم دفعة واحدة.
+
+**النتيجة** = المقبول ÷ المفحوص. البنود غير المفحوصة لا تُحتسب، فلا يُعاقَب
+المشرف على بنود لا تنطبق على الموقع.
+
+### الصور
+
+تُخزَّن في مخزن `pricing-qc-photos` منفصلة عن سجل JSON حتى لا ينتفخ.
+
+**تُصغَّر على جهاز المشرف قبل الرفع** — أطول ضلع ١٦٠٠ بكسل وجودة ٧٥٪ بصيغة
+JPEG. صورة جوال ١٫٨ ميجابايت تنزل إلى نحو ٥٠٠ كيلوبايت. بدون هذا التصغير تخنق
+الصور دالة Netlify وتستهلك باقة المشرف وهو واقف في الموقع.
+
+الصور محمية بالجلسة: وسم `<img>` لا يرسل ترويسة `Authorization`، فتُجلب
+بـ`fetch` وتُعرض من `object URL` بدل وضع التوكن في الرابط حيث يتسرب للسجلات.
+
+### التقريران
+
+| الزر | المحتوى |
+|---|---|
+| **إرسال تقرير العميل** | النتيجة والبنود التي ستُعاد — بلا سرد كل بند |
+| **تقرير داخلي** | كل بند بحكمه وملاحظته، وقائمة ما يحتاج عملاً مرتّبة بأقسامها |
 
 ---
 

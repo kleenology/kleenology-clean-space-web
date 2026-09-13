@@ -6,7 +6,7 @@ import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import {
   Calculator, Lock, LogOut, Loader2, Copy, MessageCircle, RotateCcw,
-  Minus, Plus, Search, X, Package, PlusCircle, ClipboardList, Eye, EyeOff,
+  Minus, Plus, Search, X, Package, PlusCircle, ClipboardList, Eye, EyeOff, ShieldCheck,
 } from "lucide-react";
 import { toast } from "sonner";
 import { cn } from "@/lib/utils";
@@ -17,6 +17,7 @@ import {
 } from "@/lib/pricing/quoteMessage";
 import type { Catalogue, QuoteInput } from "@/lib/pricing/types";
 import { InspectionForm } from "@/components/pricing/InspectionForm";
+import { QualityControlForm } from "@/components/pricing/QualityControlForm";
 
 // التوكن في localStorage لا sessionStorage: الأخير ينمسح بإغلاق التبويب،
 // فيضطر المشرف لكتابة كلمة المرور كل مرة يفتح فيها الأداة على جواله.
@@ -170,7 +171,7 @@ export default function PricingAdmin() {
   const [customer, setCustomer] = useState<CustomerInfo>(emptyCustomer);
   const [search, setSearch] = useState("");
   // لا وضع مختاراً عند الدخول — المشرف يقرر أولاً ماذا يفعل
-  const [mode, setMode] = useState<"quote" | "inspection" | null>(null);
+  const [mode, setMode] = useState<"quote" | "inspection" | "qc" | null>(null);
   const [openGroup, setOpenGroup] = useState<string | null>(null);
   const openPanelRef = useRef<HTMLElement | null>(null);
   const [showCodes, setShowCodes] = useState(false);
@@ -369,14 +370,15 @@ export default function PricingAdmin() {
           <div className="border-t flex">
             {([
               { key: "quote", label: "تسعير", Icon: Calculator },
-              { key: "inspection", label: "معاينة ميدانية", Icon: ClipboardList },
+              { key: "inspection", label: "معاينة", Icon: ClipboardList },
+              { key: "qc", label: "فحص الجودة", Icon: ShieldCheck },
             ] as const).map(({ key, label, Icon }) => (
               <button
                 key={key}
                 type="button"
                 onClick={() => setMode(key)}
                 className={cn(
-                  "flex-1 flex items-center justify-center gap-1.5 py-2.5 text-sm font-medium border-b-2 transition-colors",
+                  "flex-1 flex items-center justify-center gap-1.5 py-2.5 text-xs sm:text-sm font-medium border-b-2 transition-colors",
                   mode === key
                     ? "border-primary text-primary bg-primary/5"
                     : "border-transparent text-muted-foreground hover:bg-muted",
@@ -430,6 +432,10 @@ export default function PricingAdmin() {
                   key: "inspection", Icon: ClipboardList, label: "معاينة ميدانية",
                   desc: "سجّل معاينة الموقع بالمستويات والغرف وأرسل التقرير",
                 },
+                {
+                  key: "qc", Icon: ShieldCheck, label: "فحص الجودة",
+                  desc: "افحص الشغل بعد انتهائه بند بند مع الصور قبل التسليم للعميل",
+                },
               ] as const).map(({ key, Icon, label, desc }) => (
                 <button
                   key={key}
@@ -451,6 +457,10 @@ export default function PricingAdmin() {
         ) : mode === "inspection" ? (
           <main className="max-w-2xl mx-auto px-4 pt-6">
             <InspectionForm token={token} />
+          </main>
+        ) : mode === "qc" ? (
+          <main className="max-w-2xl mx-auto px-4 pt-6">
+            <QualityControlForm token={token} />
           </main>
         ) : (
         <main className="max-w-6xl mx-auto px-4 pt-6 grid lg:grid-cols-[1fr_360px] gap-6 items-start">

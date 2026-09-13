@@ -61,6 +61,16 @@
   status = 200
 
 [[redirects]]
+  from = "/api/pricing/qc"
+  to = "/.netlify/functions/pricing-qc"
+  status = 200
+
+[[redirects]]
+  from = "/api/pricing/qc-photo"
+  to = "/.netlify/functions/pricing-qc-photo"
+  status = 200
+
+[[redirects]]
   from = "/*"
   to = "/index.html"
   status = 200
