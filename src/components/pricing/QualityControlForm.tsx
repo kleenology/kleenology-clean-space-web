@@ -218,7 +218,8 @@ export function QualityControlForm({ token }: { token: string }) {
   };
 
   return (
-    <div className="space-y-4">
+    <div className="lg:grid lg:grid-cols-[1fr_340px] lg:gap-6 lg:items-start">
+      <div className="space-y-4">
       {/* السجل */}
       <div className="bg-card border rounded-xl overflow-hidden">
         <div className="flex items-center justify-between gap-2 p-4">
@@ -331,7 +332,7 @@ export function QualityControlForm({ token }: { token: string }) {
             </div>
 
             {isOpen && (
-              <div className="border-t p-3 space-y-2">
+              <div className="border-t p-3 grid gap-2 xl:grid-cols-2">
                 {section.items.map((item) => {
                   const result = data.results[item.key];
                   return (
@@ -389,7 +390,7 @@ export function QualityControlForm({ token }: { token: string }) {
         </p>
 
         {data.photos.length > 0 && (
-          <div className="grid grid-cols-3 gap-2 mt-3">
+          <div className="grid grid-cols-3 sm:grid-cols-4 xl:grid-cols-5 gap-2 mt-3">
             {data.photos.map((photo, index) => (
               <div key={photo.key} className="relative aspect-square rounded-lg overflow-hidden border">
                 <button type="button" onClick={() => setViewerIndex(index)}
@@ -442,8 +443,11 @@ export function QualityControlForm({ token }: { token: string }) {
                   placeholder="أي شيء يخص الوظيفة كاملة…" />
       </Section>
 
-      {/* النتيجة والإجراءات */}
-      <div className="bg-card border rounded-xl p-4 sm:p-5 space-y-3 sticky bottom-4">
+      </div>
+
+      {/* النتيجة والإجراءات — شريط سفلي على الجوال، وعمود جانبي على اللابتوب
+          حيث كان الشريط الثابت يطفو فوق قائمة البنود ويغطيها */}
+      <div className="bg-card border rounded-xl p-4 sm:p-5 space-y-3 sticky bottom-4 mt-4 lg:mt-0 lg:sticky lg:top-32 lg:bottom-auto">
         <div className="flex items-center justify-between">
           <div>
             <span className={cn(

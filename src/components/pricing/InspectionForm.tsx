@@ -229,7 +229,8 @@ export function InspectionForm({ token }: { token: string }) {
   const rooms = totalRooms(data);
 
   return (
-    <div className="space-y-4">
+    <div className="lg:grid lg:grid-cols-[1fr_340px] lg:gap-6 lg:items-start">
+      <div className="space-y-4">
       <div className="bg-card border rounded-xl overflow-hidden">
         <div className="flex items-center justify-between gap-2 p-4">
           <button type="button" onClick={openSaved}
@@ -451,7 +452,7 @@ export function InspectionForm({ token }: { token: string }) {
                   )}
 
                   {isOpen && (
-                    <div className="p-3 space-y-1.5">
+                    <div className="p-3 grid gap-1.5 xl:grid-cols-2">
                       {ROOM_PRESETS.map((label) => {
                         const qty = qtyOf(level, label);
                         return (
@@ -512,7 +513,10 @@ export function InspectionForm({ token }: { token: string }) {
         </p>
       </Section>
 
-      <div className="bg-card border rounded-xl p-4 sm:p-5 space-y-3 sticky bottom-4">
+      </div>
+
+      {/* شريط سفلي على الجوال، عمود جانبي على اللابتوب */}
+      <div className="bg-card border rounded-xl p-4 sm:p-5 space-y-3 sticky bottom-4 mt-4 lg:mt-0 lg:sticky lg:top-32 lg:bottom-auto">
         <div className="flex items-center justify-between text-sm">
           <span className="font-bold">
             {data.levels.length} مستوى · {rooms} غرفة
