@@ -7,7 +7,7 @@
 // ستجبر المشرف على تخطّي ثلثها في كل وظيفة.
 
 export type Verdict = "pass" | "redo" | "missed";
-export type ServiceKind = "general" | "rehab" | "furniture";
+export type ServiceKind = "general" | "rehab" | "furniture" | "custom";
 
 export interface ChecklistItem {
   key: string;
@@ -30,6 +30,7 @@ export const SERVICE_KINDS: { key: ServiceKind; label: string; desc: string }[] 
   { key: "general", label: "تنظيف عام", desc: "تنظيف دوري اعتيادي — غبار وأسطح ظاهرة، الدواليب من الخارج" },
   { key: "rehab", label: "تنظيف تأهيلي", desc: "بعد البناء أو الترميم — بوهيات وأسمنت ولواصق" },
   { key: "furniture", label: "تنظيف أثاث", desc: "كنب ومراتب وسجاد وستائر" },
+  { key: "custom", label: "مخصص", desc: "العميل طلب بنوداً بعينها — ابنِ القائمة بنفسك" },
 ];
 
 const GENERAL: ChecklistSection[] = [
@@ -205,19 +206,81 @@ const FURNITURE: ChecklistSection[] = [
   },
 ];
 
-export const CHECKLISTS: Record<ServiceKind, ChecklistSection[]> = {
+export const CHECKLISTS: Record<Exclude<ServiceKind, "custom">, ChecklistSection[]> = {
   general: GENERAL,
   rehab: REHAB,
   furniture: FURNITURE,
 };
 
+/** عنوان القسم الوحيد في الفحص المخصص */
+export const CUSTOM_SECTION_TITLE = "البنود المطلوبة";
+
+export interface PoolItem {
+  key: string;
+  label: string;
+  /** اسم القائمة التي جاء منها، ليعرف المشرف سياقه في قائمة الاختيار */
+  from: string;
+}
+
+/**
+ * كل بنود القوائم الثلاث في مجموعة واحدة، لبناء الفحص المخصص منها.
+ * المفتاح يحمل اسم قائمته لأن مفاتيح مثل glass تتكرر بنصوص مختلفة.
+ */
+export const ITEM_POOL: PoolItem[] = (
+  Object.entries(CHECKLISTS) as [Exclude<ServiceKind, "custom">, ChecklistSection[]][]
+).flatMap(([kind, sections]) =>
+  sections.flatMap((section) =>
+    section.items.map((item) => ({
+      key: `${kind}:${item.key}`,
+      label: item.label,
+      from: `${SERVICE_KINDS.find((k) => k.key === kind)?.label} · ${section.title}`,
+    })),
+  ),
+).filter((item, index, all) => all.findIndex((other) => other.label === item.label) === index);
+
+/** مفتاح ثابت لبند كتبه المشرف بنفسه */
+export function freeItemKey(label: string): string {
+  return `free:${label.trim().replace(/\s+/g, " ")}`;
+}
+
 /** السجلات المحفوظة قبل إضافة الأنواع ليس لها نوع، وكلها كانت عامة */
 export const DEFAULT_KIND: ServiceKind = "general";
 
+/** قائمة نوع ثابت. الفحص المخصص قائمته في السجل نفسه — استخدم checklistOf */
 export function checklistFor(kind: ServiceKind | undefined): ChecklistSection[] {
-  return CHECKLISTS[kind ?? DEFAULT_KIND] ?? CHECKLISTS[DEFAULT_KIND];
+  if (!kind || kind === "custom") return CHECKLISTS[DEFAULT_KIND];
+  return CHECKLISTS[kind] ?? CHECKLISTS[DEFAULT_KIND];
+}
+
+/** يبني قسماً واحداً من البنود التي اختارها المشرف للفحص المخصص */
+export function customChecklist(items: ChecklistItem[]): ChecklistSection[] {
+  return items.length > 0
+    ? [{ key: "custom", title: CUSTOM_SECTION_TITLE, items }]
+    : [];
 }
 
 export function kindLabel(kind: ServiceKind | undefined): string {
   return SERVICE_KINDS.find((k) => k.key === (kind ?? DEFAULT_KIND))?.label ?? "تنظيف عام";
+}
+
+/** تطبيع عربي خفيف للبحث داخل البنود: تشكيل وهمزات وألف مقصورة وتاء مربوطة */
+function fold(text: string): string {
+  return text
+    .replace(/[ً-ْـ]/g, "")
+    .replace(/[أإآٱ]/g, "ا")
+    .replace(/ى/g, "ي")
+    .replace(/ة/g, "ه")
+    .toLowerCase()
+    .trim();
+}
+
+/** بنود المجموعة المطابقة للبحث، مع استبعاد ما اختير مسبقاً */
+export function searchPool(query: string, exclude?: ReadonlySet<string>): PoolItem[] {
+  const pool = exclude ? ITEM_POOL.filter((item) => !exclude.has(item.key)) : ITEM_POOL;
+  const words = fold(query).split(/\s+/).filter(Boolean);
+  if (words.length === 0) return pool;
+  return pool.filter((item) => {
+    const hay = fold(`${item.label} ${item.from}`);
+    return words.every((word) => hay.includes(word));
+  });
 }

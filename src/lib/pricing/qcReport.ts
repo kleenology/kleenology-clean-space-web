@@ -1,6 +1,6 @@
 import {
-  checklistFor, kindLabel, VERDICTS,
-  type ServiceKind, type Verdict,
+  checklistFor, customChecklist, kindLabel, VERDICTS,
+  type ChecklistItem, type ChecklistSection, type ServiceKind, type Verdict,
 } from "./qcChecklist";
 
 export interface QcResults {
@@ -26,6 +26,11 @@ export interface QualityCheck {
   supervisor: string;
   /** معاينة محفوظة استُوردت منها بيانات الموقع */
   inspectionId?: string;
+  /**
+   * بنود الفحص المخصص كما اختارها المشرف. تُحفظ مع السجل لأن القائمة
+   * من صنعه هو، فلا يمكن استرجاعها من ملف البنود لاحقاً.
+   */
+  customItems?: ChecklistItem[];
   results: QcResults;
   photos: QcPhoto[];
   notes: string;
@@ -33,6 +38,12 @@ export interface QualityCheck {
   signatureKey?: string;
   signedAt?: string;
   savedAt?: string;
+}
+
+/** قائمة فحص هذا السجل: المخصص يحمل قائمته معه، وغيره يأخذها من نوعه */
+export function checklistOf(check: QualityCheck): ChecklistSection[] {
+  if (check.kind === "custom") return customChecklist(check.customItems ?? []);
+  return checklistFor(check.kind);
 }
 
 export interface QcScore {
@@ -47,7 +58,7 @@ export interface QcScore {
 }
 
 export function scoreOf(check: QualityCheck): QcScore {
-  const checklist = checklistFor(check.kind);
+  const checklist = checklistOf(check);
   let passed = 0;
   let redo = 0;
   let missed = 0;
@@ -104,7 +115,7 @@ export function buildManagementReport(check: QualityCheck): string {
   if (check.photos.length > 0) lines.push(`الصور المرفقة: ${check.photos.length}`);
   lines.push(check.signatureKey ? "توقيع العميل: مُعتمد ✅" : "توقيع العميل: لم يُوقَّع");
 
-  for (const section of checklistFor(check.kind)) {
+  for (const section of checklistOf(check)) {
     const rows = section.items
       .map((item) => ({ item, result: check.results[item.key] }))
       .filter((row) => row.result);
