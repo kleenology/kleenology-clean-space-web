@@ -4,11 +4,15 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import {
-  Camera, Copy, FileText, Link2, Loader2, PenLine, RefreshCw, Save, Trash2, X,
+  ArrowRight, Camera, Copy, FileText, Link2, Loader2, PenLine, RefreshCw,
+  Save, Sparkles, Trash2, X,
 } from "lucide-react";
 import { toast } from "sonner";
 import { cn } from "@/lib/utils";
-import { CHECKLIST, VERDICTS, type Verdict } from "@/lib/pricing/qcChecklist";
+import {
+  checklistFor, kindLabel, SERVICE_KINDS, VERDICTS,
+  type ServiceKind, type Verdict,
+} from "@/lib/pricing/qcChecklist";
 import {
   buildManagementReport, emptyCheck, reportUrl, scoreOf,
   type QualityCheck,
@@ -46,7 +50,10 @@ export function QualityControlForm({ token }: { token: string }) {
   const [savedId, setSavedId] = useState<string | null>(null);
   const [saving, setSaving] = useState(false);
   const [uploading, setUploading] = useState(false);
-  const [openSection, setOpenSection] = useState<string | null>(CHECKLIST[0]?.key ?? null);
+  // لا نوع مختاراً عند الفتح: المشرف يحدد نوع التنظيف أولاً فتُبنى القائمة عليه
+  const [kind, setKind] = useState<ServiceKind | null>(null);
+  const checklist = kind ? checklistFor(kind) : [];
+  const [openSection, setOpenSection] = useState<string | null>(null);
   const [showSaved, setShowSaved] = useState(false);
   const [saved, setSaved] = useState<SavedCheckSummary[] | null>(null);
   const [loadingList, setLoadingList] = useState(false);
@@ -82,7 +89,7 @@ export function QualityControlForm({ token }: { token: string }) {
   };
 
   const markAllPass = (sectionKey: string) => {
-    const section = CHECKLIST.find((s) => s.key === sectionKey);
+    const section = checklist.find((s) => s.key === sectionKey);
     if (!section) return;
     setData((d) => {
       const next = { ...d.results };
@@ -154,7 +161,10 @@ export function QualityControlForm({ token }: { token: string }) {
     try {
       const { check } = await loadCheck(token, id);
       const { id: loadedId, ...rest } = check;
-      setData({ ...emptyCheck(), ...rest });
+      const loadedKind = rest.kind ?? "general";
+      setData({ ...emptyCheck(), ...rest, kind: loadedKind });
+      setKind(loadedKind);
+      setOpenSection(checklistFor(loadedKind)[0]?.key ?? null);
       setSavedId(loadedId);
       setShowSaved(false);
       toast.success("فُتح الفحص");
@@ -210,16 +220,113 @@ export function QualityControlForm({ token }: { token: string }) {
   };
 
   const reset = () => {
-    setData(emptyCheck(data.supervisor, today(), now()));
+    setData(emptyCheck(data.supervisor, today(), now(), kind ?? "general"));
     setSavedId(null);
-    setOpenSection(CHECKLIST[0]?.key ?? null);
+    setOpenSection(checklist[0]?.key ?? null);
     setViewerIndex(null);
     toast.success("تم تفريغ الفحص");
   };
 
+  const chooseKind = (next: ServiceKind) => {
+    setKind(next);
+    setData((d) => ({ ...d, kind: next }));
+    setOpenSection(checklistFor(next)[0]?.key ?? null);
+  };
+
+  // تغيير النوع يعني قائمة أخرى، فالأحكام المسجّلة لا تنطبق عليها
+  const changeKind = () => {
+    const answered = Object.keys(data.results).length;
+    if (answered > 0 && !window.confirm(
+      `تغيير نوع التنظيف يمسح ${answered} بنداً مفحوصاً لأن القائمة تختلف. تكمل؟`,
+    )) return;
+    setData((d) => ({ ...d, results: {} }));
+    setKind(null);
+    setOpenSection(null);
+  };
+
+  // شاشة اختيار النوع — تسبق كل شيء لأن القائمة كلها تُبنى عليه
+  if (!kind) {
+    return (
+      <div className="max-w-2xl mx-auto">
+        <p className="text-center text-muted-foreground mb-6">وش نوع التنظيف اللي تفحصه؟</p>
+        <div className="grid gap-3 sm:grid-cols-3">
+          {SERVICE_KINDS.map(({ key, label, desc }) => (
+            <button
+              key={key}
+              type="button"
+              onClick={() => chooseKind(key)}
+              className="h-full text-right bg-card border rounded-xl p-5 hover:border-primary hover:bg-primary/5 transition-colors"
+            >
+              <div className="flex items-center gap-3 mb-1.5">
+                <div className="w-10 h-10 rounded-lg bg-primary/10 text-primary flex items-center justify-center shrink-0">
+                  <Sparkles className="h-5 w-5" />
+                </div>
+                <span className="font-bold">{label}</span>
+              </div>
+              <p className="text-sm text-muted-foreground leading-relaxed">{desc}</p>
+              <p className="text-[11px] text-muted-foreground mt-2">
+                {checklistFor(key).reduce((n, sec) => n + sec.items.length, 0)} بند فحص
+              </p>
+            </button>
+          ))}
+        </div>
+
+        {/* السجل متاح قبل اختيار النوع: قد يكون المقصود فتح فحص قديم لا إنشاء جديد */}
+        <button
+          type="button"
+          onClick={toggleSaved}
+          className="w-full mt-4 bg-card border rounded-xl p-4 flex items-center gap-2 font-bold text-sm"
+        >
+          <FileText className="h-4 w-4 text-primary" />
+          الفحوصات المحفوظة
+          {saved && <span className="text-muted-foreground font-normal">({saved.length})</span>}
+        </button>
+
+        {showSaved && (
+          <div className="bg-card border rounded-xl mt-2 p-3 space-y-2">
+            {loadingList && saved === null ? (
+              <div className="flex justify-center py-4"><Loader2 className="h-5 w-5 animate-spin text-primary" /></div>
+            ) : (saved?.length ?? 0) === 0 ? (
+              <p className="text-sm text-muted-foreground py-2 text-center">ما فيه فحوصات محفوظة بعد.</p>
+            ) : (
+              saved!.map((item) => {
+                const label = item.customerName || item.location || item.date || "بلا اسم";
+                return (
+                  <button key={item.id} type="button" onClick={() => open(item.id)}
+                          className="w-full text-right border rounded-lg p-2.5 hover:border-primary hover:bg-primary/5">
+                    <div className="text-sm font-medium truncate">{label}</div>
+                    <div className="text-[11px] text-muted-foreground truncate">
+                      {[item.date, `${item.percent}٪`, `${item.checked} بند`].filter(Boolean).join(" · ")}
+                    </div>
+                  </button>
+                );
+              })
+            )}
+          </div>
+        )}
+      </div>
+    );
+  }
+
   return (
     <div className="lg:grid lg:grid-cols-[1fr_340px] lg:gap-6 lg:items-start">
       <div className="space-y-4">
+      {/* النوع المختار مع إمكانية تغييره */}
+      <div className="bg-primary/5 border border-primary/30 rounded-xl px-4 py-3 flex items-center justify-between gap-3">
+        <span className="flex items-center gap-2 min-w-0">
+          <Sparkles className="h-4 w-4 text-primary shrink-0" />
+          <span className="font-bold text-sm truncate">{kindLabel(kind)}</span>
+          <span className="text-[11px] text-muted-foreground shrink-0">
+            {checklist.reduce((n, sec) => n + sec.items.length, 0)} بند
+          </span>
+        </span>
+        <button type="button" onClick={changeKind}
+                className="text-xs text-primary underline shrink-0 flex items-center gap-1">
+          <ArrowRight className="h-3.5 w-3.5" />
+          تغيير النوع
+        </button>
+      </div>
+
       {/* السجل */}
       <div className="bg-card border rounded-xl overflow-hidden">
         <div className="flex items-center justify-between gap-2 p-4">
@@ -302,7 +409,7 @@ export function QualityControlForm({ token }: { token: string }) {
       </Section>
 
       {/* قائمة الفحص */}
-      {CHECKLIST.map((section) => {
+      {checklist.map((section) => {
         const isOpen = openSection === section.key;
         const done = section.items.filter((i) => data.results[i.key]).length;
         const failed = section.items.filter((i) => {

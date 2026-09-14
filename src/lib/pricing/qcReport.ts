@@ -1,4 +1,7 @@
-import { CHECKLIST, VERDICTS, type Verdict } from "./qcChecklist";
+import {
+  checklistFor, kindLabel, VERDICTS,
+  type ServiceKind, type Verdict,
+} from "./qcChecklist";
 
 export interface QcResults {
   /** مفتاح البند ← الحكم عليه؛ البنود غير المفحوصة لا ترد هنا */
@@ -13,6 +16,8 @@ export interface QcPhoto {
 }
 
 export interface QualityCheck {
+  /** نوع التنظيف — يحدد أي قائمة فحص تُستخدم */
+  kind?: ServiceKind;
   customerName: string;
   phone: string;
   location: string;
@@ -42,12 +47,13 @@ export interface QcScore {
 }
 
 export function scoreOf(check: QualityCheck): QcScore {
+  const checklist = checklistFor(check.kind);
   let passed = 0;
   let redo = 0;
   let missed = 0;
   const pending: QcScore["pending"] = [];
 
-  for (const section of CHECKLIST) {
+  for (const section of checklist) {
     for (const item of section.items) {
       const result = check.results[item.key];
       if (!result) continue;
@@ -90,6 +96,7 @@ export function buildManagementReport(check: QualityCheck): string {
   lines.push(`الموقع: ${dash(check.location)}`);
   lines.push(`التاريخ: ${dash(check.date)} ${check.time.trim()}`.trim());
   lines.push(`المشرف: ${dash(check.supervisor)}`);
+  lines.push(`نوع التنظيف: ${kindLabel(check.kind)}`);
   lines.push("");
   lines.push(
     `النتيجة: ${score.passed} مقبول · ${score.redo} يحتاج إعادة · ${score.missed} لم يُنفَّذ — ${score.percent}٪`,
@@ -97,7 +104,7 @@ export function buildManagementReport(check: QualityCheck): string {
   if (check.photos.length > 0) lines.push(`الصور المرفقة: ${check.photos.length}`);
   lines.push(check.signatureKey ? "توقيع العميل: مُعتمد ✅" : "توقيع العميل: لم يُوقَّع");
 
-  for (const section of CHECKLIST) {
+  for (const section of checklistFor(check.kind)) {
     const rows = section.items
       .map((item) => ({ item, result: check.results[item.key] }))
       .filter((row) => row.result);
@@ -128,8 +135,11 @@ export function buildManagementReport(check: QualityCheck): string {
   return lines.join("\n");
 }
 
-export function emptyCheck(supervisor = "", date = "", time = ""): QualityCheck {
+export function emptyCheck(
+  supervisor = "", date = "", time = "", kind: ServiceKind = "general",
+): QualityCheck {
   return {
+    kind,
     customerName: "",
     phone: "",
     location: "",
