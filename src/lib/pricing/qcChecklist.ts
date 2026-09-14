@@ -27,7 +27,7 @@ export const VERDICTS: { key: Verdict; label: string; short: string }[] = [
 ];
 
 export const SERVICE_KINDS: { key: ServiceKind; label: string; desc: string }[] = [
-  { key: "general", label: "تنظيف عام", desc: "تنظيف اعتيادي لمنزل أو مكتب مأهول" },
+  { key: "general", label: "تنظيف عام", desc: "تنظيف دوري اعتيادي — غبار وأسطح ظاهرة، الدواليب من الخارج" },
   { key: "rehab", label: "تنظيف تأهيلي", desc: "بعد البناء أو الترميم — بوهيات وأسمنت ولواصق" },
   { key: "furniture", label: "تنظيف أثاث", desc: "كنب ومراتب وسجاد وستائر" },
 ];
@@ -37,15 +37,18 @@ const GENERAL: ChecklistSection[] = [
     key: "general",
     title: "عام",
     items: [
-      { key: "floors", label: "الأرضيات نظيفة وخالية من البقع" },
+      // التنظيف العام تنظيف دوري: محوره الغبار والأسطح الظاهرة، لا فكّ ولا
+      // نبش داخل الدواليب ولا مخلفات بناء — تلك بنود التأهيلي.
+      { key: "dust", label: "إزالة الغبار عن الأسطح والأثاث" },
+      { key: "floors", label: "الأرضيات: كنس ومسح" },
       { key: "skirting", label: "النعلات والزوايا السفلية" },
       { key: "corners", label: "الأركان والزوايا" },
       { key: "doors", label: "الأبواب والمقابض" },
       { key: "switches", label: "مفاتيح الإنارة والأفياش" },
-      { key: "glass", label: "الزجاج والنوافذ من الداخل" },
-      { key: "frames", label: "إطارات النوافذ ومجاري الشيش" },
+      { key: "glass", label: "الزجاج والمرايا الداخلية" },
+      { key: "frames", label: "إطارات النوافذ" },
       { key: "ceiling", label: "الأسقف والزوايا العلوية — أتربة وعناكب" },
-      { key: "ac", label: "المكيفات وفتحات التهوية" },
+      { key: "ac", label: "المكيفات وفتحات التهوية من الخارج" },
       { key: "lights", label: "الإنارة والثريات" },
       { key: "walls", label: "الجدران خالية من البقع والبصمات" },
       { key: "smell", label: "الرائحة العامة للمكان" },
@@ -56,10 +59,10 @@ const GENERAL: ChecklistSection[] = [
     title: "المطبخ",
     items: [
       { key: "counters", label: "الأسطح والرخام" },
-      { key: "cabinets", label: "الدواليب من الداخل والخارج" },
+      { key: "cabinets", label: "الدواليب من الخارج" },
       { key: "sink", label: "الحوض والخلاط" },
-      { key: "oven", label: "الفرن والبوتاجاز" },
-      { key: "hood", label: "الشفاط والفلاتر" },
+      { key: "oven", label: "سطح البوتاجاز والفرن من الخارج" },
+      { key: "hood", label: "الشفاط من الخارج" },
       { key: "fridge", label: "الثلاجة من الخارج" },
       { key: "bin", label: "سلة النفايات" },
     ],
@@ -81,7 +84,7 @@ const GENERAL: ChecklistSection[] = [
     key: "handover",
     title: "التسليم",
     items: [
-      { key: "waste", label: "إخراج مخلفات التنظيف من الموقع" },
+      { key: "waste", label: "إخراج أكياس النفايات من الموقع" },
       { key: "furniture", label: "إعادة الأثاث إلى مكانه" },
       { key: "utilities", label: "إطفاء الإنارة وإغلاق الماء" },
       { key: "keys", label: "تسليم المفاتيح" },
