@@ -8,8 +8,10 @@ import { cn } from "@/lib/utils";
 import { LoginCard } from "@/components/pricing/LoginCard";
 import { AuthImage } from "@/components/pricing/AuthImage";
 import { PhotoLightbox } from "@/components/pricing/PhotoLightbox";
-import { checklistFor, kindLabel, VERDICTS } from "@/lib/pricing/qcChecklist";
-import { buildManagementReport, scoreOf, type QualityCheck } from "@/lib/pricing/qcReport";
+import { kindLabel, VERDICTS } from "@/lib/pricing/qcChecklist";
+import {
+  buildManagementReport, checklistOf, scoreOf, type QualityCheck,
+} from "@/lib/pricing/qcReport";
 import { loadCheck, QcError } from "@/lib/pricing/qcApi";
 
 const TOKEN_KEY = "kleenology_pricing_token";
@@ -183,7 +185,7 @@ export default function QcReport() {
           )}
 
           {/* البنود */}
-          {checklistFor(check.kind).map((section) => {
+          {checklistOf(check).map((section) => {
             const rows = section.items
               .map((item) => ({ item, result: check.results[item.key] }))
               .filter((row) => row.result);

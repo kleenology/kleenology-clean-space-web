@@ -4,17 +4,17 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import {
-  ArrowRight, Camera, Copy, FileText, Link2, Loader2, PenLine, RefreshCw,
-  Save, Sparkles, Trash2, X,
+  ArrowRight, Camera, Copy, FileText, Link2, ListChecks, Loader2, PenLine,
+  RefreshCw, Save, Sparkles, Trash2, X,
 } from "lucide-react";
 import { toast } from "sonner";
 import { cn } from "@/lib/utils";
 import {
   checklistFor, kindLabel, SERVICE_KINDS, VERDICTS,
-  type ServiceKind, type Verdict,
+  type ChecklistItem, type ServiceKind, type Verdict,
 } from "@/lib/pricing/qcChecklist";
 import {
-  buildManagementReport, emptyCheck, reportUrl, scoreOf,
+  buildManagementReport, checklistOf, emptyCheck, reportUrl, scoreOf,
   type QualityCheck,
 } from "@/lib/pricing/qcReport";
 import {
@@ -23,6 +23,7 @@ import {
 } from "@/lib/pricing/qcApi";
 import { today, now } from "@/lib/pricing/inspectionReport";
 import { AuthImage } from "./AuthImage";
+import { CustomItemsPicker } from "./CustomItemsPicker";
 import { PhotoLightbox } from "./PhotoLightbox";
 import { SignaturePad } from "./SignaturePad";
 
@@ -52,7 +53,9 @@ export function QualityControlForm({ token }: { token: string }) {
   const [uploading, setUploading] = useState(false);
   // لا نوع مختاراً عند الفتح: المشرف يحدد نوع التنظيف أولاً فتُبنى القائمة عليه
   const [kind, setKind] = useState<ServiceKind | null>(null);
-  const checklist = kind ? checklistFor(kind) : [];
+  // الفحص المخصص يبني قائمته قبل أن يبدأ، فله شاشة اختيار بنود تسبق النموذج
+  const [buildingItems, setBuildingItems] = useState(false);
+  const checklist = kind ? checklistOf(data) : [];
   const [openSection, setOpenSection] = useState<string | null>(null);
   const [showSaved, setShowSaved] = useState(false);
   const [saved, setSaved] = useState<SavedCheckSummary[] | null>(null);
@@ -164,7 +167,10 @@ export function QualityControlForm({ token }: { token: string }) {
       const loadedKind = rest.kind ?? "general";
       setData({ ...emptyCheck(), ...rest, kind: loadedKind });
       setKind(loadedKind);
-      setOpenSection(checklistFor(loadedKind)[0]?.key ?? null);
+      setBuildingItems(false);
+      setOpenSection(
+        loadedKind === "custom" ? "custom" : checklistFor(loadedKind)[0]?.key ?? null,
+      );
       setSavedId(loadedId);
       setShowSaved(false);
       toast.success("فُتح الفحص");
@@ -220,7 +226,11 @@ export function QualityControlForm({ token }: { token: string }) {
   };
 
   const reset = () => {
-    setData(emptyCheck(data.supervisor, today(), now(), kind ?? "general"));
+    // القائمة المخصصة تبقى: النوع لم يتغيّر، والمشرف قد يكرّر نفس البنود لعميل آخر
+    setData({
+      ...emptyCheck(data.supervisor, today(), now(), kind ?? "general"),
+      customItems: data.customItems,
+    });
     setSavedId(null);
     setOpenSection(checklist[0]?.key ?? null);
     setViewerIndex(null);
@@ -229,8 +239,25 @@ export function QualityControlForm({ token }: { token: string }) {
 
   const chooseKind = (next: ServiceKind) => {
     setKind(next);
-    setData((d) => ({ ...d, kind: next }));
+    if (next === "custom") {
+      setData((d) => ({ ...d, kind: next, customItems: d.customItems ?? [] }));
+      setBuildingItems(true);
+      setOpenSection("custom");
+      return;
+    }
+    setData((d) => ({ ...d, kind: next, customItems: undefined }));
     setOpenSection(checklistFor(next)[0]?.key ?? null);
+  };
+
+  // حذف بند من القائمة المخصصة يحذف حكمه معه، وإلا بقي في السجل بلا بند يحمله
+  const setCustomItems = (items: ChecklistItem[]) => {
+    setData((d) => {
+      const keys = new Set(items.map((i) => i.key));
+      const results = Object.fromEntries(
+        Object.entries(d.results).filter(([key]) => keys.has(key)),
+      );
+      return { ...d, customItems: items, results };
+    });
   };
 
   // تغيير النوع يعني قائمة أخرى، فالأحكام المسجّلة لا تنطبق عليها
@@ -239,8 +266,9 @@ export function QualityControlForm({ token }: { token: string }) {
     if (answered > 0 && !window.confirm(
       `تغيير نوع التنظيف يمسح ${answered} بنداً مفحوصاً لأن القائمة تختلف. تكمل؟`,
     )) return;
-    setData((d) => ({ ...d, results: {} }));
+    setData((d) => ({ ...d, results: {}, customItems: undefined }));
     setKind(null);
+    setBuildingItems(false);
     setOpenSection(null);
   };
 
@@ -265,7 +293,9 @@ export function QualityControlForm({ token }: { token: string }) {
               </div>
               <p className="text-sm text-muted-foreground leading-relaxed">{desc}</p>
               <p className="text-[11px] text-muted-foreground mt-2">
-                {checklistFor(key).reduce((n, sec) => n + sec.items.length, 0)} بند فحص
+                {key === "custom"
+                  ? "تختار بنوده بنفسك"
+                  : `${checklistFor(key).reduce((n, sec) => n + sec.items.length, 0)} بند فحص`}
               </p>
             </button>
           ))}
@@ -308,6 +338,18 @@ export function QualityControlForm({ token }: { token: string }) {
     );
   }
 
+  // شاشة بناء القائمة المخصصة — تسبق النموذج لأن ما فيه بنود تُفحص بدونها
+  if (kind === "custom" && buildingItems) {
+    return (
+      <CustomItemsPicker
+        items={data.customItems ?? []}
+        onChange={setCustomItems}
+        onBack={changeKind}
+        onStart={() => setBuildingItems(false)}
+      />
+    );
+  }
+
   return (
     <div className="lg:grid lg:grid-cols-[1fr_340px] lg:gap-6 lg:items-start">
       <div className="space-y-4">
@@ -320,11 +362,20 @@ export function QualityControlForm({ token }: { token: string }) {
             {checklist.reduce((n, sec) => n + sec.items.length, 0)} بند
           </span>
         </span>
-        <button type="button" onClick={changeKind}
-                className="text-xs text-primary underline shrink-0 flex items-center gap-1">
-          <ArrowRight className="h-3.5 w-3.5" />
-          تغيير النوع
-        </button>
+        <span className="flex items-center gap-3 shrink-0">
+          {kind === "custom" && (
+            <button type="button" onClick={() => setBuildingItems(true)}
+                    className="text-xs text-primary underline flex items-center gap-1">
+              <ListChecks className="h-3.5 w-3.5" />
+              تعديل البنود
+            </button>
+          )}
+          <button type="button" onClick={changeKind}
+                  className="text-xs text-primary underline flex items-center gap-1">
+            <ArrowRight className="h-3.5 w-3.5" />
+            تغيير النوع
+          </button>
+        </span>
       </div>
 
       {/* السجل */}
