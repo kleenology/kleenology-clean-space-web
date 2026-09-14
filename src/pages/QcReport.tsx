@@ -8,7 +8,7 @@ import { cn } from "@/lib/utils";
 import { LoginCard } from "@/components/pricing/LoginCard";
 import { AuthImage } from "@/components/pricing/AuthImage";
 import { PhotoLightbox } from "@/components/pricing/PhotoLightbox";
-import { CHECKLIST, VERDICTS } from "@/lib/pricing/qcChecklist";
+import { checklistFor, kindLabel, VERDICTS } from "@/lib/pricing/qcChecklist";
 import { buildManagementReport, scoreOf, type QualityCheck } from "@/lib/pricing/qcReport";
 import { loadCheck, QcError } from "@/lib/pricing/qcApi";
 
@@ -157,6 +157,7 @@ export default function QcReport() {
                 ["الموقع", check.location],
                 ["تاريخ الفحص", [check.date, check.time].filter(Boolean).join(" ")],
                 ["المشرف", check.supervisor],
+                ["نوع التنظيف", kindLabel(check.kind)],
               ].filter(([, value]) => value?.trim()).map(([label, value]) => (
                 <div key={label} className="flex justify-between gap-3">
                   <dt className="text-muted-foreground">{label}</dt>
@@ -182,7 +183,7 @@ export default function QcReport() {
           )}
 
           {/* البنود */}
-          {CHECKLIST.map((section) => {
+          {checklistFor(check.kind).map((section) => {
             const rows = section.items
               .map((item) => ({ item, result: check.results[item.key] }))
               .filter((row) => row.result);

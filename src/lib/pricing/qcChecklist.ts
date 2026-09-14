@@ -1,8 +1,13 @@
-// قائمة فحص الجودة — يعبّيها المشرف بعد انتهاء الشغل وقبل التسليم للعميل.
+// قوائم فحص الجودة — يعبّيها المشرف بعد انتهاء الشغل وقبل التسليم للعميل.
 // البنود ليست سرية (لا أسعار فيها) فتبقى هنا لا على الخادم؛ لتعديلها عدّل
 // هذا الملف وانشر.
+//
+// لكل نوع تنظيف قائمته: بنود التأهيلي (بوهيات، أسمنت، لواصق) لا علاقة لها
+// ببنود تنظيف الأثاث (بقع، تجفيف، رغوة متبقية)، وقائمة واحدة تجمعها كانت
+// ستجبر المشرف على تخطّي ثلثها في كل وظيفة.
 
 export type Verdict = "pass" | "redo" | "missed";
+export type ServiceKind = "general" | "rehab" | "furniture";
 
 export interface ChecklistItem {
   key: string;
@@ -21,7 +26,13 @@ export const VERDICTS: { key: Verdict; label: string; short: string }[] = [
   { key: "missed", label: "لم يُنفَّذ", short: "❌" },
 ];
 
-export const CHECKLIST: ChecklistSection[] = [
+export const SERVICE_KINDS: { key: ServiceKind; label: string; desc: string }[] = [
+  { key: "general", label: "تنظيف عام", desc: "تنظيف اعتيادي لمنزل أو مكتب مأهول" },
+  { key: "rehab", label: "تنظيف تأهيلي", desc: "بعد البناء أو الترميم — بوهيات وأسمنت ولواصق" },
+  { key: "furniture", label: "تنظيف أثاث", desc: "كنب ومراتب وسجاد وستائر" },
+];
+
+const GENERAL: ChecklistSection[] = [
   {
     key: "general",
     title: "عام",
@@ -78,11 +89,132 @@ export const CHECKLIST: ChecklistSection[] = [
   },
 ];
 
-/** كل بنود القائمة مسطّحة مع اسم قسمها */
-export function flatChecklist(): (ChecklistItem & { section: string })[] {
-  return CHECKLIST.flatMap((section) =>
-    section.items.map((item) => ({ ...item, section: section.title })),
-  );
+const REHAB: ChecklistSection[] = [
+  {
+    key: "debris",
+    title: "المخلفات والبقايا",
+    items: [
+      { key: "rubble", label: "إخراج مخلفات البناء والأنقاض" },
+      { key: "cement", label: "إزالة بقايا الأسمنت والجبس" },
+      { key: "paint", label: "إزالة بقع الدهان (البوهيات) عن الأرضيات" },
+      { key: "stickers", label: "إزالة اللواصق والملصقات عن الزجاج والأبواب" },
+      { key: "silicone", label: "إزالة بقايا السيليكون والغراء" },
+      { key: "dust", label: "إزالة غبار البناء الناعم من كل الأسطح" },
+    ],
+  },
+  {
+    key: "surfaces",
+    title: "الأرضيات والأسطح",
+    items: [
+      { key: "grout", label: "الفواصل بين البلاط نظيفة" },
+      { key: "polish", label: "تلميع الأرضيات" },
+      { key: "skirting", label: "النعلات والوزرات" },
+      { key: "walls", label: "الجدران خالية من الرذاذ والبقع" },
+      { key: "ceiling", label: "الأسقف والكرانيش" },
+      { key: "stairs", label: "الدرج والدرابزين" },
+    ],
+  },
+  {
+    key: "openings",
+    title: "النوافذ والأبواب",
+    items: [
+      { key: "glass", label: "الزجاج من الداخل والخارج" },
+      { key: "tracks", label: "مجاري الشيش والنوافذ من الأتربة" },
+      { key: "frames", label: "إطارات النوافذ والأبواب" },
+      { key: "doors", label: "الأبواب والمقابض" },
+      { key: "acvents", label: "فتحات التكييف من غبار البناء" },
+    ],
+  },
+  {
+    key: "wet",
+    title: "الحمامات والمطبخ",
+    items: [
+      { key: "bathcement", label: "إزالة الأسمنت عن السيراميك والخلاطات" },
+      { key: "sanitary", label: "الأطقم الصحية والمغاسل" },
+      { key: "cabinets", label: "الدواليب من الداخل من أثر الغبار" },
+      { key: "drains", label: "الصرف والبلاعات مفتوحة ونظيفة" },
+    ],
+  },
+  {
+    key: "outdoor",
+    title: "الخارجي والتسليم",
+    items: [
+      { key: "yard", label: "الحوش والممرات الخارجية" },
+      { key: "facade", label: "الواجهات الخارجية" },
+      { key: "waste", label: "إخراج مخلفات التنظيف من الموقع" },
+      { key: "utilities", label: "إطفاء الإنارة وإغلاق الماء" },
+      { key: "keys", label: "تسليم المفاتيح" },
+    ],
+  },
+];
+
+const FURNITURE: ChecklistSection[] = [
+  {
+    key: "sofa",
+    title: "الكنب والمجالس",
+    items: [
+      { key: "stains", label: "إزالة البقع الظاهرة" },
+      { key: "deep", label: "تنظيف عميق بالبخار أو الرغوة" },
+      { key: "cushions", label: "الوسائد من الوجهين" },
+      { key: "under", label: "تحت الوسائد والزوايا والأطراف" },
+      { key: "wood", label: "الأجزاء الخشبية والأرجل" },
+    ],
+  },
+  {
+    key: "mattress",
+    title: "المراتب",
+    items: [
+      { key: "mattop", label: "الوجه العلوي" },
+      { key: "matbottom", label: "الوجه السفلي" },
+      { key: "matsides", label: "الأطراف والحواف" },
+      { key: "matstains", label: "إزالة البقع" },
+    ],
+  },
+  {
+    key: "carpet",
+    title: "السجاد",
+    items: [
+      { key: "carpetstains", label: "إزالة البقع" },
+      { key: "carpetwash", label: "الغسيل والشطف الكامل" },
+      { key: "fringe", label: "الأطراف والهدّاب" },
+      { key: "backing", label: "الوجه السفلي" },
+    ],
+  },
+  {
+    key: "curtains",
+    title: "الستائر والمنسوجات",
+    items: [
+      { key: "curtainclean", label: "الستائر نظيفة وخالية من الأتربة" },
+      { key: "curtainhang", label: "أُعيد تعليقها بشكل صحيح" },
+      { key: "chairs", label: "الكراسي والمساند" },
+    ],
+  },
+  {
+    key: "finishing",
+    title: "الإنهاء والتسليم",
+    items: [
+      { key: "dry", label: "التجفيف الكامل قبل التسليم" },
+      { key: "residue", label: "لا بقايا رغوة أو صابون" },
+      { key: "color", label: "لا تغيّر في اللون أو الملمس" },
+      { key: "smell", label: "الرائحة بعد التنظيف" },
+      { key: "placed", label: "إعادة القطع إلى أماكنها" },
+    ],
+  },
+];
+
+export const CHECKLISTS: Record<ServiceKind, ChecklistSection[]> = {
+  general: GENERAL,
+  rehab: REHAB,
+  furniture: FURNITURE,
+};
+
+/** السجلات المحفوظة قبل إضافة الأنواع ليس لها نوع، وكلها كانت عامة */
+export const DEFAULT_KIND: ServiceKind = "general";
+
+export function checklistFor(kind: ServiceKind | undefined): ChecklistSection[] {
+  return CHECKLISTS[kind ?? DEFAULT_KIND] ?? CHECKLISTS[DEFAULT_KIND];
 }
 
-export const TOTAL_ITEMS = flatChecklist().length;
+export function kindLabel(kind: ServiceKind | undefined): string {
+  return SERVICE_KINDS.find((k) => k.key === (kind ?? DEFAULT_KIND))?.label ?? "تنظيف عام";
+}
