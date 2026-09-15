@@ -4,8 +4,8 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import {
-  ArrowRight, Camera, Copy, FileText, Link2, ListChecks, Loader2, PenLine,
-  RefreshCw, Save, Sparkles, Trash2, X,
+  ArrowRight, Camera, Copy, FileText, HardHat, Link2, ListChecks, Loader2,
+  PenLine, RefreshCw, Save, Sofa, Sparkles, Trash2, X,
 } from "lucide-react";
 import { toast } from "sonner";
 import { cn } from "@/lib/utils";
@@ -29,6 +29,14 @@ import { SignaturePad } from "./SignaturePad";
 
 const SUPERVISOR_KEY = "kleenology_supervisor_name";
 
+// أيقونة لكل نوع: المشرف يميّزها بالشكل قبل ما يقرأ، وهو واقف في الموقع
+const KIND_ICON: Record<ServiceKind, typeof Sparkles> = {
+  general: Sparkles,
+  rehab: HardHat,
+  furniture: Sofa,
+  custom: ListChecks,
+};
+
 const VERDICT_STYLE: Record<Verdict, string> = {
   pass: "border-emerald-400 bg-emerald-50 text-emerald-700",
   redo: "border-amber-400 bg-amber-50 text-amber-700",
@@ -37,8 +45,13 @@ const VERDICT_STYLE: Record<Verdict, string> = {
 
 function Section({ title, children }: { title: string; children: React.ReactNode }) {
   return (
-    <section className="bg-card border rounded-xl p-4 sm:p-5">
-      <h2 className="font-bold mb-3">{title}</h2>
+    <section className="bg-card border rounded-2xl shadow-clean p-4 sm:p-5">
+      {/* شرطة صفراء قبل العنوان — علامة الهوية، ولا تدخل قائمة الفحص
+          فتلتبس بحكم «يحتاج إعادة» */}
+      <h2 className="font-bold mb-3 flex items-center gap-2">
+        <span className="w-1 h-4 rounded-full bg-brand-yellow shrink-0" aria-hidden />
+        {title}
+      </h2>
       {children}
     </section>
   );
@@ -278,16 +291,18 @@ export function QualityControlForm({ token }: { token: string }) {
       <div className="max-w-2xl mx-auto">
         <p className="text-center text-muted-foreground mb-6">وش نوع التنظيف اللي تفحصه؟</p>
         <div className="grid gap-3 sm:grid-cols-3">
-          {SERVICE_KINDS.map(({ key, label, desc }) => (
+          {SERVICE_KINDS.map(({ key, label, desc }) => {
+            const KindIcon = KIND_ICON[key];
+            return (
             <button
               key={key}
               type="button"
               onClick={() => chooseKind(key)}
-              className="h-full text-right bg-card border rounded-xl p-5 hover:border-primary hover:bg-primary/5 transition-colors"
+              className="h-full text-right bg-card border rounded-2xl shadow-clean p-5 hover:shadow-float hover:border-brand-blue hover:-translate-y-0.5 transition-all"
             >
               <div className="flex items-center gap-3 mb-1.5">
-                <div className="w-10 h-10 rounded-lg bg-primary/10 text-primary flex items-center justify-center shrink-0">
-                  <Sparkles className="h-5 w-5" />
+                <div className="w-11 h-11 rounded-xl bg-gradient-to-br from-brand-blue to-brand-blue-dark text-white flex items-center justify-center shrink-0 shadow-clean">
+                  <KindIcon className="h-5 w-5" />
                 </div>
                 <span className="font-bold">{label}</span>
               </div>
@@ -298,14 +313,15 @@ export function QualityControlForm({ token }: { token: string }) {
                   : `${checklistFor(key).reduce((n, sec) => n + sec.items.length, 0)} بند فحص`}
               </p>
             </button>
-          ))}
+            );
+          })}
         </div>
 
         {/* السجل متاح قبل اختيار النوع: قد يكون المقصود فتح فحص قديم لا إنشاء جديد */}
         <button
           type="button"
           onClick={toggleSaved}
-          className="w-full mt-4 bg-card border rounded-xl p-4 flex items-center gap-2 font-bold text-sm"
+          className="w-full mt-4 bg-card border rounded-2xl shadow-clean p-4 flex items-center gap-2 font-bold text-sm"
         >
           <FileText className="h-4 w-4 text-primary" />
           الفحوصات المحفوظة
@@ -313,7 +329,7 @@ export function QualityControlForm({ token }: { token: string }) {
         </button>
 
         {showSaved && (
-          <div className="bg-card border rounded-xl mt-2 p-3 space-y-2">
+          <div className="bg-card border rounded-2xl shadow-clean mt-2 p-3 space-y-2">
             {loadingList && saved === null ? (
               <div className="flex justify-center py-4"><Loader2 className="h-5 w-5 animate-spin text-primary" /></div>
             ) : (saved?.length ?? 0) === 0 ? (
@@ -356,7 +372,7 @@ export function QualityControlForm({ token }: { token: string }) {
       {/* النوع المختار مع إمكانية تغييره */}
       <div className="bg-primary/5 border border-primary/30 rounded-xl px-4 py-3 flex items-center justify-between gap-3">
         <span className="flex items-center gap-2 min-w-0">
-          <Sparkles className="h-4 w-4 text-primary shrink-0" />
+          {(() => { const KindIcon = KIND_ICON[kind]; return <KindIcon className="h-4 w-4 text-primary shrink-0" />; })()}
           <span className="font-bold text-sm truncate">{kindLabel(kind)}</span>
           <span className="text-[11px] text-muted-foreground shrink-0">
             {checklist.reduce((n, sec) => n + sec.items.length, 0)} بند
@@ -379,7 +395,7 @@ export function QualityControlForm({ token }: { token: string }) {
       </div>
 
       {/* السجل */}
-      <div className="bg-card border rounded-xl overflow-hidden">
+      <div className="bg-card border rounded-2xl shadow-clean overflow-hidden">
         <div className="flex items-center justify-between gap-2 p-4">
           <button type="button" onClick={toggleSaved} className="flex items-center gap-2 font-bold text-sm">
             <FileText className="h-4 w-4 text-primary" />
@@ -469,7 +485,7 @@ export function QualityControlForm({ token }: { token: string }) {
         }).length;
         return (
           <div key={section.key} className={cn(
-            "bg-card border rounded-xl overflow-hidden",
+            "bg-card border rounded-2xl shadow-clean overflow-hidden",
             failed > 0 ? "border-amber-300" : isOpen ? "border-primary" : "border-border",
           )}>
             <div className="flex items-center justify-between gap-2 p-4">
@@ -605,7 +621,7 @@ export function QualityControlForm({ token }: { token: string }) {
 
       {/* النتيجة والإجراءات — شريط سفلي على الجوال، وعمود جانبي على اللابتوب
           حيث كان الشريط الثابت يطفو فوق قائمة البنود ويغطيها */}
-      <div className="bg-card border rounded-xl p-4 sm:p-5 space-y-3 sticky bottom-4 mt-4 lg:mt-0 lg:sticky lg:top-32 lg:bottom-auto">
+      <div className="bg-card border rounded-2xl shadow-float p-4 sm:p-5 space-y-3 sticky bottom-4 mt-4 lg:mt-0 lg:sticky lg:top-32 lg:bottom-auto">
         <div className="flex items-center justify-between">
           <div>
             <span className={cn(

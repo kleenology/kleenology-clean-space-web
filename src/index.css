@@ -46,6 +46,12 @@ All colors MUST be HSL.
     --brand-blue-dark: 200 85% 45%;
     --brand-yellow: 45 95% 65%;
     --brand-yellow-light: 45 90% 85%;
+
+    /* درجتان أعمق من أزرق الهوية، لشريط أداة المشرف: النص عليه أبيض،
+       والأزرق الفاتح يعطيه تبايناً ٢:١ لا يُقرأ في شمس الرياض. هاتان
+       تعطيان ٤٫٦:١ فما فوق وتبقيان على نفس درجة اللون. */
+    --brand-blue-deep: 200 85% 38%;
+    --brand-blue-deeper: 200 90% 28%;
     
     /* Gradients */
     --gradient-primary: linear-gradient(135deg, hsl(var(--brand-blue)), hsl(var(--brand-blue-dark)));

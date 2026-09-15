@@ -80,7 +80,7 @@ export function CustomerSearch({
   const count = results ? results.checks.length + results.inspections.length : 0;
 
   return (
-    <div className="bg-card border rounded-xl p-4 sm:p-5">
+    <div className="bg-card border rounded-2xl shadow-clean p-4 sm:p-5">
       <form onSubmit={run} className="flex gap-2">
         <div className="relative flex-1">
           <Search className="absolute right-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground pointer-events-none" />

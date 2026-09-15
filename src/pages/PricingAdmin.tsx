@@ -245,45 +245,48 @@ export default function PricingAdmin() {
            url="https://kleenology.me/admin/pricing" noindex />
 
       <div dir="rtl" className="min-h-screen bg-muted/30 pb-16">
-        <header className="bg-card border-b sticky top-0 z-20">
+        <header className="bg-gradient-to-l from-brand-blue-deep to-brand-blue-deeper text-white sticky top-0 z-20 shadow-clean">
           <div className="max-w-6xl mx-auto px-4 h-16 flex items-center justify-between gap-3">
             <div className="flex items-center gap-2.5 min-w-0">
-              {mode !== null ? (
+              {mode !== null && (
                 <button
                   type="button"
                   onClick={() => { setMode(null); setOpenInspectionId(null); }}
-                  className="w-9 h-9 rounded-lg border flex items-center justify-center shrink-0 hover:bg-muted"
+                  className="w-9 h-9 rounded-lg bg-white/15 hover:bg-white/25 flex items-center justify-center shrink-0 transition-colors"
                   aria-label="رجوع للبحث"
                 >
                   <ArrowRight className="h-5 w-5" />
                 </button>
-              ) : (
-                <div className="w-9 h-9 rounded-lg bg-primary/10 text-primary flex items-center justify-center shrink-0">
-                  <Calculator className="h-5 w-5" />
-                </div>
               )}
-              <div className="min-w-0">
-                <h1 className="font-bold leading-tight truncate">تسعير كلينولوجي</h1>
-                <p className="text-[11px] text-muted-foreground truncate">{catalogue.version}</p>
+              {/* الشعار نفسه لا أيقونة عامة: المشرف يفتحها يومياً فتُعرف من أول نظرة */}
+              <div className="bg-white rounded-xl px-3 py-1.5 shrink-0 shadow-clean">
+                <img src="/logo.png" alt="كلينولوجي" className="h-9 w-auto object-contain"
+                     width={135} height={36} />
+              </div>
+              <div className="min-w-0 hidden md:block">
+                <h1 className="font-bold leading-tight truncate text-sm">أداة المشرف</h1>
+                <p className="text-[11px] text-white/70 truncate">{catalogue.version}</p>
               </div>
             </div>
             <div className="flex items-center gap-2">
               {mode === "quote" && (
-                <Button variant="ghost" size="sm" onClick={resetForm} aria-label="تفريغ">
+                <button type="button" onClick={resetForm} aria-label="تفريغ"
+                        className="h-9 px-3 rounded-lg bg-white/15 hover:bg-white/25 text-sm font-medium flex items-center transition-colors">
                   <RotateCcw className="h-4 w-4 sm:ml-1.5" />
                   <span className="hidden sm:inline">تفريغ</span>
-                </Button>
+                </button>
               )}
-              <Button variant="outline" size="sm" onClick={endSession} aria-label="خروج">
+              <button type="button" onClick={endSession} aria-label="خروج"
+                      className="h-9 px-3 rounded-lg bg-white/15 hover:bg-white/25 text-sm font-medium flex items-center transition-colors">
                 <LogOut className="h-4 w-4 sm:ml-1.5" />
                 <span className="hidden sm:inline">خروج</span>
-              </Button>
+              </button>
             </div>
           </div>
 
           {/* تبويبا الوضع — لا يظهران قبل الاختيار الأول */}
           {mode !== null && (
-          <div className="border-t flex">
+          <div className="border-t border-white/20 flex">
             {([
               { key: "quote", label: "تسعير", Icon: Calculator },
               { key: "inspection", label: "معاينة", Icon: ClipboardList },
@@ -294,10 +297,12 @@ export default function PricingAdmin() {
                 type="button"
                 onClick={() => setMode(key)}
                 className={cn(
-                  "flex-1 flex items-center justify-center gap-1.5 py-2.5 text-xs sm:text-sm font-medium border-b-2 transition-colors",
+                  "flex-1 flex items-center justify-center gap-1.5 py-2.5 text-xs sm:text-sm font-medium border-b-[3px] transition-colors",
+                  // الأصفر علامة الهوية، ويقرأ بوضوح على الأزرق — وهو خارج
+                  // قائمة الفحص فلا يلتبس بحكم «يحتاج إعادة»
                   mode === key
-                    ? "border-primary text-primary bg-primary/5"
-                    : "border-transparent text-muted-foreground hover:bg-muted",
+                    ? "border-brand-yellow text-white bg-white/10"
+                    : "border-transparent text-white/80 hover:bg-white/10",
                 )}
               >
                 <Icon className="h-4 w-4" />
@@ -309,23 +314,23 @@ export default function PricingAdmin() {
 
           {/* شريط السعر — يبقى ظاهراً مهما نزل المشرف في الكتالوج */}
           {mode === "quote" && (
-          <div className="bg-primary/10 border-t">
+          <div className="bg-black/15 border-t border-white/15">
             <div className="max-w-6xl mx-auto px-4 py-2.5 flex items-center justify-between gap-3">
               <div className="flex items-baseline gap-2 min-w-0">
-                <span className="text-sm font-bold shrink-0">الإجمالي</span>
-                <span className="text-xl font-bold text-primary tabular-nums">
+                <span className="text-sm font-bold shrink-0 text-white/80">الإجمالي</span>
+                <span className="text-xl font-bold text-brand-yellow tabular-nums">
                   {sar(quote.total)}
                 </span>
                 {quote.discountAmount > 0 && (
-                  <span className="text-xs text-muted-foreground line-through tabular-nums hidden sm:inline">
+                  <span className="text-xs text-white/60 line-through tabular-nums hidden sm:inline">
                     {sar(quote.listTotal)}
                   </span>
                 )}
               </div>
-              <div className="flex items-center gap-2 text-[11px] text-muted-foreground shrink-0">
+              <div className="flex items-center gap-2 text-[11px] text-white/70 shrink-0">
                 {quote.lines.length > 0 && <span>{quote.lines.length} بند</span>}
                 {quote.discountAmount > 0 && (
-                  <span className="px-1.5 py-0.5 rounded font-semibold bg-emerald-100 text-emerald-700">
+                  <span className="px-1.5 py-0.5 rounded font-semibold bg-white/20 text-white">
                     خصم {catalogue.discountPercent}٪
                   </span>
                 )}
@@ -351,7 +356,10 @@ export default function PricingAdmin() {
             />
 
             <div>
-            <p className="text-center text-muted-foreground mb-6">وش تبي تسوي؟</p>
+            <div className="text-center mb-6">
+              <h2 className="text-xl font-bold">وش تبي تسوي؟</h2>
+              <span className="block w-12 h-1 rounded-full bg-brand-yellow mx-auto mt-2" aria-hidden />
+            </div>
             <div className="grid gap-3 sm:grid-cols-3">
               {([
                 {
@@ -371,15 +379,19 @@ export default function PricingAdmin() {
                   key={key}
                   type="button"
                   onClick={() => setMode(key)}
-                  className="w-full h-full text-right bg-card border rounded-xl p-5 hover:border-primary hover:bg-primary/5 transition-colors"
+                  className="group w-full h-full text-right bg-card border rounded-2xl p-5 shadow-clean hover:shadow-float hover:border-brand-blue hover:-translate-y-0.5 transition-all"
                 >
-                  <div className="flex items-center gap-3 mb-1.5">
-                    <div className="w-10 h-10 rounded-lg bg-primary/10 text-primary flex items-center justify-center shrink-0">
+                  <div className="flex items-center gap-3 mb-2">
+                    <div className="w-11 h-11 rounded-xl bg-gradient-to-br from-brand-blue to-brand-blue-dark text-white flex items-center justify-center shrink-0 shadow-clean">
                       <Icon className="h-5 w-5" />
                     </div>
                     <span className="font-bold text-lg">{label}</span>
                   </div>
                   <p className="text-sm text-muted-foreground leading-relaxed">{desc}</p>
+                  <span className="mt-3 inline-flex items-center gap-1 text-xs font-semibold text-brand-blue-dark opacity-0 group-hover:opacity-100 transition-opacity">
+                    ابدأ
+                    <ArrowRight className="h-3.5 w-3.5" />
+                  </span>
                 </button>
               ))}
             </div>
@@ -398,7 +410,7 @@ export default function PricingAdmin() {
           {/* ——— عمود الاختيار ——— */}
           <div className="space-y-5">
             {/* البحث */}
-            <div className="bg-card border rounded-xl p-4">
+            <div className="bg-card border rounded-2xl shadow-clean p-4">
               <div className="relative">
                 <Search className="absolute right-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground pointer-events-none" />
                 <Input
@@ -507,8 +519,11 @@ export default function PricingAdmin() {
               </>
             )}
 
-            <section className="bg-card border rounded-xl p-5">
-              <h2 className="font-bold mb-4">بيانات العميل</h2>
+            <section className="bg-card border rounded-2xl shadow-clean p-5">
+              <h2 className="font-bold mb-4 flex items-center gap-2">
+                <span className="w-1 h-4 rounded-full bg-brand-yellow shrink-0" aria-hidden />
+                بيانات العميل
+              </h2>
               <div className="grid sm:grid-cols-2 gap-3">
                 <div className="space-y-1.5">
                   <Label htmlFor="name">الاسم</Label>
@@ -541,12 +556,13 @@ export default function PricingAdmin() {
 
           {/* ——— عمود النتيجة ——— */}
           <aside className="lg:sticky lg:top-32 space-y-4">
-            <div className="bg-card border rounded-xl overflow-hidden">
+            <div className="bg-card border rounded-2xl shadow-clean overflow-hidden">
               <div className="p-5">
-                <h2 className="font-bold mb-3">
+                <h2 className="font-bold mb-3 flex items-center gap-2">
+                  <span className="w-1 h-4 rounded-full bg-brand-yellow shrink-0" aria-hidden />
                   العرض
                   {quote.lines.length > 0 && (
-                    <span className="text-xs font-normal text-muted-foreground mr-2">
+                    <span className="text-xs font-normal text-muted-foreground">
                       {quote.lines.length} بند
                     </span>
                   )}
@@ -605,7 +621,7 @@ export default function PricingAdmin() {
             </div>
 
             {/* الإرسال */}
-            <div className="bg-card border rounded-xl p-5 space-y-3">
+            <div className="bg-card border rounded-2xl shadow-clean p-5 space-y-3">
               <label className="flex items-center gap-2 text-sm cursor-pointer">
                 <input type="checkbox" checked={showCodes}
                        onChange={(e) => setShowCodes(e.target.checked)}
