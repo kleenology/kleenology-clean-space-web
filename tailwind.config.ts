@@ -60,6 +60,8 @@ export default {
 					blue: 'hsl(var(--brand-blue))',
 					'blue-light': 'hsl(var(--brand-blue-light))',
 					'blue-dark': 'hsl(var(--brand-blue-dark))',
+					'blue-deep': 'hsl(var(--brand-blue-deep))',
+					'blue-deeper': 'hsl(var(--brand-blue-deeper))',
 					yellow: 'hsl(var(--brand-yellow))',
 					'yellow-light': 'hsl(var(--brand-yellow-light))'
 				},

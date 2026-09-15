@@ -23,8 +23,13 @@ const SUPERVISOR_KEY = "kleenology_supervisor_name";
 
 function Section({ title, children }: { title: string; children: React.ReactNode }) {
   return (
-    <section className="bg-card border rounded-xl p-4 sm:p-5">
-      <h2 className="font-bold mb-3">{title}</h2>
+    <section className="bg-card border rounded-2xl shadow-clean p-4 sm:p-5">
+      {/* شرطة صفراء قبل العنوان — علامة الهوية، ولا تدخل قائمة الفحص
+          فتلتبس بحكم «يحتاج إعادة» */}
+      <h2 className="font-bold mb-3 flex items-center gap-2">
+        <span className="w-1 h-4 rounded-full bg-brand-yellow shrink-0" aria-hidden />
+        {title}
+      </h2>
       {children}
     </section>
   );
@@ -256,7 +261,7 @@ export function InspectionForm({
   return (
     <div className="lg:grid lg:grid-cols-[1fr_340px] lg:gap-6 lg:items-start">
       <div className="space-y-4">
-      <div className="bg-card border rounded-xl overflow-hidden">
+      <div className="bg-card border rounded-2xl shadow-clean overflow-hidden">
         <div className="flex items-center justify-between gap-2 p-4">
           <button type="button" onClick={openSaved}
                   className="flex items-center gap-2 font-bold text-sm">
@@ -541,7 +546,7 @@ export function InspectionForm({
       </div>
 
       {/* شريط سفلي على الجوال، عمود جانبي على اللابتوب */}
-      <div className="bg-card border rounded-xl p-4 sm:p-5 space-y-3 sticky bottom-4 mt-4 lg:mt-0 lg:sticky lg:top-32 lg:bottom-auto">
+      <div className="bg-card border rounded-2xl shadow-clean p-4 sm:p-5 space-y-3 sticky bottom-4 mt-4 lg:mt-0 lg:sticky lg:top-32 lg:bottom-auto">
         <div className="flex items-center justify-between text-sm">
           <span className="font-bold">
             {data.levels.length} مستوى · {rooms} غرفة

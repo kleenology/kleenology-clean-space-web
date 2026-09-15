@@ -58,7 +58,7 @@ export function CustomItemsPicker({
       </p>
 
       {/* المختار أولاً: هو مادة الفحص، فيبقى تحت عين المشرف وهو يبحث */}
-      <div className="bg-card border rounded-xl p-4 mb-3">
+      <div className="bg-card border rounded-2xl shadow-clean p-4 mb-3">
         <div className="flex items-center justify-between gap-2 mb-2">
           <span className="font-bold text-sm">البنود المختارة</span>
           <span className="text-xs text-muted-foreground tabular-nums">{items.length}</span>
@@ -82,7 +82,7 @@ export function CustomItemsPicker({
         )}
       </div>
 
-      <div className="bg-card border rounded-xl p-4">
+      <div className="bg-card border rounded-2xl shadow-clean p-4">
         <div className="relative mb-3">
           <Search className="absolute right-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground pointer-events-none" />
           <Input
