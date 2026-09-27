@@ -14,6 +14,7 @@ const ALL_MODULES = [
   { id: 'dns',        label: 'DNS & Email Security', requiresKey: false },
   { id: 'certs',      label: 'Certificate Transparency', requiresKey: false },
   { id: 'ip',         label: 'IP Geolocation', requiresKey: false },
+  { id: 'headers',    label: 'HTTP Security Headers', requiresKey: false },
   { id: 'virustotal', label: 'VirusTotal Reputation', requiresKey: true,  keyField: 'virustotal' as const },
   { id: 'urlscan',    label: 'URLScan + Headers', requiresKey: true, keyField: 'urlscan' as const },
 ];

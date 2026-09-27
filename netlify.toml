@@ -71,6 +71,11 @@
   status = 200
 
 [[redirects]]
+  from = "/api/scan/headers"
+  to = "/.netlify/functions/http-headers"
+  status = 200
+
+[[redirects]]
   from = "/*"
   to = "/index.html"
   status = 200
