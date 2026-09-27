@@ -9,6 +9,22 @@ interface CrtShEntry {
   not_after: string;
 }
 
+// Pull extra subdomains from the multi-source aggregator (crt.sh, certspotter,
+// hackertarget, anubis, OTX) via a same-origin serverless function.
+async function fetchAggregatedSubdomains(
+  domain: string,
+): Promise<{ subdomains: string[]; sources?: CertResult['subdomainSources'] }> {
+  try {
+    const res = await fetch(`/api/scan/subdomains?domain=${encodeURIComponent(domain)}`);
+    if (!res.ok) return { subdomains: [] };
+    const data = await res.json();
+    if (data.error || !Array.isArray(data.subdomains)) return { subdomains: [] };
+    return { subdomains: data.subdomains, sources: data.sources };
+  } catch {
+    return { subdomains: [] };
+  }
+}
+
 export async function scanCertificates(domain: string): Promise<{ result: CertResult; findings: Finding[] }> {
   const empty: CertResult = { certificates: [], subdomains: [], totalCerts: 0, wildcardCerts: 0, expiredCerts: 0 };
 
@@ -63,12 +79,17 @@ export async function scanCertificates(domain: string): Promise<{ result: CertRe
       };
     });
 
+    // Enrich the CT-derived subdomains with the aggregator's other sources.
+    const agg = await fetchAggregatedSubdomains(domain);
+    agg.subdomains.forEach(s => subdomainSet.add(s));
+
     const result: CertResult = {
       certificates: certificates.slice(0, 50),
       subdomains: Array.from(subdomainSet).sort(),
       totalCerts: unique.length,
       wildcardCerts,
       expiredCerts,
+      subdomainSources: agg.sources,
     };
 
     const findings: Finding[] = [];
@@ -100,8 +121,8 @@ export async function scanCertificates(domain: string): Promise<{ result: CertRe
         id: 'cert-large-surface',
         module: 'Certificate Transparency',
         severity: 'info',
-        title: `${subdomainSet.size} Subdomains Exposed via Certificate Transparency`,
-        description: 'A large subdomain footprint increases attack surface. CT logs are public and indexed by tools like crt.sh.',
+        title: `${subdomainSet.size} Subdomains Discovered Across Public Sources`,
+        description: 'A large subdomain footprint increases attack surface. These names are publicly indexed (CT logs, passive DNS, crt.sh, certspotter, and others).',
         evidence: `${subdomainSet.size} unique subdomains found`,
         remediation: 'Decommission unused subdomains. Ensure each subdomain has appropriate security controls.',
       });
