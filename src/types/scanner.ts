@@ -30,6 +30,8 @@ export interface DnsResult {
   hasDKIM: boolean;
   dkimSelectors: string[];
   hasDNSSEC: boolean;
+  hasCAA: boolean;
+  caaRecords: string[];
 }
 
 export interface Certificate {
@@ -96,10 +98,27 @@ export interface UrlScanResult {
   technologies: string[];
 }
 
+export interface HttpHeadersResult {
+  finalStatus: number;
+  server?: string;
+  poweredBy?: string;
+  present: string[];
+  missing: string[];
+  xssPosture: 'protected' | 'weak' | 'exposed';
+  xssSummary: string;
+  cookies: Array<{
+    name: string;
+    secure: boolean;
+    httpOnly: boolean;
+    sameSite: string | null;
+  }>;
+}
+
 export interface ModuleStates {
   dns: ModuleStatus;
   certs: ModuleStatus;
   ip: ModuleStatus;
+  headers: ModuleStatus;
   virustotal: ModuleStatus;
   urlscan: ModuleStatus;
 }
@@ -114,6 +133,7 @@ export interface ScanResult {
   dns?: DnsResult;
   certs?: CertResult;
   ip?: IpResult;
+  headers?: HttpHeadersResult;
   virustotal?: VirusTotalResult;
   urlscan?: UrlScanResult;
 }

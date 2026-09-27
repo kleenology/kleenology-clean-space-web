@@ -4,6 +4,7 @@ import { scanDNS } from '@/lib/scanner/dns';
 import { scanCertificates } from '@/lib/scanner/certs';
 import { scanIP } from '@/lib/scanner/ip';
 import { checkVirusTotal, submitUrlScan } from '@/lib/scanner/reputation';
+import { scanHeaders } from '@/lib/scanner/headers';
 import { calculateRiskScore } from '@/lib/scanner/scoring';
 
 const DEFAULT_KEYS: ApiKeys = { virustotal: '', urlscan: '' };
@@ -32,7 +33,7 @@ function normalizeUrl(input: string): string {
 }
 
 const IDLE_MODULES: ModuleStates = {
-  dns: 'idle', certs: 'idle', ip: 'idle', virustotal: 'idle', urlscan: 'idle',
+  dns: 'idle', certs: 'idle', ip: 'idle', headers: 'idle', virustotal: 'idle', urlscan: 'idle',
 };
 
 export function useScanner() {
@@ -84,6 +85,7 @@ export function useScanner() {
       const initialModules: ModuleStates = {
         dns:        enabledModules.has('dns')   ? 'running' : 'skipped',
         certs:      enabledModules.has('certs') ? 'running' : 'skipped',
+        headers:    enabledModules.has('headers') ? 'running' : 'skipped',
         ip:         'idle',
         virustotal: enabledModules.has('virustotal') && apiKeys.virustotal ? 'running' : 'skipped',
         urlscan:    enabledModules.has('urlscan') && apiKeys.urlscan       ? 'running' : 'skipped',
@@ -138,6 +140,20 @@ export function useScanner() {
               pushFindings(findings);
             })
             .catch(() => setModuleStatus('certs', 'error')),
+        );
+      }
+
+      // ── HTTP Security Headers (via serverless proxy) ─────────────────────
+      if (enabledModules.has('headers')) {
+        tasks.push(
+          scanHeaders(normalizeUrl(target))
+            .then(({ result, findings }) => {
+              if (abort.signal.aborted) return;
+              if (result) mergeResult('headers', result);
+              setModuleStatus('headers', result ? 'complete' : 'error');
+              pushFindings(findings);
+            })
+            .catch(() => setModuleStatus('headers', 'error')),
         );
       }
 

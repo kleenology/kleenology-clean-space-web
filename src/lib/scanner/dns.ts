@@ -21,7 +21,7 @@ const DKIM_SELECTORS = [
 ];
 
 export async function scanDNS(domain: string): Promise<{ result: DnsResult; findings: Finding[] }> {
-  const [aRecs, aaaaRecs, mxRecs, nsRecs, txtRecs, dmarcRecs, dsRecs] = await Promise.all([
+  const [aRecs, aaaaRecs, mxRecs, nsRecs, txtRecs, dmarcRecs, dsRecs, caaRecs] = await Promise.all([
     doh(domain, 'A'),
     doh(domain, 'AAAA'),
     doh(domain, 'MX'),
@@ -29,6 +29,7 @@ export async function scanDNS(domain: string): Promise<{ result: DnsResult; find
     doh(domain, 'TXT'),
     doh(`_dmarc.${domain}`, 'TXT'),
     doh(domain, 'DS'),
+    doh(domain, 'CAA'),
   ]);
 
   const dkimResults = await Promise.all(
@@ -38,9 +39,11 @@ export async function scanDNS(domain: string): Promise<{ result: DnsResult; find
 
   const unquote = (s: string) => s.replace(/^"|"$/g, '').replace(/"\s*"/g, '');
   const txtValues = txtRecs.map(r => unquote(r.data));
-  const spfRecord = txtValues.find(t => t.startsWith('v=spf1'));
+  const spfRecords = txtValues.filter(t => t.startsWith('v=spf1'));
+  const spfRecord = spfRecords[0];
   const dmarcRaw = dmarcRecs.find(r => r.data.includes('v=DMARC1'));
   const dmarcRecord = dmarcRaw ? unquote(dmarcRaw.data) : undefined;
+  const caaValues = caaRecs.map(r => unquote(r.data));
 
   const result: DnsResult = {
     ipv4: aRecs.map(r => r.data),
@@ -55,9 +58,16 @@ export async function scanDNS(domain: string): Promise<{ result: DnsResult; find
     hasDKIM: foundSelectors.length > 0,
     dkimSelectors: foundSelectors,
     hasDNSSEC: dsRecs.length > 0,
+    hasCAA: caaValues.length > 0,
+    caaRecords: caaValues,
   };
 
   const findings: Finding[] = [];
+
+  // Count SPF DNS-lookup mechanisms (RFC 7208 caps these at 10).
+  const spfLookups = spfRecord
+    ? (spfRecord.match(/\b(include|a|mx|ptr|exists|redirect)[:=]?/gi) ?? []).length
+    : 0;
 
   if (!result.hasSPF) {
     findings.push({
@@ -78,6 +88,50 @@ export async function scanDNS(domain: string): Promise<{ result: DnsResult; find
       description: '+all allows any server on the internet to send mail as this domain, completely defeating SPF.',
       evidence: spfRecord,
       remediation: 'Replace +all with ~all (soft fail) or -all (hard fail)',
+    });
+  } else if (spfRecord && !/[-~?+]all\b/.test(spfRecord)) {
+    findings.push({
+      id: 'dns-spf-no-all',
+      module: 'DNS / Email Security',
+      severity: 'medium',
+      title: 'SPF Record Missing an "all" Mechanism',
+      description: 'Without a trailing all mechanism, receivers apply a neutral result and spoofed mail is not reliably rejected.',
+      evidence: spfRecord,
+      remediation: 'End the SPF record with -all (hard fail) or at least ~all (soft fail).',
+    });
+  } else if (spfRecord?.includes('~all')) {
+    findings.push({
+      id: 'dns-spf-soft-fail',
+      module: 'DNS / Email Security',
+      severity: 'low',
+      title: 'SPF Uses ~all (Soft Fail)',
+      description: 'Soft fail asks receivers to accept-but-mark unauthorized mail rather than reject it, leaving room for spoofing.',
+      evidence: spfRecord,
+      remediation: 'Once confident in your sender list, tighten ~all to -all (hard fail).',
+    });
+  }
+
+  if (spfRecords.length > 1) {
+    findings.push({
+      id: 'dns-spf-multiple',
+      module: 'DNS / Email Security',
+      severity: 'high',
+      title: 'Multiple SPF Records Published',
+      description: 'RFC 7208 permits only one SPF record. Multiple records cause a permerror and SPF is ignored entirely by receivers.',
+      evidence: spfRecords.join('  |  '),
+      remediation: 'Merge all senders into a single v=spf1 TXT record.',
+    });
+  }
+
+  if (spfLookups > 10) {
+    findings.push({
+      id: 'dns-spf-lookup-limit',
+      module: 'DNS / Email Security',
+      severity: 'medium',
+      title: `SPF Exceeds the 10 DNS-Lookup Limit (~${spfLookups})`,
+      description: 'SPF allows at most 10 DNS-lookup mechanisms. Exceeding it produces a permerror, so SPF fails open.',
+      evidence: spfRecord,
+      remediation: 'Reduce include/a/mx/ptr/exists mechanisms, or flatten includes into IP ranges.',
     });
   }
 
@@ -100,6 +154,67 @@ export async function scanDNS(domain: string): Promise<{ result: DnsResult; find
       description: 'DMARC is in report-only mode. Spoofed emails are not quarantined or rejected.',
       evidence: dmarcRecord,
       remediation: 'Graduate to p=quarantine then p=reject after reviewing DMARC aggregate reports.',
+    });
+  }
+
+  if (dmarcRecord) {
+    const pctMatch = dmarcRecord.match(/pct=(\d+)/);
+    if (pctMatch && Number(pctMatch[1]) < 100 && !dmarcRecord.includes('p=none')) {
+      findings.push({
+        id: 'dns-dmarc-partial-pct',
+        module: 'DNS / Email Security',
+        severity: 'medium',
+        title: `DMARC Enforced on Only ${pctMatch[1]}% of Mail (pct<100)`,
+        description: 'The DMARC policy is applied to a fraction of messages, leaving the remainder unprotected against spoofing.',
+        evidence: dmarcRecord,
+        remediation: 'Raise pct to 100 once monitoring confirms legitimate mail passes.',
+      });
+    }
+    if (!/\brua=/.test(dmarcRecord)) {
+      findings.push({
+        id: 'dns-dmarc-no-rua',
+        module: 'DNS / Email Security',
+        severity: 'low',
+        title: 'DMARC Has No Aggregate Reporting Address (rua)',
+        description: 'Without rua you receive no aggregate reports, so you cannot see who is sending or spoofing mail as your domain.',
+        evidence: dmarcRecord,
+        remediation: 'Add rua=mailto:dmarc-reports@yourdomain.com to collect aggregate reports.',
+      });
+    }
+    if (/\bsp=none\b/.test(dmarcRecord)) {
+      findings.push({
+        id: 'dns-dmarc-sp-none',
+        module: 'DNS / Email Security',
+        severity: 'medium',
+        title: 'DMARC Subdomain Policy is sp=none',
+        description: 'Subdomains are exempt from enforcement, so attackers can spoof mail from any subdomain of this domain.',
+        evidence: dmarcRecord,
+        remediation: 'Set sp=quarantine or sp=reject to cover subdomains.',
+      });
+    }
+  }
+
+  if (!result.hasCAA) {
+    findings.push({
+      id: 'dns-no-caa',
+      module: 'DNS / Email Security',
+      severity: 'low',
+      title: 'No CAA Record — Any CA May Issue Certificates',
+      description: 'Without a CAA record, any certificate authority can issue certificates for this domain, widening the mis-issuance attack surface.',
+      remediation: 'Publish a CAA record, e.g. 0 issue "letsencrypt.org", to restrict which CAs may issue.',
+      reference: 'https://www.rfc-editor.org/rfc/rfc8659',
+    });
+  }
+
+  if (result.mxRecords.length > 0 && (!result.hasSPF || !result.hasDMARC)) {
+    findings.push({
+      id: 'dns-mx-without-auth',
+      module: 'DNS / Email Security',
+      severity: 'high',
+      title: 'Mail Servers Present Without Full Email Authentication',
+      description: 'The domain publishes MX records (it sends/receives mail) but is missing SPF and/or DMARC, making it an easy spoofing target.',
+      evidence: `MX: ${result.mxRecords.join(', ')}`,
+      remediation: 'Ensure SPF, DKIM, and an enforcing DMARC policy are all configured for any mail-enabled domain.',
     });
   }
 

@@ -5,6 +5,7 @@ const MODULE_LABELS: Record<keyof ModuleStates, string> = {
   dns:        'DNS & Email',
   certs:      'Certificates',
   ip:         'IP Geolocation',
+  headers:    'Security Headers',
   virustotal: 'VirusTotal',
   urlscan:    'URLScan + Headers',
 };
