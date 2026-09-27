@@ -14,14 +14,22 @@ interface CrtShEntry {
 async function fetchAggregatedSubdomains(
   domain: string,
 ): Promise<{ subdomains: string[]; sources?: CertResult['subdomainSources'] }> {
+  const controller = new AbortController();
+  const timer = setTimeout(() => controller.abort(), 15000);
   try {
-    const res = await fetch(`/api/scan/subdomains?domain=${encodeURIComponent(domain)}`);
+    const res = await fetch(`/api/scan/subdomains?domain=${encodeURIComponent(domain)}`, {
+      signal: controller.signal,
+    });
     if (!res.ok) return { subdomains: [] };
+    // Guard against the SPA fallback (index.html) when the function is absent.
+    if (!res.headers.get('content-type')?.includes('application/json')) return { subdomains: [] };
     const data = await res.json();
     if (data.error || !Array.isArray(data.subdomains)) return { subdomains: [] };
     return { subdomains: data.subdomains, sources: data.sources };
   } catch {
     return { subdomains: [] };
+  } finally {
+    clearTimeout(timer);
   }
 }
 

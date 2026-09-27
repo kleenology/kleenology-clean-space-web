@@ -30,13 +30,10 @@ async function withTimeout(promise, ms) {
 const UA = { "user-agent": "KleenologyScanner/1.0 (+subdomain-index)" };
 
 // Each source returns an array of hostnames (may be empty on failure).
+// crt.sh is intentionally NOT queried here: the certificate module already
+// calls it directly from the browser, and hitting it twice per scan triggers
+// crt.sh rate-limiting, which would empty the results.
 const SOURCES = {
-  async crtsh(domain, signal) {
-    const res = await fetch(`https://crt.sh/?q=%25.${encodeURIComponent(domain)}&output=json`, { signal, headers: UA });
-    if (!res.ok) return [];
-    const rows = await res.json();
-    return rows.flatMap((r) => String(r.name_value ?? "").split("\n"));
-  },
   async hackertarget(domain, signal) {
     const res = await fetch(`https://api.hackertarget.com/hostsearch/?q=${encodeURIComponent(domain)}`, { signal, headers: UA });
     if (!res.ok) return [];
