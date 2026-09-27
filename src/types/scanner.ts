@@ -51,6 +51,7 @@ export interface CertResult {
   totalCerts: number;
   wildcardCerts: number;
   expiredCerts: number;
+  subdomainSources?: Record<string, { count: number; ok: boolean }>;
 }
 
 export interface IpResult {
