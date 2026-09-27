@@ -72,7 +72,7 @@ const SOURCES = {
   },
   async wayback(domain, signal) {
     const res = await fetch(
-      `https://web.archive.org/cdx/search/cdx?url=*.${encodeURIComponent(domain)}&output=json&fl=original&collapse=urlkey&limit=10000`,
+      `https://web.archive.org/cdx/search/cdx?url=*.${encodeURIComponent(domain)}&output=json&fl=original&collapse=urlkey&limit=5000`,
       { signal, headers: UA },
     );
     if (!res.ok) return [];
@@ -99,9 +99,11 @@ export default async (req) => {
   if (!domain) return json({ error: "missing domain parameter" }, 400);
   if (!isValidDomain(domain)) return json({ error: "invalid domain" }, 400);
 
+  // Netlify synchronous functions are killed at ~10s, so keep every source
+  // well under that; Promise.allSettled means total time ≈ the slowest source.
   const names = Object.keys(SOURCES);
   const settled = await Promise.allSettled(
-    names.map((name) => withTimeout((signal) => SOURCES[name](domain, signal), 12000)),
+    names.map((name) => withTimeout((signal) => SOURCES[name](domain, signal), 7000)),
   );
 
   const all = new Set();

@@ -58,7 +58,8 @@ export default async (req) => {
   }
 
   const controller = new AbortController();
-  const timer = setTimeout(() => controller.abort(), 12000);
+  // Stay under Netlify's ~10s synchronous-function limit.
+  const timer = setTimeout(() => controller.abort(), 8000);
 
   try {
     const res = await fetch(target.toString(), {
