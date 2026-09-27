@@ -62,6 +62,36 @@ const SOURCES = {
     const rows = await res.json();
     return Array.isArray(rows) ? rows.flatMap((r) => r.dns_names ?? []) : [];
   },
+  async rapiddns(domain, signal) {
+    const res = await fetch(`https://rapiddns.io/subdomain/${encodeURIComponent(domain)}?full=1`, { signal, headers: UA });
+    if (!res.ok) return [];
+    const html = await res.text();
+    // Extract every hostname of the target domain from the results table.
+    const re = new RegExp(`[a-z0-9](?:[a-z0-9-]*[a-z0-9])?(?:\\.[a-z0-9-]+)*\\.${domain.replace(/\./g, "\\.")}`, "gi");
+    return html.match(re) ?? [];
+  },
+  async wayback(domain, signal) {
+    const res = await fetch(
+      `https://web.archive.org/cdx/search/cdx?url=*.${encodeURIComponent(domain)}&output=json&fl=original&collapse=urlkey&limit=10000`,
+      { signal, headers: UA },
+    );
+    if (!res.ok) return [];
+    const rows = await res.json();
+    // First row is the header; each remaining row is [originalUrl].
+    return (Array.isArray(rows) ? rows.slice(1) : []).map((r) => {
+      try {
+        return new URL(r[0]).hostname;
+      } catch {
+        return "";
+      }
+    });
+  },
+  async threatminer(domain, signal) {
+    const res = await fetch(`https://api.threatminer.org/v2/domain.php?q=${encodeURIComponent(domain)}&rt=5`, { signal, headers: UA });
+    if (!res.ok) return [];
+    const data = await res.json();
+    return Array.isArray(data.results) ? data.results : [];
+  },
 };
 
 export default async (req) => {
