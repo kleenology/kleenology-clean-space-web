@@ -30,6 +30,8 @@ export interface DnsResult {
   hasDKIM: boolean;
   dkimSelectors: string[];
   hasDNSSEC: boolean;
+  hasCAA: boolean;
+  caaRecords: string[];
 }
 
 export interface Certificate {
