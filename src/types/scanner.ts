@@ -104,6 +104,8 @@ export interface HttpHeadersResult {
   poweredBy?: string;
   present: string[];
   missing: string[];
+  xssPosture: 'protected' | 'weak' | 'exposed';
+  xssSummary: string;
   cookies: Array<{
     name: string;
     secure: boolean;

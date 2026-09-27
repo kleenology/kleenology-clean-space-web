@@ -116,6 +116,60 @@ export async function scanHeaders(
     }
   }
 
+  // XSS-readiness: CSP is the primary defence-in-depth control against XSS.
+  // Analyse its strength when present (no payloads are ever sent to the target).
+  const csp = data.headers['content-security-policy'];
+  if (csp) {
+    const lower = csp.toLowerCase();
+    const scriptDirective =
+      lower.match(/script-src[^;]*/)?.[0] ?? lower.match(/default-src[^;]*/)?.[0] ?? '';
+
+    if (scriptDirective.includes("'unsafe-inline'")) {
+      findings.push({
+        id: 'headers-csp-unsafe-inline',
+        module: 'HTTP Security Headers',
+        severity: 'medium',
+        title: "CSP Allows 'unsafe-inline' Scripts",
+        description: "'unsafe-inline' lets inline <script> and event-handler attributes run, which largely defeats CSP as an XSS defence.",
+        evidence: scriptDirective.trim(),
+        remediation: "Remove 'unsafe-inline'; use nonces or hashes for the scripts you trust.",
+        reference: 'https://developer.mozilla.org/en-US/docs/Web/HTTP/Headers/Content-Security-Policy/script-src',
+      });
+    }
+    if (scriptDirective.includes("'unsafe-eval'")) {
+      findings.push({
+        id: 'headers-csp-unsafe-eval',
+        module: 'HTTP Security Headers',
+        severity: 'low',
+        title: "CSP Allows 'unsafe-eval'",
+        description: "'unsafe-eval' permits eval() and similar string-to-code APIs, expanding the XSS attack surface.",
+        evidence: scriptDirective.trim(),
+        remediation: "Remove 'unsafe-eval' and refactor code that relies on eval().",
+      });
+    }
+    if (/script-src[^;]*(\s|:)\*/.test(lower) || (!lower.includes('script-src') && /default-src[^;]*(\s|:)\*/.test(lower))) {
+      findings.push({
+        id: 'headers-csp-wildcard-script',
+        module: 'HTTP Security Headers',
+        severity: 'medium',
+        title: 'CSP Script Source Uses a Wildcard (*)',
+        description: 'A wildcard script source lets scripts load from any origin, so an attacker-controlled host can serve malicious JavaScript.',
+        evidence: scriptDirective.trim(),
+        remediation: 'Replace * with an explicit allowlist of trusted script origins.',
+      });
+    }
+    if (!lower.includes('object-src')) {
+      findings.push({
+        id: 'headers-csp-no-object-src',
+        module: 'HTTP Security Headers',
+        severity: 'info',
+        title: "CSP Missing object-src 'none'",
+        description: 'Without object-src, plugins/embeds (<object>, <embed>) can be injected as an XSS vector.',
+        remediation: "Add object-src 'none' to the policy.",
+      });
+    }
+  }
+
   const cookies = data.setCookies.map(parseCookie);
   for (const cookie of cookies) {
     if (!cookie.httpOnly) {
@@ -179,12 +233,34 @@ export async function scanHeaders(
     });
   }
 
+  // At-a-glance XSS readiness from the response's defensive posture (no active
+  // probing): strong CSP => protected, weak CSP => weak, no CSP => exposed.
+  let xssPosture: HttpHeadersResult['xssPosture'];
+  let xssSummary: string;
+  const cspLower = csp?.toLowerCase() ?? '';
+  const cspIsWeak =
+    cspLower.includes("'unsafe-inline'") ||
+    cspLower.includes("'unsafe-eval'") ||
+    /script-src[^;]*(\s|:)\*/.test(cspLower);
+  if (!csp) {
+    xssPosture = 'exposed';
+    xssSummary = 'No Content-Security-Policy: if any input is reflected unsafely, injected scripts run with nothing to stop them.';
+  } else if (cspIsWeak) {
+    xssPosture = 'weak';
+    xssSummary = 'A CSP exists but is weakened (unsafe-inline / unsafe-eval / wildcard), so it offers limited protection against XSS.';
+  } else {
+    xssPosture = 'protected';
+    xssSummary = 'A Content-Security-Policy is present without obvious weaknesses, providing defence-in-depth against XSS.';
+  }
+
   const result: HttpHeadersResult = {
     finalStatus: data.finalStatus,
     server: data.server ?? undefined,
     poweredBy: data.poweredBy ?? undefined,
     present,
     missing,
+    xssPosture,
+    xssSummary,
     cookies,
   };
 
