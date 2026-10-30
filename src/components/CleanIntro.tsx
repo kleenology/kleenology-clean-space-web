@@ -204,25 +204,14 @@ export const CleanIntro = () => {
       }
       frame.current = requestAnimationFrame(tick);
     };
-    // تبدأ المسحة بعد ما يخلص تحميل الصفحة — التحميل هو اللي كان يقطّع أول
-    // جزء من الحركة. حد أقصى ثانيتين حتى لا ينتظر الزائر على اتصال بطيء.
-    let started = false;
-    const begin = () => {
-      if (started) return;
-      started = true;
-      window.setTimeout(() => { frame.current = requestAnimationFrame(tick); }, 200);
-    };
-    if (document.readyState === "complete") begin();
-    else window.addEventListener("load", begin, { once: true });
-    const fallback = window.setTimeout(begin, 2000);
+    // تبدأ المسحة فوراً: انتظار تحميل الصفحة كان يأخّرها ثواني على الجوال
+    // والزائر ممكن يطلع. أي تقطيع وقت التحميل تمتصه الساعة الداخلية فوق.
+    frame.current = requestAnimationFrame(tick);
 
     // الصفحة ما تتحرك تحت المقدّمة
     const previousOverflow = document.body.style.overflow;
     document.body.style.overflow = "hidden";
     return () => {
-      started = true;
-      window.clearTimeout(fallback);
-      window.removeEventListener("load", begin);
       cancelAnimationFrame(frame.current);
       document.body.style.overflow = previousOverflow;
     };
