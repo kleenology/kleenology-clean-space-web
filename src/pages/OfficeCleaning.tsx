@@ -11,7 +11,7 @@ import {
 } from "@/components/ui/accordion";
 import {
   MessageCircle, Clock, ShieldCheck, Users, Camera, ClipboardCheck, PenLine,
-  CalendarClock, Building2, Coffee, DoorOpen, Monitor, Bath, Sparkles, Quote,
+  CalendarClock, Building2, Coffee, DoorOpen, Monitor, Bath, Sparkles,
   UserX, TrendingDown, MessageSquareWarning, CheckCircle2, ArrowLeft, ArrowRight, Lock,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
@@ -82,9 +82,9 @@ const content = {
         { icon: Building2, title: "الممرات والسلالم والمصاعد", desc: "ونفرّغ السلال ونرتّب المناطق المشتركة." },
       ],
     },
-    testimonial: {
-      text: "من افضل شركات التنظيف في الرياض، تعاملت مع شركات كثيرة لكن للأسف بعد ما ينظفون ويمشون تلقى ملاحظات. لكن شركة كلينولوجي كسرت هذي القاعدة، مهتمين برضا العميل.",
-      name: "ف · عميل كلينولوجي",
+    why: {
+      title: "ليش الشركات تختارنا؟",
+      items: ["فريق ثابت ومشرف يعرف مكتبك", "فحص جودة موثّق بالصور بعد كل زيارة", "جدولة قبل الدوام أو بعده أو في الويكند", "عرض سعر خلال أقل من ساعة"],
     },
     form: {
       title: "عرض سعر لمكتبك",
@@ -174,9 +174,9 @@ const content = {
         { icon: Building2, title: "Hallways, stairs & lifts", desc: "Plus emptying bins and tidying shared areas." },
       ],
     },
-    testimonial: {
-      text: "One of the best cleaning companies in Riyadh. I've dealt with many companies, but after they clean and leave you always find issues. Kleenology broke that rule — they truly care about customer satisfaction.",
-      name: "F · Kleenology client",
+    why: {
+      title: "Why businesses choose us",
+      items: ["A dedicated team and supervisor who know your office", "A documented photo quality check after every visit", "Scheduling before hours, after hours or weekends", "A quote in under an hour"],
     },
     form: {
       title: "A quote for your office",
@@ -445,15 +445,21 @@ const OfficeCleaning = () => {
           </div>
         </section>
 
-        {/* ——— شهادة ونموذج ——— */}
+        {/* ——— لماذا نحن ونموذج ——— */}
         <section className="bg-muted/40 py-16 sm:py-20">
           <div className="max-w-6xl mx-auto px-4 grid lg:grid-cols-2 gap-10 items-start">
             <div className="lg:sticky lg:top-28 space-y-6">
-              <figure className="rounded-3xl bg-card border p-7 shadow-clean">
-                <Quote className="h-8 w-8 text-brand-yellow mb-3" />
-                <blockquote className="text-lg leading-relaxed mb-4">{c.testimonial.text}</blockquote>
-                <figcaption className="text-sm text-muted-foreground">{c.testimonial.name}</figcaption>
-              </figure>
+              <div>
+                <h2 className="text-2xl sm:text-3xl font-bold mb-3">{c.why.title}</h2>
+                <ul className="space-y-3">
+                  {c.why.items.map((item) => (
+                    <li key={item} className="flex items-start gap-3">
+                      <CheckCircle2 className="h-5 w-5 text-primary shrink-0 mt-0.5" />
+                      <span>{item}</span>
+                    </li>
+                  ))}
+                </ul>
+              </div>
               <div className="grid grid-cols-3 gap-3 text-center">
                 {[["+150", isRTL ? "شركة عميلة" : "business clients"], ["98%", isRTL ? "رضا العملاء" : "satisfaction"], ["< 1h", isRTL ? "وقت الرد" : "reply time"]].map(([v, l]) => (
                   <div key={l} className="rounded-2xl bg-card border p-4">
