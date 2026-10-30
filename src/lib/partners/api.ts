@@ -2,11 +2,11 @@
 
 import { toWhatsAppNumber } from "@/lib/pricing/quoteMessage";
 
-/** عمولة الشريك: 10٪ من قيمة أول طلب للعميل بعد الخصم وقبل الضريبة */
+/** عمولة الشريك: 10٪ من قيمة كل طلب لكل عميل يحيله، بعد الخصم وقبل الضريبة */
 export const COMMISSION_RATE = 0.1;
 
 export type PartnerStatus = "pending" | "approved" | "suspended";
-export type LeadStatus = "new" | "quoted" | "done" | "paid" | "settled" | "lost";
+export type LeadStatus = "new" | "quoted" | "active" | "lost";
 
 export const PARTNER_STATUS_LABEL: Record<PartnerStatus, string> = {
   pending: "بانتظار الاعتماد",
@@ -17,13 +17,11 @@ export const PARTNER_STATUS_LABEL: Record<PartnerStatus, string> = {
 export const LEAD_STATUS_LABEL: Record<LeadStatus, string> = {
   new: "جديد",
   quoted: "تم التسعير",
-  done: "تم التنفيذ",
-  paid: "العميل دفع",
-  settled: "العمولة مدفوعة",
+  active: "عميل فعّال",
   lost: "ما تم",
 };
 
-export const LEAD_STATUS_ORDER: LeadStatus[] = ["new", "quoted", "done", "paid", "settled", "lost"];
+export const LEAD_STATUS_ORDER: LeadStatus[] = ["new", "quoted", "active", "lost"];
 
 export const PARTNER_TYPES = ["مقاول", "شركة إنشاءات", "مكتب عقار", "شركة إدارة أملاك", "وسيط / فرد", "أخرى"];
 
@@ -41,6 +39,15 @@ export interface Partner {
   approvedAt?: string;
 }
 
+/** طلب مدفوع لعميل محال — لكل طلب عمولته */
+export interface Order {
+  id: string;
+  amount: number; // قبل الضريبة
+  note?: string;
+  paidAt: string;
+  settledAt?: string;
+}
+
 export interface Lead {
   id: string;
   partnerCode: string;
@@ -53,18 +60,21 @@ export interface Lead {
   adminNotes?: string;
   source: "partner" | "link";
   status: LeadStatus;
+  /** للعلم فقط: نفس العميل مسجّل عند شريك آخر */
+  duplicateNote?: string;
   eligible: boolean;
-  ineligibleReason: string;
-  amount: number;
+  orders: Order[];
   createdAt: string;
-  paidAt?: string;
-  settledAt?: string;
 }
 
 export const displayCode = (code: string) => `P-${code}`;
 
-export const commissionOf = (lead: Pick<Lead, "amount" | "eligible">) =>
-  lead.eligible ? Math.round(lead.amount * COMMISSION_RATE * 100) / 100 : 0;
+export const commissionOf = (amount: number) => Math.round(amount * COMMISSION_RATE * 100) / 100;
+
+/** طلبات لم تُصرف عمولتها بعد، لعملاء مؤهلين */
+export const unsettledOrders = (leads: Lead[]) =>
+  leads.flatMap((lead) =>
+    lead.eligible ? lead.orders.filter((o) => !o.settledAt).map((order) => ({ lead, order })) : []);
 
 export const sar = (value: number) =>
   `${(Math.round(value * 100) / 100).toLocaleString("en-US")} ر.س`;
@@ -81,6 +91,7 @@ function messageFor(status: number, code?: string): string {
   if (code === "invalid_code") return "كود الشريك غير صحيح أو غير مفعّل";
   if (code === "missing_fields") return "عبّ الحقول المطلوبة ورقم جوال صحيح";
   if (code === "terms_required") return "لازم توافق على الشروط";
+  if (code === "invalid_amount") return "اكتب مبلغ الطلب";
   if (status === 429) return "طلبات كثيرة — حاول بعد دقائق";
   if (status === 401) return "انتهت الجلسة — سجّل الدخول من جديد";
   if (status === 503 || code === "store_unavailable")
@@ -175,10 +186,24 @@ export function updateLead(token: string, id: string, changes: Partial<Lead>) {
   }, token);
 }
 
-export function settleLeads(token: string, ids: string[]) {
-  return call<{ settled: string[]; settledAt: string }>(ADMIN, {
+export function addOrder(token: string, id: string, amount: number, note = "") {
+  return call<{ lead: Lead }>(ADMIN, {
     method: "POST",
-    body: JSON.stringify({ kind: "settle", ids }),
+    body: JSON.stringify({ kind: "order", id, amount, note }),
+  }, token);
+}
+
+export function removeOrder(token: string, id: string, orderId: string) {
+  return call<{ lead: Lead }>(ADMIN, {
+    method: "POST",
+    body: JSON.stringify({ kind: "order", id, orderId, remove: true }),
+  }, token);
+}
+
+export function settleOrders(token: string, items: { id: string; orderId: string }[]) {
+  return call<{ settled: { id: string; orderId: string }[]; settledAt: string }>(ADMIN, {
+    method: "POST",
+    body: JSON.stringify({ kind: "settle", items }),
   }, token);
 }
 
@@ -209,7 +234,7 @@ export function approvalMessage(partner: Partner) {
     "٢. تسجّل العميل بنفسك من صفحة الشركاء:",
     "https://kleenology.me/partners",
     "",
-    "عمولتك 10٪ من قيمة أول طلب لكل عميل (بعد الخصم وقبل الضريبة)، وتصلك بكشف شهري بعد سداد العميل.",
+    "عمولتك 10٪ من قيمة كل طلب لكل عميل تحيله (بعد الخصم وقبل الضريبة)، وتصلك بكشف شهري بعد سداد العميل.",
   ].join("\n");
 }
 
@@ -221,17 +246,14 @@ const dateAr = (iso?: string) =>
   iso ? new Date(iso).toLocaleDateString("ar-SA-u-ca-gregory", { day: "numeric", month: "short" }) : "";
 
 /**
- * الكشف الشهري: العمولات المستحقة (العميل دفع ولم تُصرف بعد) مع ملخص
- * العملاء اللي ما زالوا في الطريق، حتى يعرف الشريك وين وصل كل عميل.
+ * الكشف الشهري: كل طلب مدفوع لم تُصرف عمولته بعد، مع العملاء اللي ما زالوا
+ * في الطريق حتى يعرف الشريك وين وصل كل عميل.
  */
 export function buildStatement(partner: Partner, leads: Lead[]) {
   const mine = leads.filter((lead) => lead.partnerCode === partner.id);
-  const payable = mine.filter((lead) => lead.status === "paid" && lead.eligible);
-  const pending = mine.filter((lead) => ["new", "quoted", "done"].includes(lead.status) && lead.eligible);
-  // المستبعدون يظهرون في كشف شهر إحالتهم والشهر اللي بعده فقط، لا كل شهر
-  const recent = Date.now() - 45 * 24 * 60 * 60 * 1000;
-  const excluded = mine.filter((lead) => !lead.eligible && Date.parse(lead.createdAt) > recent);
-  const total = payable.reduce((sum, lead) => sum + commissionOf(lead), 0);
+  const payable = unsettledOrders(mine);
+  const pending = mine.filter((lead) => ["new", "quoted"].includes(lead.status));
+  const total = payable.reduce((sum, { order }) => sum + commissionOf(order.amount), 0);
 
   const month = new Date().toLocaleDateString("ar-SA-u-ca-gregory", { month: "long", year: "numeric" });
   const lines = [
@@ -242,9 +264,9 @@ export function buildStatement(partner: Partner, leads: Lead[]) {
 
   if (payable.length) {
     lines.push("*العمولات المستحقة:*");
-    payable.forEach((lead, i) => {
-      lines.push(`${i + 1}. ${lead.customerName}${lead.neighborhood ? ` — ${lead.neighborhood}` : ""}`);
-      lines.push(`   قيمة الطلب ${sar(lead.amount)} ← عمولتك ${sar(commissionOf(lead))}`);
+    payable.forEach(({ lead, order }, i) => {
+      lines.push(`${i + 1}. ${lead.customerName}${lead.neighborhood ? ` — ${lead.neighborhood}` : ""} (${dateAr(order.paidAt)})`);
+      lines.push(`   قيمة الطلب ${sar(order.amount)} ← عمولتك ${sar(commissionOf(order.amount))}`);
     });
     lines.push("", `*الإجمالي: ${sar(total)}*`);
     if (partner.iban) lines.push(`يُحوّل على الآيبان المنتهي بـ ${partner.iban.slice(-4)}`);
@@ -253,17 +275,9 @@ export function buildStatement(partner: Partner, leads: Lead[]) {
   }
 
   if (pending.length) {
-    lines.push("", "*عملاء في الطريق* (تُستحق عمولتهم بعد السداد):");
+    lines.push("", "*عملاء في الطريق* (العمولة بعد ما يطلبون ويدفعون):");
     pending.forEach((lead) => {
       lines.push(`• ${lead.customerName} — ${LEAD_STATUS_LABEL[lead.status]} (${dateAr(lead.createdAt)})`);
-    });
-  }
-
-  if (excluded.length) {
-    lines.push("", "*غير مشمولين بالعمولة:*");
-    excluded.forEach((lead) => {
-      // سبب عام: السبب الداخلي قد يذكر اسم شريك آخر
-      lines.push(`• ${lead.customerName} — عميل مسجّل لدينا قبل الإحالة`);
     });
   }
 

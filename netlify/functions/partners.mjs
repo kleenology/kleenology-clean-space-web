@@ -9,7 +9,7 @@ import { newKey, MAX_BODY_BYTES } from "../lib/blob-records.mjs";
 import { normalizePhone } from "../lib/search-text.mjs";
 import {
   partnersStore, leadsStore, newPartnerCode, normalizeCode, displayCode,
-  findPriorCustomer, clean, rateLimited,
+  otherReferral, clean, rateLimited,
 } from "../lib/partners.mjs";
 
 async function approvedPartner(rawCode) {
@@ -67,10 +67,6 @@ async function submitLead(payload) {
     return jsonResponse({ error: "missing_fields" }, 400);
   }
 
-  // الاستبعاد يُحسب لحظة الإحالة: لو حُسب لاحقاً لظهرت معاينة هذا العميل نفسه
-  // كأنه «عميل سابق»
-  const prior = await findPriorCustomer(lead.phone);
-
   const id = newKey();
   await leadsStore().setJSON(id, {
     ...lead,
@@ -78,13 +74,11 @@ async function submitLead(payload) {
     partnerName: partner.company,
     source: payload.source === "link" ? "link" : "partner",
     status: "new",
-    eligible: !prior,
-    ineligibleReason: prior?.label ?? "",
-    amount: 0,
+    eligible: true,
+    duplicateNote: await otherReferral(lead.phone, partner.code),
+    orders: [],
     createdAt: new Date().toISOString(),
   });
-  // الشريك لا يُخبر بسبب الاستبعاد هنا — حتى لا يصير النموذج أداة لفحص
-  // من هو عميل عندنا. يصله في الكشف الشهري.
   return jsonResponse({ ok: true, partnerName: partner.company });
 }
 
