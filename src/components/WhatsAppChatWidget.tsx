@@ -86,6 +86,22 @@ const FLOW: Record<FlowKey, { text: string; replies: QuickReply[] }> = {
 const WA_PATTERN =
   "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='60' height='60'%3E%3Cg fill='%23d4ccc4' fill-opacity='0.15'%3E%3Cpath d='M36 34v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-30V0h-2v4h-4v2h4v4h2V6h4V4h-4zM6 34v-4H4v4H0v2h4v4h2v-4h4v-2H6zM6 4V0H4v4H0v2h4v4h2V6h4V4H6z'/%3E%3C/g%3E%3C/svg%3E";
 
+// شارة التوثيق الزرقاء بنفس شكل شارة واتساب للحسابات الموثقة
+function VerifiedBadge() {
+  return (
+    <svg viewBox="0 0 24 24" className="w-4 h-4 flex-shrink-0" role="img" aria-label="حساب موثق">
+      <path
+        fill="#1D9BF0"
+        d="M22.25 12c0-1.43-.88-2.67-2.19-3.34.46-1.39.2-2.9-.81-3.91s-2.52-1.27-3.91-.81c-.66-1.31-1.91-2.19-3.34-2.19s-2.67.88-3.33 2.19c-1.4-.46-2.91-.2-3.92.81s-1.26 2.52-.8 3.91c-1.31.67-2.2 1.91-2.2 3.34s.89 2.67 2.2 3.34c-.46 1.39-.21 2.9.8 3.91s2.52 1.26 3.91.81c.67 1.31 1.91 2.19 3.34 2.19s2.68-.88 3.34-2.19c1.39.45 2.9.2 3.91-.81s1.27-2.52.81-3.91c1.31-.67 2.19-1.91 2.19-3.34z"
+      />
+      <path
+        fill="#fff"
+        d="M10.54 16.2 6.8 12.46l1.41-1.42 2.26 2.26 4.8-5.23 1.47 1.36z"
+      />
+    </svg>
+  );
+}
+
 function TypingIndicator() {
   return (
     <div className="flex justify-start">
@@ -221,7 +237,10 @@ export const WhatsAppChatWidget = () => {
                 <span className="absolute bottom-0 right-0 w-2.5 h-2.5 bg-green-300 border-2 border-white rounded-full" />
               </div>
               <div>
-                <p className="text-white font-semibold text-sm leading-tight">كلينولوجي</p>
+                <p className="text-white font-semibold text-sm leading-tight flex items-center gap-1">
+                  كلينولوجي
+                  <VerifiedBadge />
+                </p>
                 <p className="text-white/80 text-xs">متاح الآن · رد خلال دقائق</p>
               </div>
             </div>
