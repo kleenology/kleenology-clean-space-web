@@ -6,9 +6,11 @@ import { useTranslation } from "react-i18next";
 // تظهر مرة واحدة في الزيارة، تُتخطى بضغطة، ولا تظهر لمن يفضّل تقليل الحركة.
 
 const SEEN_KEY = "kleenology_intro_seen";
-// كل سطر ثانية: بطيء كفاية يشوف الزائر المسح، والمقدّمة كلها حوالي ٣٫٥ ثانية
-const PASS_MS = 1000;
-const DROP_MS = 260;
+// مدة كل سطر: بطيئة كفاية يشوف الزائر المسح.
+// على الجوال أسرع (حوالي ٣ ثواني) لأن زائر الإعلان ما يصبر،
+// وعلى الشاشات الكبيرة حوالي ٣٫٥ ثانية
+const timing = (width: number) =>
+  width < 768 ? { pass: 850, drop: 200 } : { pass: 1000, drop: 260 };
 
 const copy = {
   ar: { working: "جاري التنظيف", skip: "تخطّي" },
@@ -144,6 +146,7 @@ export const CleanIntro = () => {
     const passes = 3;
     const band = h / passes;
     const pad = 6; // تداخل بسيط بين الأسطر حتى لا يبقى خط وسخ
+    const { pass: PASS_MS, drop: DROP_MS } = timing(w);
     const cycle = PASS_MS + DROP_MS;
     const total = passes * PASS_MS + (passes - 1) * DROP_MS;
     // ساعة داخلية: لو تأخر إطار (تحميل صور أو سكربتات) تبطئ المسّاحة لحظة
