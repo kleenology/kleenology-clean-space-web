@@ -9,17 +9,17 @@ import { Label } from "@/components/ui/label";
 import {
   Accordion, AccordionContent, AccordionItem, AccordionTrigger,
 } from "@/components/ui/accordion";
-import {
-  MessageCircle, Clock, ShieldCheck, Users, Camera, ClipboardCheck, PenLine,
-  CalendarClock, Building2, Coffee, DoorOpen, Monitor, Bath, Sparkles,
-  UserX, TrendingDown, MessageSquareWarning, CheckCircle2, ArrowLeft, ArrowRight, Lock,
-} from "lucide-react";
+import { MessageCircle, CheckCircle2, Camera, PenLine, ClipboardCheck, Lock } from "lucide-react";
 import { cn } from "@/lib/utils";
-import heroImage from "@/assets/professional-cleaning-hero.jpg";
-import resultImage from "@/assets/office-cleaning-bg.jpg";
+// صور فريق كلينولوجي الحقيقية بالزي — لا صور مولّدة في هذه الصفحة
+import teamGlass from "@/assets/deep-cleaning.jpg";
+import teamShelves from "@/assets/home-cleaning.jpg";
+import teamWindow from "@/assets/windows-cleaning.jpg";
+import teamStairs from "@/assets/rehab-cleaning.jpg";
+import teamMove from "@/assets/move-cleaning.jpg";
 
 // صفحة تنظيف المكاتب لها تصميمها الخاص بدل قالب الخدمات العام: صاحب القرار
-// هنا مدير مكتب أو مسؤول مرافق، وسؤاله «ليش أوقّع معكم؟» لا «وش تنظفون؟».
+// هنا مدير مكتب أو مسؤول مرافق، وسؤاله «ليش أوقّع معكم؟».
 // كل الادعاءات هنا موجودة أصلاً في الموقع (الأرقام، التأمين، الجدولة) أو في
 // أداة فحص الجودة الفعلية (قائمة بنود، صور، توقيع العميل، سجل محفوظ).
 // لا تضف هنا «نرسل التقرير على الواتس» — رابط التقرير للإدارة فقط.
@@ -29,158 +29,168 @@ const WHATSAPP_NUMBER = "966537519929";
 const content = {
   ar: {
     seo: {
-      title: "تنظيف مكاتب وشركات في الرياض | فحص جودة بالصور | كلينولوجي",
-      description: "تنظيف مكاتب وشركات في الرياض بفريق ثابت ومشرف، جدولة قبل أو بعد الدوام، وفحص جودة موثّق بالصور بعد كل زيارة. اطلب عرض سعر خلال أقل من ساعة.",
+      title: "تنظيف مكاتب وشركات في الرياض | كلينولوجي",
+      description: "تنظيف مكاتب وشركات في الرياض بفريق ثابت ومشرف، قبل الدوام أو بعده، مع فحص جودة بالصور بعد كل زيارة. اطلب عرض سعر على الواتس.",
       keywords: "تنظيف مكاتب الرياض, شركة تنظيف مكاتب, تنظيف شركات, عقد تنظيف مكاتب, تنظيف تجاري, كلينولوجي",
     },
     breadcrumb: "تنظيف المكاتب",
     hero: {
-      eyebrow: "تنظيف مكاتب وشركات · الرياض",
-      title: "مكتبك نظيف كل يوم",
-      titleAccent: "بدون ما تتابع أحد",
-      subtitle: "فريق ثابت يعرف مكتبك، يشتغل قبل أو بعد الدوام، ويوثّق كل زيارة بفحص جودة بالصور.",
+      kicker: "كلينولوجي للتنظيف · الرياض",
+      title: "تنظيف مكاتب وشركات",
+      subtitle: "نفس الفريق يجي مكتبك كل مرة، ومعه مشرف. نشتغل قبل الدوام أو بعده، وبعد كل زيارة نمر على المكان بقائمة فحص ونصوّر النتيجة.",
       primary: "اطلب عرض سعر",
-      secondary: "كيف نضمن الجودة؟",
-      proof: ["+150 شركة عميلة", "رد خلال أقل من ساعة", "فريق مؤمَّن عليه"],
+      secondary: "أو كلّمنا واتساب مباشرة",
+      proof: ["+150 شركة تعاملت معنا", "رد خلال أقل من ساعة", "الفريق مؤمَّن عليه"],
+      photoAlt: "عامل من فريق كلينولوجي ينظف واجهة زجاجية",
+    },
+    gallery: {
+      caption: "فريقنا في الشغل",
+      alts: ["فريق كلينولوجي ينظف الرفوف والشاشة", "تنظيف زجاج بالبخاخ", "تنظيف درج بعد التشطيب", "فريق كلينولوجي في وحدة فاضية"],
     },
     pains: {
-      title: "تعاملت مع شركة تنظيف قبل؟ أكيد مرّيت بهذا:",
+      title: "اللي نسمعه من الشركات قبل ما يجون لنا",
       items: [
-        { icon: UserX, title: "عامل يتغير كل أسبوع", desc: "وكل مرة تشرح من جديد وين المطبخ ووين المستودع." },
-        { icon: TrendingDown, title: "أول أسبوعين ممتاز… وبعدين؟", desc: "النظافة تنزل شوي شوي ومحد ينتبه إلا أنت." },
-        { icon: MessageSquareWarning, title: "ملاحظات ما تنحل", desc: "تكلّم، يوعدون، وترجع نفس المشكلة الأسبوع اللي بعده." },
+        "العامل يتغير كل أسبوع، وكل مرة تشرح له من جديد.",
+        "أول أسبوعين ممتاز، وبعدها المستوى ينزل شوي شوي.",
+        "تعطيهم ملاحظة، ونفس المشكلة ترجع الأسبوع اللي بعده.",
       ],
-      answer: "عشان كذا بنينا طريقة شغلنا على ثلاث أشياء:",
     },
-    pillars: [
-      { icon: Users, title: "فريق ثابت ومشرف", desc: "نفس الفريق يجي مكتبك كل مرة، ومعه مشرف يتابع الشغل ويستقبل ملاحظاتك مباشرة." },
-      { icon: Camera, title: "فحص جودة بالصور", desc: "بعد كل زيارة المشرف يمر على قائمة فحص بند بند ويصوّر النتيجة قبل التسليم." },
-      { icon: CalendarClock, title: "على وقتك أنت", desc: "قبل الدوام، بعده، أو في الويكند — موظفينك ما يحسون فينا." },
-    ],
+    pillars: {
+      title: "وكيف نشتغل احنا",
+      items: [
+        { title: "فريق ثابت ومشرف", desc: "نخصص لمكتبك نفس الفريق كل مرة. يعرفون المكان وتفاصيله، والمشرف هو اللي تكلمه لو عندك ملاحظة." },
+        { title: "فحص بعد كل زيارة", desc: "قبل ما نطلع، المشرف يمر على قائمة بنود لكل منطقة ويصوّر النتيجة. أي شيء ناقص يتعدل في نفس الزيارة." },
+        { title: "على وقت دوامكم", desc: "قبل الدوام، بعده، أو في الويكند. نتفق على الوقت اللي ما يعطّل موظفينك." },
+      ],
+    },
     qc: {
-      eyebrow: "اللي يميزنا",
-      title: "فحص موثّق بعد كل زيارة… مو كلام",
-      desc: "كل زيارة تنتهي بفحص جودة موثّق: قائمة بنود لكل منطقة، صور للنتيجة، وتوقيعك على الاستلام. وأي بند يحتاج إعادة نرجع له قبل ما نطلع.",
-      points: ["قائمة فحص لكل منطقة: الاستقبال، المكاتب، الاجتماعات، المطبخ، الحمامات", "صور للنتيجة مرفقة بالفحص", "أي بند ناقص يُعاد قبل التسليم", "توقيعك على الاستلام، وسجل محفوظ لكل زيارة"],
+      title: "شكل فحص الجودة",
+      desc: "هذا الفحص نفسه اللي يعبّيه المشرف في نظامنا بعد كل زيارة: بنود لكل منطقة، صور للنتيجة، وتوقيعك على الاستلام. ويبقى محفوظ عندنا لو احتجنا نرجع له.",
       card: {
-        title: "تقرير فحص الجودة",
-        rows: [["الاستقبال", true], ["قاعة الاجتماعات", true], ["المطبخ", true], ["الحمامات", true], ["المكاتب", true]] as [string, boolean][],
+        title: "فحص جودة — زيارة مكتب",
+        rows: ["الاستقبال", "قاعة الاجتماعات", "المطبخ", "الحمامات", "المكاتب"],
         score: "مطابق",
-        example: "شكل توضيحي لفحص الجودة",
         photos: "صور النتيجة",
         signed: "توقيع العميل على الاستلام",
+        example: "مثال توضيحي",
       },
     },
     areas: {
-      title: "وش ننظف في مكتبك؟",
+      title: "وش يشمل التنظيف",
       items: [
-        { icon: DoorOpen, title: "الاستقبال والمداخل", desc: "أول انطباع لعملائك — أرضيات، زجاج، وكاونتر." },
-        { icon: Monitor, title: "المكاتب ومحطات العمل", desc: "تعقيم الأسطح والشاشات المشتركة وأسطح التلامس." },
-        { icon: Users, title: "قاعات الاجتماعات", desc: "طاولات، كراسي، وزجاج جاهز لأي اجتماع." },
-        { icon: Coffee, title: "المطبخ والاستراحة", desc: "أجهزة، مغاسل، وطاولات بدون بقع ولا روائح." },
-        { icon: Bath, title: "الحمامات", desc: "تنظيف وتعقيم كامل وتعبئة المستلزمات." },
-        { icon: Building2, title: "الممرات والسلالم والمصاعد", desc: "ونفرّغ السلال ونرتّب المناطق المشتركة." },
-      ],
+        ["الاستقبال والمداخل", "الأرضيات، الزجاج، والكاونتر."],
+        ["المكاتب", "الأسطح والشاشات المشتركة وأماكن اللمس."],
+        ["قاعات الاجتماعات", "الطاولات والكراسي والزجاج."],
+        ["المطبخ والاستراحة", "الأجهزة والمغاسل والطاولات."],
+        ["الحمامات", "تنظيف وتعقيم وتعبئة المستلزمات."],
+        ["الممرات والسلالم والمصاعد", "وتفريغ السلال وترتيب الأماكن المشتركة."],
+      ] as [string, string][],
     },
     why: {
-      title: "ليش الشركات تختارنا؟",
-      items: ["فريق ثابت ومشرف يعرف مكتبك", "فحص جودة موثّق بالصور بعد كل زيارة", "جدولة قبل الدوام أو بعده أو في الويكند", "عرض سعر خلال أقل من ساعة"],
+      title: "باختصار",
+      items: ["فريق ثابت ومشرف", "فحص جودة بالصور بعد كل زيارة", "قبل الدوام أو بعده أو في الويكند", "عرض سعر خلال أقل من ساعة"],
     },
+    stats: [["+150", "شركة عميلة"], ["98%", "رضا العملاء"], ["< ساعة", "وقت الرد"]],
     form: {
       title: "عرض سعر لمكتبك",
-      subtitle: "عبّ البيانات ونرد عليك بعرض سعر خلال أقل من ساعة في أوقات العمل.",
+      subtitle: "اختر التفاصيل، ويفتح لك الواتس والرسالة جاهزة.",
       company: "اسم الشركة",
       name: "اسمك",
       area: "مساحة المكتب تقريباً",
       areas: ["أقل من 150 م²", "150 – 400 م²", "400 – 1000 م²", "أكثر من 1000 م²"],
       frequency: "كم مرة تحتاج التنظيف؟",
-      frequencies: ["يومي", "مرتين إلى ثلاث بالأسبوع", "أسبوعي", "مرة وحدة"],
+      frequencies: ["يومي", "2–3 مرات بالأسبوع", "أسبوعي", "مرة وحدة"],
       time: "الوقت المناسب",
       times: ["قبل الدوام", "بعد الدوام", "الويكند", "مرن"],
-      submit: "أرسل الطلب على الواتس",
-      note: "يفتح الواتس والرسالة جاهزة — اضغط إرسال بس.",
+      submit: "أرسل على الواتس",
+      note: "ما نرسل شيء بدون ما تضغط إرسال في الواتس.",
       message: (f: QuoteForm) =>
         `مرحباً، أبي عرض سعر لتنظيف مكتب:\n• الشركة: ${f.company}\n• الاسم: ${f.name}\n• المساحة: ${f.area}\n• التكرار: ${f.frequency}\n• الوقت: ${f.time}`,
     },
     faq: {
-      title: "أسئلة الشركات",
+      title: "أسئلة تتكرر",
       items: [
-        { q: "كيف تحددون السعر؟", a: "حسب مساحة المكتب وعدد مرات التنظيف ونوع المناطق. نعطيك عرض سعر مبدئي على الواتس، ونزور المكتب لو احتاج الأمر قبل ما نثبت السعر." },
-        { q: "تقدرون تشتغلون خارج الدوام؟", a: "إيه، قبل الدوام أو بعده أو في الويكند — نتفق على الوقت اللي ما يأثر على شغل موظفينك." },
-        { q: "هل نفس الفريق يجي كل مرة؟", a: "إيه، نخصص فريق ثابت لمكتبك مع مشرف، عشان يعرفون المكان وتفاصيله وما تحتاج تشرح كل مرة." },
-        { q: "وش يصير لو فيه ملاحظة؟", a: "ترسلها للمشرف مباشرة. والأفضل إن فحص الجودة بعد كل زيارة يكشف الناقص قبل ما تشوفه أنت، ونعيده قبل ما نطلع." },
-        { q: "وش عن سرية المستندات والأجهزة؟", a: "فريقنا مدرّب على العمل في بيئات الشركات، وما يلمس المستندات ولا الأجهزة الخاصة إلا بطلبك." },
+        { q: "كيف تحددون السعر؟", a: "حسب المساحة وعدد مرات التنظيف ونوع الأماكن. نعطيك سعر مبدئي على الواتس، ولو احتاج نزور المكتب قبل ما نثبت السعر." },
+        { q: "تشتغلون خارج الدوام؟", a: "إيه، قبل الدوام أو بعده أو في الويكند. نتفق على الوقت اللي يناسبكم." },
+        { q: "نفس الفريق يجي كل مرة؟", a: "إيه، نخصص فريق ثابت لمكتبك مع مشرف، عشان ما تحتاج تشرح كل مرة." },
+        { q: "لو عندي ملاحظة؟", a: "ترسلها للمشرف مباشرة. وفحص الجودة بعد كل زيارة يكشف أغلب النواقص قبل ما تشوفها أنت." },
+        { q: "وش عن المستندات والأجهزة؟", a: "الفريق ما يلمس المستندات ولا الأجهزة الخاصة إلا بطلبك." },
       ],
     },
     cta: {
-      title: "خلّ النظافة علينا، وركّز على شغلك",
-      subtitle: "عرض سعر لمكتبك خلال أقل من ساعة.",
+      title: "تبي عرض سعر لمكتبك؟",
+      subtitle: "أرسل لنا التفاصيل على الواتس ونرد عليك خلال أقل من ساعة.",
       button: "اطلب عرض سعر",
     },
-    sticky: "اطلب عرض سعر لمكتبك",
+    sticky: "اطلب عرض سعر",
   },
   en: {
     seo: {
-      title: "Office & Commercial Cleaning in Riyadh | Photo Quality Reports | Kleenology",
-      description: "Office cleaning in Riyadh with a dedicated team and supervisor, before or after hours, and a documented photo quality check after every visit. Get a quote in under an hour.",
+      title: "Office & Commercial Cleaning in Riyadh | Kleenology",
+      description: "Office cleaning in Riyadh with a dedicated team and supervisor, before or after hours, with a photo quality check after every visit. Get a quote on WhatsApp.",
       keywords: "office cleaning riyadh, commercial cleaning, corporate cleaning, office cleaning contract, kleenology",
     },
     breadcrumb: "Office Cleaning",
     hero: {
-      eyebrow: "Office & Commercial Cleaning · Riyadh",
-      title: "A spotless office, every day",
-      titleAccent: "without chasing anyone",
-      subtitle: "A dedicated team that knows your office, works before or after hours, and documents every visit with a photo quality check.",
+      kicker: "Kleenology Cleaning · Riyadh",
+      title: "Office & commercial cleaning",
+      subtitle: "The same team comes to your office every time, with a supervisor. We work before or after hours, and after every visit we walk the space with a checklist and photograph the result.",
       primary: "Get a quote",
-      secondary: "How we guarantee quality",
-      proof: ["150+ business clients", "Reply in under an hour", "Insured team"],
+      secondary: "or message us on WhatsApp",
+      proof: ["150+ businesses served", "Reply in under an hour", "Insured team"],
+      photoAlt: "A Kleenology team member cleaning a glass wall",
+    },
+    gallery: {
+      caption: "Our team at work",
+      alts: ["Kleenology team cleaning shelves and a screen", "Spraying and cleaning glass", "Cleaning stairs after finishing work", "Kleenology team in an empty unit"],
     },
     pains: {
-      title: "Worked with a cleaning company before? You've probably seen this:",
+      title: "What businesses tell us before they switch",
       items: [
-        { icon: UserX, title: "A different cleaner every week", desc: "And every time you explain where the kitchen and storage are." },
-        { icon: TrendingDown, title: "Great for two weeks… then?", desc: "Standards slip slowly and nobody notices but you." },
-        { icon: MessageSquareWarning, title: "Feedback that never sticks", desc: "You raise it, they promise, and it's back next week." },
+        "A different cleaner every week, and you explain everything again.",
+        "Great for two weeks, then standards slowly slip.",
+        "You give feedback, and the same issue is back next week.",
       ],
-      answer: "So we built how we work around three things:",
     },
-    pillars: [
-      { icon: Users, title: "Dedicated team + supervisor", desc: "The same team comes every time, with a supervisor who checks the work and takes your feedback directly." },
-      { icon: Camera, title: "Photo quality checks", desc: "After each visit the supervisor goes through a checklist item by item and photographs the result before handover." },
-      { icon: CalendarClock, title: "On your schedule", desc: "Before hours, after hours or weekends — your staff won't notice we were there." },
-    ],
+    pillars: {
+      title: "How we work",
+      items: [
+        { title: "Dedicated team + supervisor", desc: "The same team every visit. They know your space, and the supervisor is your single point of contact." },
+        { title: "A check after every visit", desc: "Before leaving, the supervisor goes through a checklist per area and photographs the result. Anything missed is fixed on the spot." },
+        { title: "Around your hours", desc: "Before hours, after hours or weekends — whatever doesn't disrupt your team." },
+      ],
+    },
     qc: {
-      eyebrow: "What sets us apart",
-      title: "A documented check after every visit — not promises",
-      desc: "Every visit ends with a documented quality check: a checklist per area, photos of the result, and your sign-off on handover. Anything that needs redoing is fixed before we leave.",
-      points: ["A checklist per area: reception, offices, meeting rooms, kitchen, restrooms", "Photos of the result attached to the check", "Anything missed is redone before handover", "Your sign-off on handover, and a saved record of every visit"],
+      title: "What the quality check looks like",
+      desc: "This is the same check the supervisor fills in our system after every visit: items per area, photos of the result, and your sign-off on handover. It stays on record if we ever need to look back.",
       card: {
-        title: "Quality check report",
-        rows: [["Reception", true], ["Meeting room", true], ["Kitchen", true], ["Restrooms", true], ["Offices", true]] as [string, boolean][],
+        title: "Quality check — office visit",
+        rows: ["Reception", "Meeting room", "Kitchen", "Restrooms", "Offices"],
         score: "Passed",
-        example: "Illustration of a quality check",
         photos: "Result photos",
         signed: "Client sign-off on handover",
+        example: "Illustrative example",
       },
     },
     areas: {
-      title: "What we clean in your office",
+      title: "What's included",
       items: [
-        { icon: DoorOpen, title: "Reception & entrances", desc: "Your clients' first impression — floors, glass and counter." },
-        { icon: Monitor, title: "Offices & workstations", desc: "Disinfecting surfaces, shared screens and touch points." },
-        { icon: Users, title: "Meeting rooms", desc: "Tables, chairs and glass ready for any meeting." },
-        { icon: Coffee, title: "Kitchen & break room", desc: "Appliances, sinks and tables without stains or smells." },
-        { icon: Bath, title: "Restrooms", desc: "Full cleaning, disinfection and restocking." },
-        { icon: Building2, title: "Hallways, stairs & lifts", desc: "Plus emptying bins and tidying shared areas." },
-      ],
+        ["Reception & entrances", "Floors, glass and the counter."],
+        ["Offices", "Surfaces, shared screens and touch points."],
+        ["Meeting rooms", "Tables, chairs and glass."],
+        ["Kitchen & break room", "Appliances, sinks and tables."],
+        ["Restrooms", "Cleaning, disinfecting and restocking."],
+        ["Hallways, stairs & lifts", "Plus emptying bins and tidying shared areas."],
+      ] as [string, string][],
     },
     why: {
-      title: "Why businesses choose us",
-      items: ["A dedicated team and supervisor who know your office", "A documented photo quality check after every visit", "Scheduling before hours, after hours or weekends", "A quote in under an hour"],
+      title: "In short",
+      items: ["Dedicated team and supervisor", "Photo quality check after every visit", "Before hours, after hours or weekends", "A quote in under an hour"],
     },
+    stats: [["150+", "business clients"], ["98%", "satisfaction"], ["< 1h", "reply time"]],
     form: {
       title: "A quote for your office",
-      subtitle: "Fill in the details and we'll reply with a quote in under an hour during working hours.",
+      subtitle: "Pick the details and WhatsApp opens with the message ready.",
       company: "Company name",
       name: "Your name",
       area: "Approximate office size",
@@ -190,26 +200,26 @@ const content = {
       time: "Preferred time",
       times: ["Before hours", "After hours", "Weekends", "Flexible"],
       submit: "Send on WhatsApp",
-      note: "Opens WhatsApp with the message ready — just hit send.",
+      note: "Nothing is sent until you press send in WhatsApp.",
       message: (f: QuoteForm) =>
         `Hello, I'd like a quote for office cleaning:\n• Company: ${f.company}\n• Name: ${f.name}\n• Size: ${f.area}\n• Frequency: ${f.frequency}\n• Time: ${f.time}`,
     },
     faq: {
-      title: "Questions from businesses",
+      title: "Common questions",
       items: [
-        { q: "How do you price?", a: "By office size, how often you need cleaning, and the types of areas. We send an initial quote on WhatsApp and visit the office if needed before confirming." },
-        { q: "Can you work outside business hours?", a: "Yes — before hours, after hours or weekends. We agree on a time that doesn't disturb your team." },
-        { q: "Is it the same team every time?", a: "Yes. We assign a dedicated team and supervisor to your office so they know the space and you don't have to re-explain." },
-        { q: "What if something isn't right?", a: "Tell the supervisor directly. Better still, the quality check after every visit catches gaps before you see them, and we fix them before leaving." },
-        { q: "What about confidential documents and devices?", a: "Our team is trained for corporate environments and doesn't touch documents or personal devices unless you ask." },
+        { q: "How do you price?", a: "By size, frequency and the types of areas. We send an initial price on WhatsApp and visit the office if needed before confirming." },
+        { q: "Do you work outside office hours?", a: "Yes — before hours, after hours or weekends. We agree on what suits you." },
+        { q: "Is it the same team every time?", a: "Yes, a dedicated team and supervisor for your office, so you don't have to re-explain." },
+        { q: "What if I have feedback?", a: "Send it to the supervisor directly. The check after every visit catches most gaps before you see them." },
+        { q: "What about documents and devices?", a: "The team doesn't touch documents or personal devices unless you ask." },
       ],
     },
     cta: {
-      title: "Leave the cleaning to us — focus on your business",
-      subtitle: "A quote for your office in under an hour.",
+      title: "Want a quote for your office?",
+      subtitle: "Send us the details on WhatsApp and we'll reply in under an hour.",
       button: "Get a quote",
     },
-    sticky: "Get a quote for your office",
+    sticky: "Get a quote",
   },
 };
 
@@ -232,10 +242,10 @@ function ChipGroup({ label, options, value, onChange }: {
           <button
             key={option} type="button" onClick={() => onChange(option)}
             className={cn(
-              "rounded-xl border px-3 py-2.5 text-sm transition-all",
+              "rounded-lg border px-3 py-2.5 text-sm transition-colors",
               value === option
-                ? "border-primary bg-primary/10 text-primary font-semibold ring-1 ring-primary"
-                : "hover:border-primary/40 hover:bg-muted",
+                ? "border-brand-blue-deeper bg-brand-blue-deeper text-white"
+                : "bg-background hover:border-foreground/30",
             )}
           >
             {option}
@@ -250,7 +260,6 @@ const OfficeCleaning = () => {
   const { i18n } = useTranslation();
   const isRTL = i18n.dir() === "rtl";
   const c = isRTL ? content.ar : content.en;
-  const Arrow = isRTL ? ArrowLeft : ArrowRight;
 
   const [form, setForm] = useState<QuoteForm>({
     company: "", name: "", area: c.form.areas[1], frequency: c.form.frequencies[1], time: c.form.times[1],
@@ -261,7 +270,6 @@ const OfficeCleaning = () => {
   }, [c]);
 
   const formRef = useRef<HTMLDivElement>(null);
-  const qcRef = useRef<HTMLElement>(null);
   const heroRef = useRef<HTMLElement>(null);
   const [showSticky, setShowSticky] = useState(false);
 
@@ -282,13 +290,16 @@ const OfficeCleaning = () => {
   }, []);
 
   const toForm = () => formRef.current?.scrollIntoView({ behavior: "smooth", block: "start" });
-  const toQc = () => qcRef.current?.scrollIntoView({ behavior: "smooth", block: "start" });
+
+  const openWhatsApp = (text: string) => {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    (window as any).pixelTracker?.trackWhatsAppClick?.();
+    window.open(`https://wa.me/${WHATSAPP_NUMBER}?text=${encodeURIComponent(text)}`, "_blank");
+  };
 
   const sendQuote = (e: React.FormEvent) => {
     e.preventDefault();
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    (window as any).pixelTracker?.trackWhatsAppClick?.();
-    window.open(`https://wa.me/${WHATSAPP_NUMBER}?text=${encodeURIComponent(c.form.message(form))}`, "_blank");
+    openWhatsApp(c.form.message(form));
   };
 
   const breadcrumbJsonLd = {
@@ -300,6 +311,8 @@ const OfficeCleaning = () => {
     ],
   };
 
+  const gallery = [teamShelves, teamWindow, teamStairs, teamMove];
+
   return (
     <div className="min-h-screen bg-background" dir={isRTL ? "rtl" : "ltr"}>
       <SEO {...c.seo} url="https://kleenology.me/office-cleaning" jsonLd={breadcrumbJsonLd} />
@@ -307,182 +320,161 @@ const OfficeCleaning = () => {
 
       <main>
         {/* ——— الواجهة ——— */}
-        <section ref={heroRef} className="relative overflow-hidden text-white">
-          <img src={heroImage} alt="" aria-hidden="true" className="absolute inset-0 w-full h-full object-cover" />
-          <div className="absolute inset-0 bg-gradient-to-l from-brand-blue-deeper/95 via-brand-blue-deeper/85 to-brand-blue-deep/60 rtl:bg-gradient-to-l ltr:bg-gradient-to-r" />
-          <div className="relative max-w-6xl mx-auto px-4 pt-32 pb-20 sm:pt-40 sm:pb-28">
-            <div className="max-w-2xl">
-              <span className="inline-block rounded-full bg-white/15 backdrop-blur px-4 py-1.5 text-sm font-medium mb-6">
-                {c.hero.eyebrow}
-              </span>
-              <h1 className="text-4xl sm:text-6xl font-extrabold leading-[1.25] sm:leading-[1.2] mb-5">
-                {c.hero.title}
-                <br />
-                <span className="text-brand-yellow">{c.hero.titleAccent}</span>
-              </h1>
-              <p className="text-lg sm:text-xl text-white/85 leading-relaxed mb-8">{c.hero.subtitle}</p>
-              <div className="flex flex-col sm:flex-row gap-3 mb-10">
-                <Button size="lg" onClick={toForm}
-                        className="h-14 px-8 text-lg font-bold bg-brand-yellow text-brand-blue-deeper hover:bg-brand-yellow/90 shadow-float">
-                  {c.hero.primary}
-                  <Arrow className="h-5 w-5 ms-2" />
-                </Button>
-                <Button size="lg" variant="outline" onClick={toQc}
-                        className="h-14 px-8 text-lg bg-white/10 border-white/40 text-white hover:bg-white/20 hover:text-white">
-                  {c.hero.secondary}
-                </Button>
-              </div>
-              <ul className="flex flex-wrap gap-x-6 gap-y-3">
-                {c.hero.proof.map((text, i) => {
-                  const Icon = [Building2, Clock, ShieldCheck][i];
-                  return (
-                    <li key={text} className="flex items-center gap-2 text-sm text-white/90">
-                      <Icon className="h-5 w-5 text-brand-yellow" />
-                      {text}
-                    </li>
-                  );
-                })}
-              </ul>
+        <section ref={heroRef} className="max-w-6xl mx-auto px-4 pt-28 pb-12 sm:pt-36 sm:pb-16 grid lg:grid-cols-[1.1fr_1fr] gap-10 items-center">
+          <div>
+            <p className="text-sm text-muted-foreground mb-3">{c.hero.kicker}</p>
+            <h1 className="text-4xl sm:text-5xl font-extrabold leading-[1.3] mb-5 text-brand-blue-deeper">{c.hero.title}</h1>
+            <p className="text-lg text-foreground/80 leading-relaxed mb-7 max-w-xl">{c.hero.subtitle}</p>
+            <div className="flex flex-col sm:flex-row sm:items-center gap-3 mb-7">
+              <Button size="lg" onClick={toForm} className="h-12 px-7 text-base font-bold">
+                {c.hero.primary}
+              </Button>
+              <button type="button" onClick={() => openWhatsApp(isRTL ? "مرحباً، أبي أستفسر عن تنظيف المكاتب" : "Hello, I'd like to ask about office cleaning")}
+                      className="text-sm font-medium text-foreground/70 hover:text-foreground underline underline-offset-4 decoration-foreground/30 py-2">
+                {c.hero.secondary}
+              </button>
             </div>
+            <p className="text-sm text-muted-foreground">{c.hero.proof.join(" · ")}</p>
           </div>
+          <img src={teamGlass} alt={c.hero.photoAlt}
+               className="w-full aspect-[4/3] object-cover rounded-lg" />
         </section>
 
-        {/* ——— المشكلة ← الحل ——— */}
-        <section className="max-w-6xl mx-auto px-4 py-16 sm:py-20">
-          <h2 className="text-2xl sm:text-3xl font-bold text-center mb-10">{c.pains.title}</h2>
-          <div className="grid md:grid-cols-3 gap-4 mb-14">
-            {c.pains.items.map(({ icon: Icon, title, desc }) => (
-              <div key={title} className="rounded-2xl border border-red-100 bg-red-50/60 p-5">
-                <Icon className="h-7 w-7 text-red-500 mb-3" />
-                <h3 className="font-bold mb-1">{title}</h3>
-                <p className="text-sm text-muted-foreground leading-relaxed">{desc}</p>
-              </div>
+        {/* ——— صور الفريق ——— */}
+        <section className="max-w-6xl mx-auto px-4 pb-16">
+          <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 sm:gap-3">
+            {gallery.map((src, i) => (
+              <img key={src} src={src} alt={c.gallery.alts[i]} loading="lazy"
+                   className="w-full aspect-square object-cover rounded-md" />
             ))}
           </div>
-          <p className="text-center text-lg font-semibold text-brand-blue-deeper mb-8">{c.pains.answer}</p>
-          <div className="grid md:grid-cols-3 gap-5">
-            {c.pillars.map(({ icon: Icon, title, desc }) => (
-              <div key={title} className="rounded-2xl border bg-card p-6 shadow-clean">
-                <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-brand-blue to-brand-blue-dark text-white flex items-center justify-center mb-4 shadow-float">
-                  <Icon className="h-6 w-6" />
-                </div>
-                <h3 className="font-bold text-lg mb-2">{title}</h3>
-                <p className="text-sm text-muted-foreground leading-relaxed">{desc}</p>
-              </div>
-            ))}
-          </div>
+          <p className="text-xs text-muted-foreground mt-2">{c.gallery.caption}</p>
         </section>
 
-        {/* ——— فحص الجودة ——— */}
-        <section ref={qcRef} className="bg-brand-blue-deeper text-white py-16 sm:py-24 scroll-mt-20">
-          <div className="max-w-6xl mx-auto px-4 grid lg:grid-cols-2 gap-12 items-center">
+        {/* ——— المشكلة والطريقة ——— */}
+        <section className="border-y bg-muted/30">
+          <div className="max-w-6xl mx-auto px-4 py-16 grid lg:grid-cols-2 gap-12">
             <div>
-              <span className="text-brand-yellow font-semibold text-sm">{c.qc.eyebrow}</span>
-              <h2 className="text-3xl sm:text-4xl font-bold mt-2 mb-5 leading-tight">{c.qc.title}</h2>
-              <p className="text-white/80 leading-relaxed mb-7">{c.qc.desc}</p>
-              <ul className="space-y-3">
-                {c.qc.points.map((point) => (
-                  <li key={point} className="flex items-start gap-3">
-                    <CheckCircle2 className="h-5 w-5 text-brand-yellow shrink-0 mt-0.5" />
-                    <span className="text-white/90">{point}</span>
+              <h2 className="text-2xl font-bold mb-6">{c.pains.title}</h2>
+              <ul className="space-y-4">
+                {c.pains.items.map((item) => (
+                  <li key={item} className="text-foreground/80 leading-relaxed border-s-2 border-red-300 ps-4">
+                    «{item}»
                   </li>
                 ))}
               </ul>
             </div>
-
-            {/* مثال توضيحي لشكل التقرير */}
-            <div className="relative">
-              <div className="bg-white text-foreground rounded-3xl shadow-2xl p-5 sm:p-6 rotate-1">
-                <div className="flex items-center justify-between mb-4">
-                  <div className="flex items-center gap-2 font-bold">
-                    <ClipboardCheck className="h-5 w-5 text-brand-blue" />
-                    {c.qc.card.title}
-                  </div>
-                  <span className="text-xs font-bold rounded-full bg-green-100 text-green-700 px-3 py-1">{c.qc.card.score}</span>
-                </div>
-                <div className="divide-y rounded-xl border mb-4">
-                  {c.qc.card.rows.map(([area]) => (
-                    <div key={area} className="flex items-center justify-between px-3 py-2.5 text-sm">
-                      <span>{area}</span>
-                      <CheckCircle2 className="h-4 w-4 text-green-600" />
+            <div>
+              <h2 className="text-2xl font-bold mb-6">{c.pillars.title}</h2>
+              <ol className="divide-y border-y">
+                {c.pillars.items.map(({ title, desc }, i) => (
+                  <li key={title} className="py-5 flex gap-5">
+                    <span className="text-sm font-bold text-brand-blue tabular-nums pt-0.5">0{i + 1}</span>
+                    <div>
+                      <h3 className="font-bold mb-1">{title}</h3>
+                      <p className="text-sm text-muted-foreground leading-relaxed">{desc}</p>
                     </div>
-                  ))}
-                </div>
-                <div className="text-xs text-muted-foreground mb-2 flex items-center gap-1.5">
-                  <Camera className="h-3.5 w-3.5" />{c.qc.card.photos}
-                </div>
-                <div className="grid grid-cols-3 gap-2 mb-4">
-                  {["center", "left", "right"].map((pos) => (
-                    <img key={pos} src={resultImage} alt="" aria-hidden="true" loading="lazy"
-                         className="aspect-square w-full rounded-lg object-cover" style={{ objectPosition: pos }} />
-                  ))}
-                </div>
-                <div className="flex items-center gap-2 text-xs text-muted-foreground border-t pt-3">
-                  <PenLine className="h-3.5 w-3.5" />{c.qc.card.signed}
-                  <CheckCircle2 className="h-4 w-4 text-green-600 ms-auto" />
-                </div>
-              </div>
-              <p className="text-center text-xs text-white/50 mt-4">{c.qc.card.example}</p>
+                  </li>
+                ))}
+              </ol>
             </div>
           </div>
         </section>
 
-        {/* ——— المناطق ——— */}
-        <section className="max-w-6xl mx-auto px-4 py-16 sm:py-20">
-          <h2 className="text-3xl font-bold text-center mb-10">{c.areas.title}</h2>
-          <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-4">
-            {c.areas.items.map(({ icon: Icon, title, desc }) => (
-              <div key={title} className="flex gap-4 rounded-2xl border bg-card p-5 hover:border-primary/40 hover:shadow-clean transition-all">
-                <div className="w-11 h-11 rounded-xl bg-primary/10 text-primary flex items-center justify-center shrink-0">
-                  <Icon className="h-5 w-5" />
+        {/* ——— فحص الجودة ——— */}
+        <section className="max-w-6xl mx-auto px-4 py-16 sm:py-20 grid lg:grid-cols-2 gap-12 items-center">
+          <div>
+            <h2 className="text-2xl sm:text-3xl font-bold mb-4">{c.qc.title}</h2>
+            <p className="text-foreground/80 leading-relaxed">{c.qc.desc}</p>
+          </div>
+          <div>
+            <div className="rounded-lg border bg-card p-5 shadow-sm">
+              <div className="flex items-center justify-between mb-4">
+                <div className="flex items-center gap-2 font-bold text-sm">
+                  <ClipboardCheck className="h-4 w-4 text-brand-blue" />
+                  {c.qc.card.title}
                 </div>
-                <div>
-                  <h3 className="font-bold mb-1">{title}</h3>
-                  <p className="text-sm text-muted-foreground leading-relaxed">{desc}</p>
-                </div>
+                <span className="text-xs font-semibold rounded bg-green-100 text-green-700 px-2 py-0.5">{c.qc.card.score}</span>
               </div>
-            ))}
+              <div className="divide-y border rounded-md mb-4">
+                {c.qc.card.rows.map((area) => (
+                  <div key={area} className="flex items-center justify-between px-3 py-2 text-sm">
+                    <span>{area}</span>
+                    <CheckCircle2 className="h-4 w-4 text-green-600" />
+                  </div>
+                ))}
+              </div>
+              <div className="text-xs text-muted-foreground mb-2 flex items-center gap-1.5">
+                <Camera className="h-3.5 w-3.5" />{c.qc.card.photos}
+              </div>
+              <div className="grid grid-cols-3 gap-2 mb-4">
+                {[teamWindow, teamShelves, teamStairs].map((src) => (
+                  <img key={src} src={src} alt="" aria-hidden="true" loading="lazy"
+                       className="aspect-square w-full rounded object-cover" />
+                ))}
+              </div>
+              <div className="flex items-center gap-2 text-xs text-muted-foreground border-t pt-3">
+                <PenLine className="h-3.5 w-3.5" />{c.qc.card.signed}
+                <CheckCircle2 className="h-4 w-4 text-green-600 ms-auto" />
+              </div>
+            </div>
+            <p className="text-xs text-muted-foreground mt-2">{c.qc.card.example}</p>
           </div>
         </section>
 
-        {/* ——— لماذا نحن ونموذج ——— */}
-        <section className="bg-muted/40 py-16 sm:py-20">
-          <div className="max-w-6xl mx-auto px-4 grid lg:grid-cols-2 gap-10 items-start">
-            <div className="lg:sticky lg:top-28 space-y-6">
+        {/* ——— وش يشمل ——— */}
+        <section className="max-w-6xl mx-auto px-4 pb-16">
+          <h2 className="text-2xl font-bold mb-6">{c.areas.title}</h2>
+          <dl className="grid sm:grid-cols-2 gap-x-12 border-t">
+            {c.areas.items.map(([title, desc]) => (
+              <div key={title} className="py-4 border-b flex flex-col sm:flex-row sm:gap-4">
+                <dt className="font-semibold sm:w-48 shrink-0">{title}</dt>
+                <dd className="text-sm text-muted-foreground">{desc}</dd>
+              </div>
+            ))}
+          </dl>
+        </section>
+
+        {/* ——— باختصار ونموذج ——— */}
+        <section className="bg-muted/40 border-y py-16 sm:py-20">
+          <div className="max-w-6xl mx-auto px-4 grid lg:grid-cols-2 gap-12 items-start">
+            <div className="lg:sticky lg:top-28 space-y-8">
               <div>
-                <h2 className="text-2xl sm:text-3xl font-bold mb-3">{c.why.title}</h2>
-                <ul className="space-y-3">
+                <h2 className="text-2xl font-bold mb-4">{c.why.title}</h2>
+                <ul className="space-y-2.5">
                   {c.why.items.map((item) => (
-                    <li key={item} className="flex items-start gap-3">
-                      <CheckCircle2 className="h-5 w-5 text-primary shrink-0 mt-0.5" />
+                    <li key={item} className="flex items-start gap-2.5">
+                      <CheckCircle2 className="h-5 w-5 text-brand-blue shrink-0 mt-0.5" />
                       <span>{item}</span>
                     </li>
                   ))}
                 </ul>
               </div>
-              <div className="grid grid-cols-3 gap-3 text-center">
-                {[["+150", isRTL ? "شركة عميلة" : "business clients"], ["98%", isRTL ? "رضا العملاء" : "satisfaction"], ["< 1h", isRTL ? "وقت الرد" : "reply time"]].map(([v, l]) => (
-                  <div key={l} className="rounded-2xl bg-card border p-4">
+              <div className="flex gap-8">
+                {c.stats.map(([v, l]) => (
+                  <div key={l}>
                     <div className="text-2xl font-bold text-brand-blue-deeper">{v}</div>
                     <div className="text-xs text-muted-foreground">{l}</div>
                   </div>
                 ))}
               </div>
+              <img src={teamMove} alt="" aria-hidden="true" loading="lazy"
+                   className="hidden lg:block w-full aspect-[16/10] object-cover rounded-lg" />
             </div>
 
-            <div ref={formRef} className="rounded-3xl bg-card border shadow-float p-6 sm:p-8 scroll-mt-24">
+            <div ref={formRef} className="rounded-lg bg-card border p-6 sm:p-8 scroll-mt-24">
               <h2 className="text-2xl font-bold mb-1">{c.form.title}</h2>
               <p className="text-sm text-muted-foreground mb-6">{c.form.subtitle}</p>
               <form onSubmit={sendQuote} className="space-y-5">
                 <div className="grid sm:grid-cols-2 gap-4">
                   <div className="space-y-1.5">
                     <Label htmlFor="o-company">{c.form.company}</Label>
-                    <Input id="o-company" required className="h-12 text-base" value={form.company}
+                    <Input id="o-company" required className="h-11 text-base" value={form.company}
                            onChange={(e) => setForm((f) => ({ ...f, company: e.target.value }))} />
                   </div>
                   <div className="space-y-1.5">
                     <Label htmlFor="o-name">{c.form.name}</Label>
-                    <Input id="o-name" required className="h-12 text-base" value={form.name}
+                    <Input id="o-name" required className="h-11 text-base" value={form.name}
                            onChange={(e) => setForm((f) => ({ ...f, name: e.target.value }))} />
                   </div>
                 </div>
@@ -492,7 +484,7 @@ const OfficeCleaning = () => {
                            onChange={(frequency) => setForm((f) => ({ ...f, frequency }))} />
                 <ChipGroup label={c.form.time} options={c.form.times} value={form.time}
                            onChange={(time) => setForm((f) => ({ ...f, time }))} />
-                <Button type="submit" size="lg" className="w-full h-14 text-lg font-bold bg-[#25D366] hover:bg-[#20BA5A] text-white">
+                <Button type="submit" size="lg" className="w-full h-12 text-base font-bold bg-[#25D366] hover:bg-[#20BA5A] text-white">
                   <MessageCircle className="h-5 w-5 me-2" />
                   {c.form.submit}
                 </Button>
@@ -506,10 +498,10 @@ const OfficeCleaning = () => {
 
         {/* ——— الأسئلة ——— */}
         <section className="max-w-3xl mx-auto px-4 py-16 sm:py-20">
-          <h2 className="text-3xl font-bold text-center mb-10">{c.faq.title}</h2>
-          <Accordion type="single" collapsible className="space-y-3">
+          <h2 className="text-2xl font-bold mb-6">{c.faq.title}</h2>
+          <Accordion type="single" collapsible className="border-t">
             {c.faq.items.map(({ q, a }, i) => (
-              <AccordionItem key={q} value={`q${i}`} className="bg-card border rounded-2xl px-5 shadow-clean">
+              <AccordionItem key={q} value={`q${i}`}>
                 <AccordionTrigger className="text-start font-semibold hover:no-underline py-5">{q}</AccordionTrigger>
                 <AccordionContent className="text-muted-foreground leading-relaxed">{a}</AccordionContent>
               </AccordionItem>
@@ -518,15 +510,15 @@ const OfficeCleaning = () => {
         </section>
 
         {/* ——— الختام ——— */}
-        <section className="relative overflow-hidden bg-gradient-to-l from-brand-blue-deep to-brand-blue-deeper text-white py-16 px-4 text-center">
-          <Sparkles className="absolute top-8 start-10 h-10 w-10 text-brand-yellow/30" aria-hidden="true" />
-          <div className="relative max-w-2xl mx-auto">
-            <h2 className="text-3xl sm:text-4xl font-bold mb-3">{c.cta.title}</h2>
-            <p className="text-white/80 text-lg mb-8">{c.cta.subtitle}</p>
+        <section className="bg-brand-blue-deeper text-white py-14 px-4">
+          <div className="max-w-6xl mx-auto flex flex-col sm:flex-row sm:items-center sm:justify-between gap-6">
+            <div>
+              <h2 className="text-2xl sm:text-3xl font-bold mb-2">{c.cta.title}</h2>
+              <p className="text-white/75">{c.cta.subtitle}</p>
+            </div>
             <Button size="lg" onClick={toForm}
-                    className="h-14 px-10 text-lg font-bold bg-brand-yellow text-brand-blue-deeper hover:bg-brand-yellow/90 shadow-float">
+                    className="h-12 px-8 text-base font-bold bg-white text-brand-blue-deeper hover:bg-white/90 shrink-0">
               {c.cta.button}
-              <Arrow className="h-5 w-5 ms-2" />
             </Button>
           </div>
         </section>
@@ -536,7 +528,7 @@ const OfficeCleaning = () => {
 
       {/* ——— زر ثابت للجوال ——— */}
       <div className={cn(
-        "fixed bottom-0 inset-x-0 z-40 p-3 bg-background/95 backdrop-blur border-t shadow-[0_-4px_20px_rgba(0,0,0,0.08)] md:hidden transition-transform duration-300",
+        "fixed bottom-0 inset-x-0 z-40 p-3 bg-background/95 backdrop-blur border-t md:hidden transition-transform duration-300",
         showSticky ? "translate-y-0" : "translate-y-full",
       )}>
         <Button size="lg" onClick={toForm} className="w-full h-12 text-base font-bold">
