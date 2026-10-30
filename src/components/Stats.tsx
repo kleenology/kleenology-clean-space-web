@@ -10,7 +10,8 @@ const stats = [
 ];
 
 function useCountUp(target: number, duration = 1500, start: boolean) {
-  const [count, setCount] = useState(0);
+  // في التصيير المسبق يظهر الرقم النهائي — وإلا تقرأ محركات البحث «0+ عميل»
+  const [count, setCount] = useState(typeof window === "undefined" ? target : 0);
   useEffect(() => {
     if (!start || target === 0) return;
     let startTime: number;

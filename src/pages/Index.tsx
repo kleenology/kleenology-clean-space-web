@@ -33,10 +33,11 @@ const Index = () => {
 
   return (
     <div className="min-h-screen bg-background">
-      <SEO 
-        title="Kleenology - Professional Cleaning Services | Excellence in Every Inch"
-        description="Kleenology delivers spotless cleaning results using eco-friendly products. Professional home and office cleaning services with satisfaction guarantee."
-        keywords="cleaning services, professional cleaning, house cleaning, office cleaning, eco-friendly cleaning, deep cleaning, sanitization"
+      {/* نفس عنوان ووصف index.html — كان هنا عنوان إنجليزي يستبدل العربي بعد التحميل */}
+      <SEO
+        title="كلينولوجي - خدمات تنظيف احترافية في الرياض | Kleenology"
+        description="كلينولوجي — شركة تنظيف احترافية في الرياض. تنظيف منازل، مكاتب، سجاد، وتنظيف عميق بمواد آمنة وضمان الرضا ١٠٠٪. احجز الآن!"
+        keywords="تنظيف منازل الرياض, شركة تنظيف الرياض, تنظيف عميق, تنظيف سجاد, تنظيف مكاتب, كلينولوجي, cleaning company Riyadh"
         url="https://kleenology.me"
       />
       
