@@ -1,20 +1,22 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
 
-// مقدّمة الصفحة الرئيسية: الشاشة كلها «زجاج» متّسخ عليه رغوة، ومسّاحة صفراء
+// مقدّمة الصفحة الرئيسية: الشاشة كلها «زجاج» مغبّر شبه شفاف، ومسّاحة صفراء
 // تروح وتجي عليه سطراً سطراً مثل تنظيف النوافذ حتى يظهر الموقع تحته.
 // تظهر مرة واحدة في الزيارة، تُتخطى بضغطة، ولا تظهر لمن يفضّل تقليل الحركة.
 
 const SEEN_KEY = "kleenology_intro_seen";
-const PASS_MS = 620;
-const DROP_MS = 140;
+// كل سطر ثانية: بطيء كفاية يشوف الزائر المسح، والمقدّمة كلها حوالي ٣٫٥ ثانية
+const PASS_MS = 1000;
+const DROP_MS = 260;
 
 const copy = {
-  ar: { working: "جاري التنظيف", skip: "تخطّي", scrawl: "نظّفني" },
-  en: { working: "Cleaning", skip: "Skip", scrawl: "Clean me" },
+  ar: { working: "جاري التنظيف", skip: "تخطّي" },
+  en: { working: "Cleaning", skip: "Skip" },
 };
 
-const easeInOut = (t: number) => (t < 0.5 ? 2 * t * t : 1 - (-2 * t + 2) ** 2 / 2);
+// منحنى جيبي: يبدأ ويوقف بنعومة بدون تسارع حاد في النص
+const easeInOut = (t: number) => (1 - Math.cos(Math.PI * t)) / 2;
 
 function shouldPlay() {
   try {
@@ -26,8 +28,8 @@ function shouldPlay() {
   }
 }
 
-/** يرسم طبقة الوساخة والرغوة على كامل اللوحة */
-function paintGrime(ctx: CanvasRenderingContext2D, w: number, h: number, scrawl: string, rtl: boolean) {
+/** يرسم طبقة الغبار على كامل اللوحة */
+function paintGrime(ctx: CanvasRenderingContext2D, w: number, h: number) {
   // رقعة تشويش صغيرة تتكرر — أسرع بكثير من رسم كل نقطة على الشاشة
   const tile = document.createElement("canvas");
   tile.width = tile.height = 160;
@@ -38,11 +40,12 @@ function paintGrime(ctx: CanvasRenderingContext2D, w: number, h: number, scrawl:
     img.data[i] = 70 + v * 40;
     img.data[i + 1] = 55 + v * 30;
     img.data[i + 2] = 35 + v * 20;
-    img.data[i + 3] = 60 + v * 90;
+    img.data[i + 3] = 30 + v * 60;
   }
   t.putImageData(img, 0, 0);
 
-  ctx.fillStyle = "rgba(120, 98, 68, 0.88)";
+  // شفافة نوعاً ما: الموقع يبان تحتها مثل زجاج مغبّر
+  ctx.fillStyle = "rgba(120, 98, 68, 0.55)";
   ctx.fillRect(0, 0, w, h);
   ctx.fillStyle = ctx.createPattern(tile, "repeat")!;
   ctx.fillRect(0, 0, w, h);
@@ -51,58 +54,32 @@ function paintGrime(ctx: CanvasRenderingContext2D, w: number, h: number, scrawl:
   for (let i = 0; i < 9; i++) {
     const x = Math.random() * w, y = Math.random() * h, r = 60 + Math.random() * 160;
     const g = ctx.createRadialGradient(x, y, 0, x, y, r);
-    g.addColorStop(0, "rgba(60, 42, 22, 0.45)");
+    g.addColorStop(0, "rgba(60, 42, 22, 0.3)");
     g.addColorStop(1, "rgba(60, 42, 22, 0)");
     ctx.fillStyle = g;
     ctx.fillRect(x - r, y - r, r * 2, r * 2);
   }
 
-  // رغوة صابون: لطخات بيضاء وفقاعات، أكثفها في النصف السفلي
-  for (let i = 0; i < 14; i++) {
-    const x = Math.random() * w, y = h * (0.35 + Math.random() * 0.65), r = 50 + Math.random() * 120;
-    const g = ctx.createRadialGradient(x, y, 0, x, y, r);
-    g.addColorStop(0, "rgba(255, 255, 255, 0.35)");
-    g.addColorStop(1, "rgba(255, 255, 255, 0)");
-    ctx.fillStyle = g;
-    ctx.fillRect(x - r, y - r, r * 2, r * 2);
-  }
-  const bubbles = Math.round((w * h) / 9000);
-  for (let i = 0; i < bubbles; i++) {
-    const x = Math.random() * w;
-    const y = h * (0.2 + Math.pow(Math.random(), 0.6) * 0.8);
-    const r = 3 + Math.pow(Math.random(), 2) * 22;
-    ctx.beginPath();
-    ctx.arc(x, y, r, 0, Math.PI * 2);
-    ctx.fillStyle = "rgba(255, 255, 255, 0.12)";
-    ctx.fill();
-    ctx.lineWidth = Math.max(1, r / 7);
-    ctx.strokeStyle = "rgba(255, 255, 255, 0.75)";
-    ctx.stroke();
-    // لمعة صغيرة
-    ctx.beginPath();
-    ctx.arc(x - r * 0.35, y - r * 0.35, Math.max(0.8, r * 0.18), 0, Math.PI * 2);
-    ctx.fillStyle = "rgba(255, 255, 255, 0.85)";
-    ctx.fill();
-  }
-
-  // «نظّفني» مكتوبة بالإصبع على الوساخة
+  // آثار مسح قديمة: خطوط مائلة باهتة مثل زجاج ما انمسح زين
   ctx.save();
-  ctx.direction = rtl ? "rtl" : "ltr";
-  ctx.textAlign = "center";
-  ctx.textBaseline = "middle";
-  ctx.font = `800 ${Math.min(w / 5, 120)}px ${getComputedStyle(document.body).fontFamily}`;
-  ctx.translate(w / 2, h * 0.38);
-  ctx.rotate(-0.06);
-  ctx.fillStyle = "rgba(255, 245, 225, 0.42)";
-  ctx.fillText(scrawl, 0, 0);
+  ctx.lineCap = "round";
+  for (let i = 0; i < 7; i++) {
+    const x = Math.random() * w, y = Math.random() * h, len = 120 + Math.random() * 260;
+    ctx.strokeStyle = "rgba(255, 245, 225, 0.07)";
+    ctx.lineWidth = 18 + Math.random() * 30;
+    ctx.beginPath();
+    ctx.moveTo(x, y);
+    ctx.lineTo(x + len * 0.8, y + len * 0.35);
+    ctx.stroke();
+  }
   ctx.restore();
+
 }
 
 /** مسّاحة: شفرة مطاط عمودية وحامل ومقبض أصفر للخلف */
-function Squeegee({ flip }: { flip: boolean }) {
+function Squeegee() {
   return (
-    <svg viewBox="0 0 120 200" className="h-full w-auto drop-shadow-2xl"
-         style={{ transform: flip ? "scaleX(-1)" : undefined }} aria-hidden="true">
+    <svg viewBox="0 0 120 200" className="h-full w-auto drop-shadow-2xl" aria-hidden="true">
       <rect x="62" y="88" width="58" height="22" rx="11" className="fill-brand-yellow" transform="rotate(-12 62 99)" />
       <rect x="30" y="6" width="34" height="188" rx="10" className="fill-brand-yellow" />
       <rect x="36" y="14" width="6" height="172" rx="3" fill="rgba(255,255,255,0.35)" />
@@ -119,9 +96,13 @@ export const CleanIntro = () => {
 
   const [active, setActive] = useState(false);
   const [leaving, setLeaving] = useState(false);
-  const [percent, setPercent] = useState(0);
-  const [blade, setBlade] = useState({ x: 0, y: 0, h: 0, flip: false });
   const canvasRef = useRef<HTMLCanvasElement>(null);
+  // الحركة تُكتب مباشرة على العناصر كل إطار بدل حالة React — إعادة الرسم
+  // ستين مرة في الثانية هي اللي كانت تقطّع الحركة على اللابتوب
+  const bladeRef = useRef<HTMLDivElement>(null);
+  const bladeSvgRef = useRef<HTMLDivElement>(null);
+  const percentRef = useRef<HTMLSpanElement>(null);
+  const barRef = useRef<HTMLDivElement>(null);
   const frame = useRef(0);
 
   // يُقرر بعد التحميل لا أثناء التصيير، حتى تطابق الصفحة لقطة التصيير المسبق
@@ -136,7 +117,8 @@ export const CleanIntro = () => {
     } catch {
       // تصفح خاص — تظهر مرة ثانية فقط
     }
-    setPercent(100);
+    if (percentRef.current) percentRef.current.textContent = "100٪";
+    if (barRef.current) barRef.current.style.width = "100%";
     setLeaving(true);
     window.setTimeout(() => setActive(false), 450);
   }, []);
@@ -149,43 +131,72 @@ export const CleanIntro = () => {
 
     const w = window.innerWidth;
     const h = window.innerHeight;
-    const dpr = Math.min(window.devicePixelRatio || 1, 2);
+    // الشاشات الكبيرة ما تحتاج دقة ٢x للغبار، وتخفيفها يريّح المعالج
+    const dpr = Math.min(window.devicePixelRatio || 1, w > 1024 ? 1.25 : 2);
     canvas.width = w * dpr;
     canvas.height = h * dpr;
     ctx.scale(dpr, dpr);
-    paintGrime(ctx, w, h, c.scrawl, rtl);
+    paintGrime(ctx, w, h);
     ctx.globalCompositeOperation = "destination-out";
+    // الممحاة لازم تكون معتمة: destination-out يمسح بقدر شفافية لون التعبئة
+    ctx.fillStyle = "#000";
 
-    const passes = w < 640 ? 4 : 3;
+    const passes = 3;
     const band = h / passes;
     const pad = 6; // تداخل بسيط بين الأسطر حتى لا يبقى خط وسخ
+    const cycle = PASS_MS + DROP_MS;
     const total = passes * PASS_MS + (passes - 1) * DROP_MS;
-    const start = performance.now() + 250;
+    // ساعة داخلية: لو تأخر إطار (تحميل صور أو سكربتات) تبطئ المسّاحة لحظة
+    // بدل ما تقفز قفزة تبان كتقطيع
+    let elapsed = 0;
+    let previous: number | null = null;
+    const bladeEl = bladeRef.current;
+    const svgEl = bladeSvgRef.current;
+    if (bladeEl) bladeEl.style.height = `${band + 16}px`;
+    const bladeWidth = bladeEl?.offsetWidth ?? 0;
     let lastX: number | null = null;
     let lastPass = -1;
+    let lastPercent = -1;
 
     const tick = (now: number) => {
-      const elapsed = Math.max(0, now - start);
-      const cycle = PASS_MS + DROP_MS;
+      elapsed += previous === null ? 0 : Math.min(now - previous, 34);
+      previous = now;
       const pass = Math.min(passes - 1, Math.floor(elapsed / cycle));
-      const within = Math.min(1, (elapsed - pass * cycle) / PASS_MS);
+      const inPass = elapsed - pass * cycle;
+      const within = Math.min(1, inPass / PASS_MS);
       // السطر الأول مع اتجاه القراءة، والذي بعده عكسه — رايح جاي
       const forward = (pass % 2 === 0) === rtl ? -1 : 1; // -1: من اليمين لليسار
-      const p = easeInOut(within);
-      const x = forward === 1 ? p * w : w - p * w;
-      const top = pass * band;
+      const x = forward === 1 ? easeInOut(within) * w : w - easeInOut(within) * w;
+
+      // بين سطرين تنزل المسّاحة بنعومة بدل ما تقفز
+      const dropping = inPass > PASS_MS && pass < passes - 1;
+      const drop = dropping ? easeInOut((inPass - PASS_MS) / DROP_MS) : 0;
+      const top = (pass + drop) * band;
 
       if (pass !== lastPass) {
         lastX = forward === 1 ? 0 : w;
         lastPass = pass;
+        // الشفرة تتقدم والمقبض خلفها: يُقلب الرسم مع كل تغيير اتجاه
+        if (svgEl) svgEl.style.transform = forward === 1 ? "scaleX(-1)" : "none";
       }
-      const from = Math.min(lastX ?? x, x);
-      const to = Math.max(lastX ?? x, x);
-      ctx.fillRect(from - 2, top - pad, to - from + 4, band + pad * 2);
-      lastX = x;
+      if (!dropping) {
+        const from = Math.min(lastX ?? x, x);
+        const to = Math.max(lastX ?? x, x);
+        ctx.fillRect(from - 2, pass * band - pad, to - from + 4, band + pad * 2);
+        lastX = x;
+      }
 
-      setBlade({ x, y: top, h: band, flip: forward === -1 });
-      setPercent(Math.min(99, Math.round(((pass + within) / passes) * 100)));
+      if (bladeEl) {
+        // حافة الشفرة على حد المسح: ٨٦٪ من العرض لما تمشي يمين و١٤٪ لما تمشي يسار
+        const offset = bladeWidth * (forward === 1 ? 0.86 : 0.14);
+        bladeEl.style.transform = `translate3d(${x - offset}px, ${top - 8}px, 0)`;
+      }
+      const percent = Math.min(99, Math.round(((pass + within) / passes) * 100));
+      if (percent !== lastPercent) {
+        lastPercent = percent;
+        if (percentRef.current) percentRef.current.textContent = `${percent}٪`;
+        if (barRef.current) barRef.current.style.width = `${percent}%`;
+      }
 
       if (elapsed >= total) {
         finish();
@@ -193,16 +204,29 @@ export const CleanIntro = () => {
       }
       frame.current = requestAnimationFrame(tick);
     };
-    frame.current = requestAnimationFrame(tick);
+    // تبدأ المسحة بعد ما يخلص تحميل الصفحة — التحميل هو اللي كان يقطّع أول
+    // جزء من الحركة. حد أقصى ثانيتين حتى لا ينتظر الزائر على اتصال بطيء.
+    let started = false;
+    const begin = () => {
+      if (started) return;
+      started = true;
+      window.setTimeout(() => { frame.current = requestAnimationFrame(tick); }, 200);
+    };
+    if (document.readyState === "complete") begin();
+    else window.addEventListener("load", begin, { once: true });
+    const fallback = window.setTimeout(begin, 2000);
 
     // الصفحة ما تتحرك تحت المقدّمة
-    const previous = document.body.style.overflow;
+    const previousOverflow = document.body.style.overflow;
     document.body.style.overflow = "hidden";
     return () => {
+      started = true;
+      window.clearTimeout(fallback);
+      window.removeEventListener("load", begin);
       cancelAnimationFrame(frame.current);
-      document.body.style.overflow = previous;
+      document.body.style.overflow = previousOverflow;
     };
-  }, [active, c.scrawl, rtl, finish]);
+  }, [active, rtl, finish]);
 
   if (!active) return null;
 
@@ -214,27 +238,21 @@ export const CleanIntro = () => {
     >
       <canvas ref={canvasRef} className="absolute inset-0 w-full h-full" />
 
-      {!leaving && blade.h > 0 && (
-        <div
-          className="absolute pointer-events-none"
-          style={{
-            top: blade.y - 8,
-            height: blade.h + 16,
-            // الشفرة (حافة الرسم) تنطبق على حد المسح
-            left: blade.x,
-            transform: blade.flip ? "translateX(-14%)" : "translateX(-86%)",
-          }}
-        >
-          <Squeegee flip={!blade.flip} />
+      {!leaving && (
+        <div ref={bladeRef} className="absolute top-0 left-0 pointer-events-none will-change-transform"
+             style={{ transform: "translate3d(-200px, -200px, 0)" }}>
+          <div ref={bladeSvgRef} className="h-full">
+            <Squeegee />
+          </div>
         </div>
       )}
 
       <div className="absolute inset-x-0 bottom-8 flex flex-col items-center gap-3 pointer-events-none">
         <div className="flex items-center gap-3 rounded-full bg-brand-blue-deeper/85 backdrop-blur px-5 py-2.5 text-white shadow-float">
           <span className="text-sm">{c.working}</span>
-          <span className="text-xl font-bold tabular-nums w-14 text-center">{percent}٪</span>
+          <span ref={percentRef} className="text-xl font-bold tabular-nums w-14 text-center">0٪</span>
           <div className="w-24 h-1.5 rounded-full bg-white/25 overflow-hidden">
-            <div className="h-full bg-brand-yellow" style={{ width: `${percent}%` }} />
+            <div ref={barRef} className="h-full bg-brand-yellow" style={{ width: "0%" }} />
           </div>
         </div>
       </div>
