@@ -26,11 +26,6 @@
   force = true
 
 [[redirects]]
-  from = "/api/visitors"
-  to = "/.netlify/functions/visitors"
-  status = 200
-
-[[redirects]]
   from = "/api/deposit/config"
   to = "/.netlify/functions/deposit-config"
   status = 200
