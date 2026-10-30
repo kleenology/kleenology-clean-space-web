@@ -1,13 +1,14 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
 
-// مقدّمة الصفحة الرئيسية: الشاشة كلها «زجاج» متّسخ عليه رغوة، ومسّاحة صفراء
+// مقدّمة الصفحة الرئيسية: الشاشة كلها «زجاج» مغبّر شبه شفاف، ومسّاحة صفراء
 // تروح وتجي عليه سطراً سطراً مثل تنظيف النوافذ حتى يظهر الموقع تحته.
 // تظهر مرة واحدة في الزيارة، تُتخطى بضغطة، ولا تظهر لمن يفضّل تقليل الحركة.
 
 const SEEN_KEY = "kleenology_intro_seen";
-const PASS_MS = 620;
-const DROP_MS = 140;
+// كل سطر ثانية: بطيء كفاية يشوف الزائر المسح، والمقدّمة كلها حوالي ٣٫٥ ثانية
+const PASS_MS = 1000;
+const DROP_MS = 260;
 
 const copy = {
   ar: { working: "جاري التنظيف", skip: "تخطّي", scrawl: "نظّفني" },
@@ -26,7 +27,7 @@ function shouldPlay() {
   }
 }
 
-/** يرسم طبقة الوساخة والرغوة على كامل اللوحة */
+/** يرسم طبقة الغبار على كامل اللوحة */
 function paintGrime(ctx: CanvasRenderingContext2D, w: number, h: number, scrawl: string, rtl: boolean) {
   // رقعة تشويش صغيرة تتكرر — أسرع بكثير من رسم كل نقطة على الشاشة
   const tile = document.createElement("canvas");
@@ -38,11 +39,12 @@ function paintGrime(ctx: CanvasRenderingContext2D, w: number, h: number, scrawl:
     img.data[i] = 70 + v * 40;
     img.data[i + 1] = 55 + v * 30;
     img.data[i + 2] = 35 + v * 20;
-    img.data[i + 3] = 60 + v * 90;
+    img.data[i + 3] = 30 + v * 60;
   }
   t.putImageData(img, 0, 0);
 
-  ctx.fillStyle = "rgba(120, 98, 68, 0.88)";
+  // شفافة نوعاً ما: الموقع يبان تحتها مثل زجاج مغبّر
+  ctx.fillStyle = "rgba(120, 98, 68, 0.55)";
   ctx.fillRect(0, 0, w, h);
   ctx.fillStyle = ctx.createPattern(tile, "repeat")!;
   ctx.fillRect(0, 0, w, h);
@@ -51,39 +53,25 @@ function paintGrime(ctx: CanvasRenderingContext2D, w: number, h: number, scrawl:
   for (let i = 0; i < 9; i++) {
     const x = Math.random() * w, y = Math.random() * h, r = 60 + Math.random() * 160;
     const g = ctx.createRadialGradient(x, y, 0, x, y, r);
-    g.addColorStop(0, "rgba(60, 42, 22, 0.45)");
+    g.addColorStop(0, "rgba(60, 42, 22, 0.3)");
     g.addColorStop(1, "rgba(60, 42, 22, 0)");
     ctx.fillStyle = g;
     ctx.fillRect(x - r, y - r, r * 2, r * 2);
   }
 
-  // رغوة صابون: لطخات بيضاء وفقاعات، أكثفها في النصف السفلي
-  for (let i = 0; i < 14; i++) {
-    const x = Math.random() * w, y = h * (0.35 + Math.random() * 0.65), r = 50 + Math.random() * 120;
-    const g = ctx.createRadialGradient(x, y, 0, x, y, r);
-    g.addColorStop(0, "rgba(255, 255, 255, 0.35)");
-    g.addColorStop(1, "rgba(255, 255, 255, 0)");
-    ctx.fillStyle = g;
-    ctx.fillRect(x - r, y - r, r * 2, r * 2);
-  }
-  const bubbles = Math.round((w * h) / 9000);
-  for (let i = 0; i < bubbles; i++) {
-    const x = Math.random() * w;
-    const y = h * (0.2 + Math.pow(Math.random(), 0.6) * 0.8);
-    const r = 3 + Math.pow(Math.random(), 2) * 22;
+  // آثار مسح قديمة: خطوط مائلة باهتة مثل زجاج ما انمسح زين
+  ctx.save();
+  ctx.lineCap = "round";
+  for (let i = 0; i < 7; i++) {
+    const x = Math.random() * w, y = Math.random() * h, len = 120 + Math.random() * 260;
+    ctx.strokeStyle = "rgba(255, 245, 225, 0.07)";
+    ctx.lineWidth = 18 + Math.random() * 30;
     ctx.beginPath();
-    ctx.arc(x, y, r, 0, Math.PI * 2);
-    ctx.fillStyle = "rgba(255, 255, 255, 0.12)";
-    ctx.fill();
-    ctx.lineWidth = Math.max(1, r / 7);
-    ctx.strokeStyle = "rgba(255, 255, 255, 0.75)";
+    ctx.moveTo(x, y);
+    ctx.lineTo(x + len * 0.8, y + len * 0.35);
     ctx.stroke();
-    // لمعة صغيرة
-    ctx.beginPath();
-    ctx.arc(x - r * 0.35, y - r * 0.35, Math.max(0.8, r * 0.18), 0, Math.PI * 2);
-    ctx.fillStyle = "rgba(255, 255, 255, 0.85)";
-    ctx.fill();
   }
+  ctx.restore();
 
   // «نظّفني» مكتوبة بالإصبع على الوساخة
   ctx.save();
@@ -93,7 +81,7 @@ function paintGrime(ctx: CanvasRenderingContext2D, w: number, h: number, scrawl:
   ctx.font = `800 ${Math.min(w / 5, 120)}px ${getComputedStyle(document.body).fontFamily}`;
   ctx.translate(w / 2, h * 0.38);
   ctx.rotate(-0.06);
-  ctx.fillStyle = "rgba(255, 245, 225, 0.42)";
+  ctx.fillStyle = "rgba(255, 245, 225, 0.35)";
   ctx.fillText(scrawl, 0, 0);
   ctx.restore();
 }
@@ -155,8 +143,10 @@ export const CleanIntro = () => {
     ctx.scale(dpr, dpr);
     paintGrime(ctx, w, h, c.scrawl, rtl);
     ctx.globalCompositeOperation = "destination-out";
+    // الممحاة لازم تكون معتمة: destination-out يمسح بقدر شفافية لون التعبئة
+    ctx.fillStyle = "#000";
 
-    const passes = w < 640 ? 4 : 3;
+    const passes = 3;
     const band = h / passes;
     const pad = 6; // تداخل بسيط بين الأسطر حتى لا يبقى خط وسخ
     const total = passes * PASS_MS + (passes - 1) * DROP_MS;
