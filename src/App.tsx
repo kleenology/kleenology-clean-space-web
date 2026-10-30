@@ -97,7 +97,11 @@ class ErrorBoundary extends Component<
   }
 }
 
-const App = () => {
+// التصيير المسبق (scripts/prerender.mjs) يمرّر راوتر ثابت بمسار الصفحة بدل راوتر المتصفح
+type RouterWrap = (children: ReactNode) => ReactNode;
+const browserRouter: RouterWrap = (children) => <BrowserRouter basename="/">{children}</BrowserRouter>;
+
+const App = ({ wrapRouter = browserRouter }: { wrapRouter?: RouterWrap }) => {
   console.log("App component is rendering - FRESH DEPLOYMENT FIX");
   
   // Add a simple test to ensure the app is loading
@@ -113,7 +117,7 @@ const App = () => {
           <Sonner />
           <PixelTracker />
           <PerformanceMonitor />
-          <BrowserRouter basename="/">
+          {wrapRouter(<>
             <EnhancedTracking />
             <Routes>
               <Route path="/" element={<Index />} />
@@ -148,7 +152,7 @@ const App = () => {
             </Routes>
             {/* داخل الراوتر: يحتاج معرفة المسار ليختفي في صفحات الإعلانات */}
             <WhatsAppChatWidget />
-          </BrowserRouter>
+          </>)}
         </TooltipProvider>
       </QueryClientProvider>
     </ErrorBoundary>

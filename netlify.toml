@@ -1,6 +1,8 @@
 [build]
   publish = "dist"
-  command = "npm install && npx vite build"
+  # يبني الموقع ثم يصيّر الصفحات العامة لـ HTML (scripts/prerender.mjs) حتى
+  # تقرأها روبوتات الذكاء الاصطناعي ومحركات البحث بدون جافاسكربت
+  command = "npm install && npm run build:prerender"
 
 [build.environment]
   NODE_VERSION = "18"
@@ -85,9 +87,10 @@
   to = "/.netlify/functions/subdomains"
   status = 200
 
+# القالب النظيف (يكتبه scripts/prerender.mjs) — index.html صار الرئيسية المصيَّرة
 [[redirects]]
   from = "/*"
-  to = "/index.html"
+  to = "/app.html"
   status = 200
 
 [[headers]]

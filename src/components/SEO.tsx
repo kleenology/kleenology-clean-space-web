@@ -12,6 +12,27 @@ interface SEOProps {
   noindex?: boolean;
 }
 
+export interface SsrHead {
+  title: string;
+  description: string;
+  keywords: string;
+  image: string;
+  url: string;
+  type: string;
+  jsonLd?: object;
+  noindex: boolean;
+}
+
+// وقت التصيير المسبق ما فيه document ولا useEffect، فالصفحة تسجّل بيانات
+// رأسها هنا ويحقنها scripts/prerender.mjs في الـ HTML.
+let ssrHead: SsrHead | null = null;
+
+export function takeSsrHead() {
+  const head = ssrHead;
+  ssrHead = null;
+  return head;
+}
+
 export const SEO: React.FC<SEOProps> = ({
   title = "Kleenology - Professional Cleaning Services | Excellence in Every Inch",
   description = "Kleenology delivers spotless cleaning results using eco-friendly products. Professional home and office cleaning services with satisfaction guarantee.",
@@ -23,6 +44,10 @@ export const SEO: React.FC<SEOProps> = ({
   hreflang = true,
   noindex = false,
 }) => {
+  if (typeof document === "undefined") {
+    ssrHead = { title, description, keywords, image, url, type, jsonLd, noindex };
+  }
+
   useEffect(() => {
     document.title = title;
 

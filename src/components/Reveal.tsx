@@ -1,5 +1,8 @@
 import { useEffect, useLayoutEffect, useRef, useState, type ReactNode } from "react";
 
+// useLayoutEffect ما يشتغل وقت التصيير المسبق ويطبع تحذير — هناك useEffect يكفي
+const useIsomorphicLayoutEffect = typeof window === "undefined" ? useEffect : useLayoutEffect;
+
 /**
  * يدخل القسم بحركة خفيفة أول ما يظهر في الشاشة.
  * يُخفى فقط بعد التحميل وفقط لو كان تحت الشاشة — فالمحتوى ظاهر في HTML
@@ -9,7 +12,7 @@ export function Reveal({ children }: { children: ReactNode }) {
   const ref = useRef<HTMLDivElement>(null);
   const [state, setState] = useState<"static" | "hidden" | "shown">("static");
 
-  useLayoutEffect(() => {
+  useIsomorphicLayoutEffect(() => {
     const el = ref.current;
     if (!el || window.matchMedia("(prefers-reduced-motion: reduce)").matches) return;
     if (el.getBoundingClientRect().top > window.innerHeight) setState("hidden");
