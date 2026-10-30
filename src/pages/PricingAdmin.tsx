@@ -7,7 +7,7 @@ import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import {
   Calculator, LogOut, Loader2, Copy, MessageCircle, RotateCcw,
-  Minus, Plus, Search, X, Package, PlusCircle, ClipboardList, ShieldCheck, ArrowRight,
+  Minus, Plus, Search, X, Package, PlusCircle, ClipboardList, ShieldCheck, ArrowRight, Handshake,
 } from "lucide-react";
 import { toast } from "sonner";
 import { cn } from "@/lib/utils";
@@ -21,6 +21,7 @@ import { LoginCard } from "@/components/pricing/LoginCard";
 import { CustomerSearch } from "@/components/pricing/CustomerSearch";
 import { InspectionForm } from "@/components/pricing/InspectionForm";
 import { QualityControlForm } from "@/components/pricing/QualityControlForm";
+import { PartnersPanel } from "@/components/pricing/PartnersPanel";
 
 // التوكن في localStorage لا sessionStorage: الأخير ينمسح بإغلاق التبويب،
 // فيضطر المشرف لكتابة كلمة المرور كل مرة يفتح فيها الأداة على جواله.
@@ -72,7 +73,7 @@ export default function PricingAdmin() {
   const [customer, setCustomer] = useState<CustomerInfo>(emptyCustomer);
   const [search, setSearch] = useState("");
   // لا وضع مختاراً عند الدخول — المشرف يقرر أولاً ماذا يفعل
-  const [mode, setMode] = useState<"quote" | "inspection" | "qc" | null>(null);
+  const [mode, setMode] = useState<"quote" | "inspection" | "qc" | "partners" | null>(null);
   const [openGroup, setOpenGroup] = useState<string | null>(null);
   const [openInspectionId, setOpenInspectionId] = useState<string | null>(null);
   // البحث في الرابط: يعود كما هو بعد فتح سجل، ويصلح للحفظ والمشاركة
@@ -291,6 +292,7 @@ export default function PricingAdmin() {
               { key: "quote", label: "تسعير", Icon: Calculator },
               { key: "inspection", label: "معاينة", Icon: ClipboardList },
               { key: "qc", label: "فحص الجودة", Icon: ShieldCheck },
+              { key: "partners", label: "الشركاء", Icon: Handshake },
             ] as const).map(({ key, label, Icon }) => (
               <button
                 key={key}
@@ -360,7 +362,7 @@ export default function PricingAdmin() {
               <h2 className="text-xl font-bold">وش تبي تسوي؟</h2>
               <span className="block w-12 h-1 rounded-full bg-brand-yellow mx-auto mt-2" aria-hidden />
             </div>
-            <div className="grid gap-3 sm:grid-cols-3">
+            <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
               {([
                 {
                   key: "quote", Icon: Calculator, label: "تسعير",
@@ -373,6 +375,10 @@ export default function PricingAdmin() {
                 {
                   key: "qc", Icon: ShieldCheck, label: "فحص الجودة",
                   desc: "افحص الشغل بعد انتهائه بند بند مع الصور قبل التسليم للعميل",
+                },
+                {
+                  key: "partners", Icon: Handshake, label: "الشركاء",
+                  desc: "اعتمد المقاولين وتابع عملاءهم المحالين وأرسل كشف العمولات الشهري",
                 },
               ] as const).map(({ key, Icon, label, desc }) => (
                 <button
@@ -404,6 +410,10 @@ export default function PricingAdmin() {
         ) : mode === "qc" ? (
           <main className="max-w-6xl mx-auto px-4 pt-6">
             <QualityControlForm token={token} />
+          </main>
+        ) : mode === "partners" ? (
+          <main className="max-w-4xl mx-auto px-4 pt-6">
+            <PartnersPanel token={token} />
           </main>
         ) : (
         <main className="max-w-6xl mx-auto px-4 pt-6 grid lg:grid-cols-[1fr_360px] gap-6 items-start">

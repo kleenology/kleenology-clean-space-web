@@ -27,6 +27,8 @@ import ReviewGate from "./pages/ReviewGate";
 import OfferLanding from "./pages/OfferLanding";
 import PricingAdmin from "./pages/PricingAdmin";
 import QcReport from "./pages/QcReport";
+import Partners from "./pages/Partners";
+import PartnerReferral from "./pages/PartnerReferral";
 import { PixelTracker } from "@/components/PixelTracker";
 import { WhatsAppChatWidget } from "@/components/WhatsAppChatWidget";
 import { PerformanceMonitor } from "@/components/PerformanceMonitor";
@@ -135,6 +137,9 @@ const App = () => {
               <Route path="/privacy-policy" element={<PrivacyPolicy />} />
               <Route path="/review" element={<ReviewGate />} />
               <Route path="/offer" element={<OfferLanding />} />
+              <Route path="/partners" element={<Partners />} />
+              {/* رابط إحالة الشريك: kleenology.me/p/P-XXXXX */}
+              <Route path="/p/:code" element={<PartnerReferral />} />
               {/* صفحة داخلية لمشرف التسعير — محمية بكلمة مرور ومحجوبة عن محركات البحث */}
               <Route path="/admin/pricing" element={<PricingAdmin />} />
               <Route path="/admin/pricing/qc/:id" element={<QcReport />} />
