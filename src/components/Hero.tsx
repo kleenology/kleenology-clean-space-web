@@ -1,12 +1,6 @@
-
-import heroBg from "@/assets/hero-background-white.jpg";
-import heroBgMobile from "@/assets/hero-background-mobile.jpg";
-
-// Darkens the photo so the white headline stays readable over it.
-const HERO_SCRIM =
-  "linear-gradient(180deg, rgba(20,30,48,0.50) 0%, rgba(20,30,48,0.38) 55%, rgba(20,30,48,0.45) 100%), linear-gradient(120deg, rgba(20,30,48,0.15) 30%, rgba(36,198,220,0.05))";
 import { Button } from "@/components/ui/button";
-import { MessageCircle, Users, Shield, Sparkles, Calendar } from "lucide-react";
+import { MessageCircle, Users, Sparkles, Calendar, Clock } from "lucide-react";
+import { HeroWash } from "@/components/HeroWash";
 import { useCallback } from "react";
 import { useTranslation } from "react-i18next";
 
@@ -29,46 +23,47 @@ export const Hero = () => {
     window.location.href = '/booking';
   }, []);
 
+  // هذه الأرقام يجب أن تطابق قسم الإحصائيات في Stats.tsx
+  const proof = [
+    { icon: Users, text: `690+ ${t('hero.stats.0')}` },
+    { icon: Sparkles, text: `98% ${t('hero.stats.2')}` },
+    { icon: Clock, text: t('hero.reassurance') },
+  ];
+
   return (
     <section
       id="home"
-      className="relative min-h-[90vh] flex items-center justify-center overflow-hidden pt-24 pb-24 sm:pt-36 sm:pb-36"
+      className="relative overflow-hidden bg-gradient-to-b from-brand-blue/10 via-background to-background pt-24 pb-14 sm:pt-32 sm:pb-24"
     >
-      {/* Professional Background with Gradient Overlay.
-          Two layers so phones load the portrait crop instead of the wide one. */}
-      <div
-        className="absolute inset-0 w-full h-full z-0 bg-cover bg-center bg-no-repeat sm:hidden"
-        style={{
-          backgroundImage: `${HERO_SCRIM}, url(${heroBgMobile})`,
-        }}
-        aria-hidden="true"
-      />
-      <div
-        className="absolute inset-0 w-full h-full z-0 bg-cover bg-center bg-no-repeat hidden sm:block"
-        style={{
-          backgroundImage: `${HERO_SCRIM}, url(${heroBg})`,
-        }}
-        aria-hidden="true"
-      />
+      {/* زخرفة خلفية خفيفة بألوان الهوية */}
+      <div className="absolute -top-24 -start-24 w-72 h-72 rounded-full bg-brand-yellow/20 blur-3xl" aria-hidden="true" />
+      <div className="absolute top-1/3 -end-32 w-96 h-96 rounded-full bg-brand-blue/15 blur-3xl" aria-hidden="true" />
 
-      {/* Hero Content */}
-      <div className="relative z-10 w-full flex flex-col items-center justify-center px-4 sm:px-0">
-        <div className="max-w-2xl w-full mx-auto px-4 sm:px-10 py-12 sm:py-20 rounded-none sm:rounded-3xl bg-transparent sm:bg-white/5 backdrop-blur-none sm:backdrop-blur-xl shadow-none sm:shadow-2xl border-none sm:border sm:border-white/10 flex flex-col items-center gap-6 sm:gap-8 mb-10 sm:mb-16 animate-fade-in">
-          {/* Main Professional Headline */}
-          <h1 className="font-sans text-3xl sm:text-5xl md:text-6xl font-extrabold tracking-tight text-center text-white drop-shadow-xl mb-3 sm:mb-4 leading-tight">
-            {t('hero.headline')}
+      {/* على الجوال تأتي البطاقة بعد العنوان مباشرة حتى تُرى الحركة بلا تمرير،
+          وعلى الشاشة الكبيرة تأخذ عموداً كاملاً بجانب النص */}
+      <div className="relative max-w-6xl mx-auto px-4 grid lg:grid-cols-2 gap-x-14 gap-y-8 items-center">
+        <div className="text-center lg:text-start lg:self-end animate-fade-in">
+          <h1 className="font-sans text-4xl sm:text-5xl lg:text-[3.4rem] font-extrabold tracking-tight text-foreground leading-[1.4] sm:leading-[1.4] lg:leading-[1.45] mb-5">
+            <span className="bg-[linear-gradient(transparent_68%,hsl(var(--brand-yellow)/0.55)_68%)] box-decoration-clone">
+              {t('hero.headline')}
+            </span>
           </h1>
-          {/* Elegant Tagline */}
-          <p className="font-sans text-base sm:text-xl md:text-2xl text-center text-white font-medium drop-shadow-lg max-w-xl mx-auto mb-2 sm:mb-4 leading-relaxed">
+          <p className="text-lg sm:text-xl text-muted-foreground leading-relaxed max-w-xl mx-auto lg:mx-0">
             {t('hero.tagline')}
           </p>
-          {/* Call-to-Action Buttons */}
-          <div className="flex flex-col sm:flex-row gap-3 sm:gap-4 justify-center items-center w-full mt-2">
-            <Button 
+        </div>
+
+        <div className="px-2 sm:px-6 lg:px-0 pt-4 lg:col-start-2 lg:row-start-1 lg:row-span-2">
+          <HeroWash />
+        </div>
+
+        <div className="text-center lg:text-start lg:self-start lg:col-start-1 lg:row-start-2">
+          <div className="flex flex-col sm:flex-row gap-3 justify-center lg:justify-start mb-6">
+            <Button
               onClick={handleWhatsAppClick}
               variant="hero"
               size="lg"
-              className="text-base sm:text-lg px-6 sm:px-8 py-4 sm:py-5 h-auto font-bold shadow-float w-full sm:w-auto"
+              className="text-base sm:text-lg px-7 py-4 h-auto font-bold shadow-float"
             >
               <MessageCircle className="h-5 w-5 sm:h-6 sm:w-6 mr-2" />
               {t('hero.startBooking')}
@@ -77,50 +72,21 @@ export const Hero = () => {
               onClick={handleBookingPage}
               variant="outline"
               size="lg"
-              className="text-base sm:text-lg px-6 sm:px-8 py-4 sm:py-5 h-auto font-semibold border-white/40 text-white/90 bg-transparent sm:bg-white/10 hover:bg-white/20 hover:text-brand-blue w-full sm:w-auto"
+              className="text-base sm:text-lg px-7 py-4 h-auto font-semibold border-2 border-brand-blue/30 text-brand-blue-deeper hover:bg-brand-blue/5"
             >
               <Calendar className="h-5 w-5 sm:h-6 sm:w-6 mr-2" />
               {t('hero.bookOnline')}
             </Button>
           </div>
-          {/* ما الذي يحدث بعد الضغط — يقلل تردد الزائر.
-              خلفية داكنة شبه شفافة لضمان الوضوح فوق أي صورة مهما كانت فاتحة */}
-          <div className="flex justify-center w-full">
-            <p className="text-sm sm:text-base text-white font-semibold text-center leading-relaxed bg-black/45 backdrop-blur-sm rounded-full px-5 py-2.5 shadow-lg">
-              {t('hero.reassurance')}
-            </p>
-          </div>
-        </div>
-        {/* Stats Grid - Desktop only */}
-        <div className="hidden sm:grid grid-cols-3 gap-8 max-w-4xl w-full mx-auto mt-2 animate-fade-in">
-          {[
-            // هذه الأرقام يجب أن تطابق قسم الإحصائيات في Stats.tsx
-            { icon: Users, number: "690+", label: t('hero.stats.0') },
-            { icon: Shield, number: "182+", label: t('hero.stats.1') },
-            { icon: Sparkles, number: "98%", label: t('hero.stats.2') }
-          ].map((stat, idx) => (
-            <div
-              key={idx}
-              className="flex flex-col items-center justify-center bg-white/10 backdrop-blur-lg rounded-2xl p-8 shadow-lg border border-white/20 group"
-              style={{boxShadow: '0 4px 24px 0 rgba(0,0,0,0.15)'}}
-            >
-              <div className="inline-flex items-center justify-center w-16 h-16 bg-gradient-to-br from-brand-yellow to-brand-blue rounded-full mb-4 shadow-xl">
-                <stat.icon className="h-8 w-8 text-white drop-shadow-lg" />
-              </div>
-              <div className="text-3xl font-extrabold mb-1 text-white">
-                {stat.number}
-              </div>
-              <div className="text-base font-medium text-white/80">
-                {stat.label}
-              </div>
-            </div>
-          ))}
-        </div>
-      </div>
-      {/* Scroll Indicator */}
-      <div className="absolute bottom-6 sm:bottom-8 left-1/2 transform -translate-x-1/2 z-10 animate-bounce">
-        <div className="w-7 h-12 sm:w-8 sm:h-14 border-2 border-white/60 rounded-full flex justify-center items-start bg-white/10 shadow-lg">
-          <div className="w-1.5 h-3 sm:w-2 sm:h-4 bg-gradient-to-b from-brand-yellow to-brand-blue rounded-full mt-2 animate-pulse"></div>
+
+          <ul className="flex flex-wrap justify-center lg:justify-start gap-x-6 gap-y-2">
+            {proof.map(({ icon: Icon, text }) => (
+              <li key={text} className="flex items-center gap-2 text-sm font-medium text-foreground/80">
+                <Icon className="h-4 w-4 text-brand-blue" />
+                {text}
+              </li>
+            ))}
+          </ul>
         </div>
       </div>
     </section>

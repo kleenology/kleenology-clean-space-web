@@ -16,7 +16,6 @@ import { MessageCircle } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useTranslation } from "react-i18next";
 import { SEO } from "@/components/SEO";
-import { ScrollWash } from "@/components/ScrollWash";
 import { Reveal, ScrollProgress } from "@/components/Reveal";
 
 const Index = () => {
@@ -46,7 +45,6 @@ const Index = () => {
       <ScrollProgress />
       <Hero />
       <Stats />
-      <ScrollWash />
       <Reveal><TrustBadges /></Reveal>
       <Reveal><ClientSectors /></Reveal>
       <Reveal><Services /></Reveal>
