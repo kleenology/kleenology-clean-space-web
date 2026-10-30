@@ -24,7 +24,8 @@ const HIDDEN_ON_PATHS = ["/offer"];
 
 // كل ما تحت /admin/ صفحات داخلية لا يفتحها عميل، والودجت يغطي فيها
 // الأزرار والأرقام. البادئة تشمل الصفحات الفرعية تلقائياً.
-const HIDDEN_PREFIXES = ["/admin/"];
+// وصفحات رابط الشريك /p/ فيها زر واتساب خاص يحمل كود الشريك.
+const HIDDEN_PREFIXES = ["/admin/", "/p/"];
 
 const fmt = () =>
   new Date().toLocaleTimeString("ar-SA", { hour: "2-digit", minute: "2-digit" });
