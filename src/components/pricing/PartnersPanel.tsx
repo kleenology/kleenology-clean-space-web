@@ -3,7 +3,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import {
-  Loader2, RefreshCw, Check, Trash2, Copy, MessageCircle, FileText, Ban, Play, X, Plus, Info,
+  Loader2, RefreshCw, Check, Trash2, Copy, MessageCircle, FileText, Ban, Play, X, Plus, Info, Pencil,
 } from "lucide-react";
 import { toast } from "sonner";
 import { cn } from "@/lib/utils";
@@ -80,7 +80,9 @@ function StatementView({ partner, leads, token, onClose, onSettled }: {
           </Button>
         )}
       </div>
-      {partner.iban && <p className="text-xs text-muted-foreground" dir="ltr">IBAN: {partner.iban}</p>}
+      {partner.iban
+        ? <p className="text-xs text-muted-foreground" dir="ltr">IBAN: {partner.iban}</p>
+        : <p className="text-xs text-amber-700">ما فيه آيبان — أضفه من زر ✎ عند الشريك قبل التحويل.</p>}
     </div>
   );
 }
@@ -405,6 +407,13 @@ export function PartnersPanel({ token }: { token: string }) {
                     <div className="flex flex-wrap gap-1.5">
                       <Button size="sm" variant="outline" onClick={() => setStatementFor(statementFor === p.id ? null : p.id)}>
                         <FileText className="h-4 w-4 ml-1" />الكشف
+                      </Button>
+                      <Button size="sm" variant="ghost" aria-label="الآيبان" title={p.iban || "أضف الآيبان"}
+                              onClick={() => {
+                                const iban = window.prompt(`آيبان ${p.company}`, p.iban || "SA");
+                                if (iban !== null) changePartner(p, { iban: iban.toUpperCase().replace(/\s/g, "") });
+                              }}>
+                        <Pencil className={cn("h-4 w-4", !p.iban && "text-amber-600")} />
                       </Button>
                       <Button size="sm" variant="ghost" aria-label="نسخ الرابط"
                               onClick={() => navigator.clipboard.writeText(partnerLink(p.id)).then(() => toast.success("تم نسخ رابط الشريك"))}>
