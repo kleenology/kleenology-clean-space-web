@@ -11,7 +11,7 @@ export const LEADS_STORE = "partner-leads";
 // حروف بلا التباس: لا O/0 ولا I/1، فالمقاول يمليها على الجوال بلا أخطاء
 const CODE_ALPHABET = "ABCDEFGHJKLMNPQRSTUVWXYZ23456789";
 
-export const LEAD_STATUSES = ["new", "quoted", "done", "paid", "settled", "lost"];
+export const LEAD_STATUSES = ["new", "quoted", "active", "lost"];
 export const PARTNER_STATUSES = ["pending", "approved", "suspended"];
 
 export function partnersStore() {
@@ -66,34 +66,40 @@ export async function allRecords(store, idField = "id") {
 }
 
 /**
- * هل العميل مسجّل من قبل؟ العمولة على أول طلب للعميل فقط، فالعميل اللي
- * أحاله شريك قبل، أو تعامل معنا قبل (معاينة أو فحص جودة)، ما يُحسب.
- * يرجّع سبب الاستبعاد أو null.
+ * هل نفس العميل مسجّل عند شريك آخر؟ للعلم فقط — العمولة على كل عميل وكل
+ * طلب بلا استبعاد، لكن المشرف يحتاج يعرف قبل ما يضيف طلباً حتى لا يُسجّل
+ * نفس الطلب عند شريكين.
  */
-export async function findPriorCustomer(phone) {
+export async function otherReferral(phone, partnerCode) {
   const target = normalizePhone(phone);
-  if (target.length < 8) return null;
-
+  if (target.length < 8) return "";
   const leads = await allRecords(leadsStore());
-  const earlier = leads.find((lead) => normalizePhone(lead.phone) === target);
-  if (earlier) {
-    return {
-      reason: "referred",
-      label: `سبق أن أحاله ${earlier.partnerName || displayCode(earlier.partnerCode)}`,
-      leadId: earlier.id,
-    };
-  }
+  const other = leads.find(
+    (lead) => normalizePhone(lead.phone) === target && lead.partnerCode !== partnerCode,
+  );
+  return other ? `مسجّل أيضاً عند ${other.partnerName || displayCode(other.partnerCode)}` : "";
+}
 
-  for (const [storeName, label] of [
-    ["pricing-inspections", "عميل سابق — له معاينة محفوظة"],
-    ["pricing-quality-checks", "عميل سابق — له فحص جودة محفوظ"],
-  ]) {
-    const records = await allRecords(recordStore(storeName)).catch(() => []);
-    if (records.some((record) => normalizePhone(record.phone) === target)) {
-      return { reason: "existing", label };
-    }
+/**
+ * طلبات العميل المدفوعة. السجلات الأقدم (قبل العمولة على كل طلب) فيها مبلغ
+ * واحد بلا قائمة طلبات، فتُقرأ كطلب واحد حتى لا تضيع عمولتها.
+ */
+export function ordersOf(lead) {
+  if (Array.isArray(lead?.orders)) return lead.orders;
+  if (lead?.amount > 0 && ["paid", "settled"].includes(lead.status)) {
+    return [{
+      id: "legacy",
+      amount: lead.amount,
+      paidAt: lead.paidAt || lead.createdAt,
+      ...(lead.settledAt ? { settledAt: lead.settledAt } : {}),
+    }];
   }
-  return null;
+  return [];
+}
+
+/** حالات العميل القديمة تُطابق الجديدة */
+export function leadStatusOf(lead) {
+  return ["done", "paid", "settled"].includes(lead?.status) ? "active" : lead?.status || "new";
 }
 
 /* ——— حد بسيط للطلبات العامة ———

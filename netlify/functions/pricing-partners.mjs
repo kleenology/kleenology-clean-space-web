@@ -1,18 +1,28 @@
 // إدارة برنامج الشركاء — كل العمليات تتطلب جلسة مشرف صالحة.
 //   GET                                   الشركاء والعملاء المحالون
 //   POST {kind:"partner", id, changes}    اعتماد/إيقاف شريك أو تعديل بياناته
-//   POST {kind:"lead", id, changes}       حالة العميل والمبلغ وأهلية العمولة
-//   POST {kind:"settle", ids}             تعليم عمولات كمدفوعة بعد التحويل
+//   POST {kind:"lead", id, changes}       بيانات العميل وحالته وأهليته
+//   POST {kind:"order", id, amount}       طلب مدفوع جديد للعميل — عمولة على كل طلب
+//   POST {kind:"order", id, orderId, remove:true}  حذف طلب لم تُصرف عمولته
+//   POST {kind:"settle", items:[{id, orderId}]}    تعليم عمولات كمدفوعة بعد التحويل
 //   DELETE ?kind=partner|lead&id=X
 
 import { isConfigured, requireSession, jsonResponse } from "../lib/admin-auth.mjs";
+import crypto from "node:crypto";
 import { MAX_BODY_BYTES } from "../lib/blob-records.mjs";
 import {
-  partnersStore, leadsStore, allRecords, clean, LEAD_STATUSES, PARTNER_STATUSES,
+  partnersStore, leadsStore, allRecords, clean, ordersOf, leadStatusOf,
+  LEAD_STATUSES, PARTNER_STATUSES,
 } from "../lib/partners.mjs";
 
 const PARTNER_FIELDS = ["company", "contactName", "phone", "partnerType", "city", "iban", "notes"];
-const LEAD_FIELDS = ["customerName", "phone", "neighborhood", "serviceType", "notes", "adminNotes", "ineligibleReason"];
+const LEAD_FIELDS = ["customerName", "phone", "neighborhood", "serviceType", "notes", "adminNotes"];
+
+/** السجل كما تراه الواجهة: قائمة طلبات وحالة بالصيغة الجديدة حتى للسجلات الأقدم */
+function normalizeLead(lead) {
+  const { amount: _amount, paidAt: _paidAt, settledAt: _settledAt, ineligibleReason: _reason, ...rest } = lead;
+  return { ...rest, status: leadStatusOf(lead), orders: ordersOf(lead) };
+}
 
 async function updatePartner(id, changes) {
   const store = partnersStore();
@@ -37,35 +47,69 @@ async function updateLead(id, changes) {
   const current = await store.get(id, { type: "json" });
   if (!current) return jsonResponse({ error: "not_found" }, 404);
 
-  const next = { ...current };
+  const next = normalizeLead(current);
   for (const field of LEAD_FIELDS) {
     if (field in changes) next[field] = clean(changes[field], 500);
   }
-  if ("amount" in changes) {
-    const amount = Number(changes.amount);
-    next.amount = Number.isFinite(amount) && amount >= 0 ? Math.round(amount * 100) / 100 : 0;
-  }
   if (typeof changes.eligible === "boolean") next.eligible = changes.eligible;
-  if (LEAD_STATUSES.includes(changes.status)) {
-    next.status = changes.status;
-    // تاريخ السداد يحدد شهر الكشف، فيُثبت أول مرة فقط
-    if (changes.status === "paid" && !next.paidAt) next.paidAt = new Date().toISOString();
-  }
+  if (LEAD_STATUSES.includes(changes.status)) next.status = changes.status;
   next.updatedAt = new Date().toISOString();
   await store.setJSON(id, next);
   return jsonResponse({ lead: { ...next, id } });
 }
 
-async function settle(ids) {
+async function changeOrder(id, payload) {
+  const store = leadsStore();
+  const current = await store.get(id, { type: "json" });
+  if (!current) return jsonResponse({ error: "not_found" }, 404);
+
+  const next = normalizeLead(current);
+  const now = new Date().toISOString();
+
+  if (payload.remove) {
+    const order = next.orders.find((o) => o.id === payload.orderId);
+    // الطلب اللي صُرفت عمولته يبقى — حذفه يخرب كشوف الأشهر الماضية
+    if (!order || order.settledAt) return jsonResponse({ error: "not_found" }, 404);
+    next.orders = next.orders.filter((o) => o.id !== payload.orderId);
+  } else {
+    const amount = Number(payload.amount);
+    if (!Number.isFinite(amount) || amount <= 0) return jsonResponse({ error: "invalid_amount" }, 400);
+    next.orders = [...next.orders, {
+      id: crypto.randomBytes(4).toString("hex"),
+      amount: Math.round(amount * 100) / 100,
+      note: clean(payload.note, 120),
+      paidAt: now,
+    }];
+    // أول طلب مدفوع يعني أن العميل صار فعّالاً
+    if (next.status === "new" || next.status === "quoted") next.status = "active";
+  }
+  next.updatedAt = now;
+  await store.setJSON(id, next);
+  return jsonResponse({ lead: { ...next, id } });
+}
+
+async function settle(items) {
   const store = leadsStore();
   const now = new Date().toISOString();
+  const byLead = new Map();
+  for (const { id, orderId } of items.slice(0, 500)) {
+    if (typeof id !== "string" || typeof orderId !== "string") continue;
+    byLead.set(id, [...(byLead.get(id) ?? []), orderId]);
+  }
+
   const settled = [];
-  for (const id of ids.slice(0, 200)) {
+  for (const [id, orderIds] of byLead) {
     const current = await store.get(id, { type: "json" }).catch(() => null);
-    // لا تُصرف إلا عمولة عميل دفع ومؤهل — حماية من ضغطة بالخطأ
-    if (!current || current.status !== "paid" || !current.eligible) continue;
-    await store.setJSON(id, { ...current, status: "settled", settledAt: now, updatedAt: now });
-    settled.push(id);
+    // لا تُصرف إلا عمولة عميل مؤهل — حماية من ضغطة بالخطأ
+    if (!current || current.eligible === false) continue;
+    const next = normalizeLead(current);
+    next.orders = next.orders.map((order) => {
+      if (!orderIds.includes(order.id) || order.settledAt) return order;
+      settled.push({ id, orderId: order.id });
+      return { ...order, settledAt: now };
+    });
+    next.updatedAt = now;
+    await store.setJSON(id, next);
   }
   return jsonResponse({ settled, settledAt: now });
 }
@@ -82,7 +126,7 @@ export default async (request) => {
         allRecords(partnersStore()),
         allRecords(leadsStore()),
       ]);
-      return jsonResponse({ partners, leads });
+      return jsonResponse({ partners, leads: leads.map(normalizeLead) });
     }
 
     if (request.method === "POST") {
@@ -98,7 +142,8 @@ export default async (request) => {
 
       if (payload.kind === "partner" && payload.id) return await updatePartner(payload.id, changes);
       if (payload.kind === "lead" && payload.id) return await updateLead(payload.id, changes);
-      if (payload.kind === "settle" && Array.isArray(payload.ids)) return await settle(payload.ids);
+      if (payload.kind === "order" && payload.id) return await changeOrder(payload.id, payload);
+      if (payload.kind === "settle" && Array.isArray(payload.items)) return await settle(payload.items);
       return jsonResponse({ error: "invalid_body" }, 400);
     }
 

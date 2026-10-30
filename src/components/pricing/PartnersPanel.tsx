@@ -3,12 +3,13 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import {
-  Loader2, RefreshCw, Check, Trash2, Copy, MessageCircle, FileText, Ban, Play, X, Plus, AlertTriangle,
+  Loader2, RefreshCw, Check, Trash2, Copy, MessageCircle, FileText, Ban, Play, X, Plus, Info,
 } from "lucide-react";
 import { toast } from "sonner";
 import { cn } from "@/lib/utils";
 import {
-  loadPartnersData, updatePartner, updateLead, settleLeads, deleteRecord, submitLead,
+  loadPartnersData, updatePartner, updateLead, settleOrders, addOrder, removeOrder,
+  deleteRecord, submitLead, unsettledOrders,
   PartnersError, PARTNER_STATUS_LABEL, LEAD_STATUS_LABEL, LEAD_STATUS_ORDER,
   displayCode, partnerLink, approvalMessage, whatsappUrl, buildStatement, commissionOf, sar,
   type Partner, type Lead, type LeadStatus,
@@ -23,9 +24,7 @@ const dateAr = (iso?: string) =>
 const statusTone: Record<LeadStatus, string> = {
   new: "bg-sky-100 text-sky-800",
   quoted: "bg-indigo-100 text-indigo-800",
-  done: "bg-amber-100 text-amber-800",
-  paid: "bg-green-100 text-green-800",
-  settled: "bg-gray-200 text-gray-700",
+  active: "bg-green-100 text-green-800",
   lost: "bg-red-100 text-red-700",
 };
 
@@ -42,7 +41,7 @@ function Card({ title, action, children }: { title: string; action?: React.React
 }
 
 function StatementView({ partner, leads, token, onClose, onSettled }: {
-  partner: Partner; leads: Lead[]; token: string; onClose: () => void; onSettled: (ids: string[]) => void;
+  partner: Partner; leads: Lead[]; token: string; onClose: () => void; onSettled: () => void;
 }) {
   const { text, payable, total } = useMemo(() => buildStatement(partner, leads), [partner, leads]);
   const [busy, setBusy] = useState(false);
@@ -51,8 +50,8 @@ function StatementView({ partner, leads, token, onClose, onSettled }: {
     if (!window.confirm(`تعليم ${payable.length} عمولة بإجمالي ${sar(total)} كمدفوعة؟`)) return;
     setBusy(true);
     try {
-      const { settled } = await settleLeads(token, payable.map((l) => l.id));
-      onSettled(settled);
+      await settleOrders(token, payable.map(({ lead, order }) => ({ id: lead.id, orderId: order.id })));
+      onSettled();
       toast.success("تم تعليم العمولات كمدفوعة");
     } catch (error) {
       fail(error);
@@ -134,7 +133,7 @@ function AddLead({ partners, onAdded }: { partners: Partner[]; onAdded: () => vo
         {busy ? <Loader2 className="h-4 w-4 animate-spin" /> : <><Plus className="h-4 w-4 ml-1" />إضافة</>}
       </Button>
       <p className="sm:col-span-5 text-[11px] text-muted-foreground">
-        لعميل حجز على الواتس وذكر كود شريك — يُفحص تلقائياً إن كان مسجّلاً من قبل.
+        لعميل حجز على الواتس وذكر كود شريك.
       </p>
     </form>
   );
@@ -143,16 +142,33 @@ function AddLead({ partners, onAdded }: { partners: Partner[]; onAdded: () => vo
 function LeadRow({ lead, token, onChange, onDelete }: {
   lead: Lead; token: string; onChange: (lead: Lead) => void; onDelete: (id: string) => void;
 }) {
-  const [amount, setAmount] = useState(String(lead.amount || ""));
-  useEffect(() => setAmount(String(lead.amount || "")), [lead.amount]);
+  const [amount, setAmount] = useState("");
+  const [busy, setBusy] = useState(false);
 
-  const save = async (changes: Partial<Lead>) => {
+  const apply = async (request: Promise<{ lead: Lead }>) => {
     try {
-      const { lead: next } = await updateLead(token, lead.id, changes);
+      const { lead: next } = await request;
       onChange({ ...next, id: lead.id });
+      return true;
     } catch (error) {
       fail(error);
+      return false;
     }
+  };
+
+  const addPaidOrder = async (e: React.FormEvent) => {
+    e.preventDefault();
+    const value = Number(amount);
+    if (!value || value <= 0) {
+      toast.error("اكتب مبلغ الطلب قبل الضريبة");
+      return;
+    }
+    setBusy(true);
+    if (await apply(addOrder(token, lead.id, value))) {
+      setAmount("");
+      toast.success(`أضيف الطلب — عمولة ${sar(commissionOf(value))}`);
+    }
+    setBusy(false);
   };
 
   const remove = async () => {
@@ -165,10 +181,10 @@ function LeadRow({ lead, token, onChange, onDelete }: {
     }
   };
 
-  const settled = lead.status === "settled";
+  const total = lead.orders.reduce((sum, o) => sum + o.amount, 0);
 
   return (
-    <div className={cn("border rounded-xl p-3 space-y-2", !lead.eligible && "bg-red-50/50 border-red-200")}>
+    <div className={cn("border rounded-xl p-3 space-y-2", !lead.eligible && "bg-muted/60")}>
       <div className="flex flex-wrap items-start justify-between gap-2">
         <div className="min-w-0">
           <div className="font-semibold">{lead.customerName}
@@ -185,45 +201,69 @@ function LeadRow({ lead, token, onChange, onDelete }: {
         </span>
       </div>
 
-      {!lead.eligible && (
-        <div className="flex items-center gap-1.5 text-xs text-red-700">
-          <AlertTriangle className="h-3.5 w-3.5" />
-          غير مؤهل للعمولة: {lead.ineligibleReason || "—"}
+      {lead.duplicateNote && (
+        <div className="flex items-center gap-1.5 text-xs text-amber-700">
+          <Info className="h-3.5 w-3.5" />
+          {lead.duplicateNote} — انتبه لا تسجّل نفس الطلب عند الاثنين
+        </div>
+      )}
+
+      {lead.orders.length > 0 && (
+        <div className="rounded-lg border bg-background divide-y text-xs">
+          {lead.orders.map((order) => (
+            <div key={order.id} className="flex items-center justify-between gap-2 px-2.5 py-1.5">
+              <span>{dateAr(order.paidAt)} · {sar(order.amount)}</span>
+              <span className="flex items-center gap-2">
+                <span className={order.settledAt ? "text-muted-foreground" : "text-green-700 font-semibold"}>
+                  عمولة {sar(commissionOf(order.amount))} {order.settledAt ? `· صُرفت ${dateAr(order.settledAt)}` : "· مستحقة"}
+                </span>
+                {!order.settledAt && (
+                  <button type="button" aria-label="حذف الطلب"
+                          onClick={() => window.confirm("حذف هذا الطلب؟") && apply(removeOrder(token, lead.id, order.id))}>
+                    <X className="h-3.5 w-3.5 text-red-600" />
+                  </button>
+                )}
+              </span>
+            </div>
+          ))}
+          {lead.orders.length > 1 && (
+            <div className="px-2.5 py-1.5 font-semibold">
+              {lead.orders.length} طلبات · {sar(total)} · عمولة {sar(commissionOf(total))}
+            </div>
+          )}
         </div>
       )}
 
       <div className="flex flex-wrap items-center gap-2">
-        <select value={lead.status} disabled={settled}
-                onChange={(e) => save({ status: e.target.value as LeadStatus })}
+        <select value={lead.status}
+                onChange={(e) => apply(updateLead(token, lead.id, { status: e.target.value as LeadStatus }))}
                 className="h-8 rounded-md border border-input bg-background px-2 text-xs">
-          {LEAD_STATUS_ORDER.filter((s) => s !== "settled" || settled).map((s) => (
-            <option key={s} value={s}>{LEAD_STATUS_LABEL[s]}</option>
-          ))}
+          {LEAD_STATUS_ORDER.map((s) => <option key={s} value={s}>{LEAD_STATUS_LABEL[s]}</option>)}
         </select>
-        <div className="flex items-center gap-1">
-          <Input className="h-8 w-28 text-xs" inputMode="decimal" dir="ltr" placeholder="قيمة الطلب"
-                 value={amount} disabled={settled}
-                 onChange={(e) => setAmount(e.target.value)}
-                 onBlur={() => Number(amount || 0) !== lead.amount && save({ amount: Number(amount || 0) })} />
-          <span className="text-[11px] text-muted-foreground">قبل الضريبة</span>
-        </div>
-        <span className="text-xs font-semibold text-green-700">العمولة: {sar(commissionOf(lead))}</span>
-        <label className="flex items-center gap-1 text-xs cursor-pointer mr-auto">
-          <input type="checkbox" checked={lead.eligible} disabled={settled}
-                 onChange={(e) => save({ eligible: e.target.checked })} />
-          مؤهل
+        <form onSubmit={addPaidOrder} className="flex items-center gap-1">
+          <Input className="h-8 w-28 text-xs" inputMode="decimal" dir="ltr" placeholder="مبلغ الطلب"
+                 value={amount} onChange={(e) => setAmount(e.target.value)} />
+          <Button type="submit" size="sm" variant="outline" className="h-8 text-xs" disabled={busy}>
+            {busy ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <><Plus className="h-3.5 w-3.5 ml-1" />طلب مدفوع</>}
+          </Button>
+        </form>
+        <label className="flex items-center gap-1 text-xs cursor-pointer mr-auto"
+               title="ألغِه لعميل وهمي أو إحالة غير صحيحة">
+          <input type="checkbox" checked={lead.eligible}
+                 onChange={(e) => apply(updateLead(token, lead.id, { eligible: e.target.checked }))} />
+          يستحق عمولة
         </label>
         <a href={whatsappUrl(lead.phone, `أهلاً ${lead.customerName} 👋 معك كلينولوجي للتنظيف`)}
            target="_blank" rel="noopener noreferrer" aria-label="واتساب العميل"
            className="h-8 w-8 rounded-md border flex items-center justify-center hover:bg-muted">
           <MessageCircle className="h-4 w-4 text-green-600" />
         </a>
-        <button type="button" onClick={remove} aria-label="حذف"
+        <button type="button" onClick={remove} aria-label="حذف العميل"
                 className="h-8 w-8 rounded-md border flex items-center justify-center hover:bg-red-50">
           <Trash2 className="h-4 w-4 text-red-600" />
         </button>
       </div>
-      {lead.settledAt && <div className="text-[11px] text-muted-foreground">صُرفت العمولة {dateAr(lead.settledAt)}</div>}
+      <p className="text-[11px] text-muted-foreground">المبلغ قبل الضريبة — أضف طلباً كل ما دفع العميل.</p>
     </div>
   );
 }
@@ -281,13 +321,11 @@ export function PartnersPanel({ token }: { token: string }) {
 
   const pending = partners.filter((p) => p.status === "pending");
   const active = partners.filter((p) => p.status !== "pending");
-  const payableTotal = leads
-    .filter((l) => l.status === "paid" && l.eligible)
-    .reduce((sum, l) => sum + commissionOf(l), 0);
+  const payableTotal = unsettledOrders(leads).reduce((sum, { order }) => sum + commissionOf(order.amount), 0);
 
   const visibleLeads = leads.filter((l) =>
     filter === "all" ? true
-      : filter === "open" ? !["settled", "lost"].includes(l.status)
+      : filter === "open" ? l.status !== "lost"
         : l.status === filter);
 
   if (loading && !partners.length && !leads.length) {
@@ -299,7 +337,7 @@ export function PartnersPanel({ token }: { token: string }) {
       <div className="grid grid-cols-3 gap-3">
         {[
           { label: "شركاء معتمدون", value: String(partners.filter((p) => p.status === "approved").length) },
-          { label: "عملاء مفتوحون", value: String(leads.filter((l) => !["settled", "lost"].includes(l.status)).length) },
+          { label: "عملاء محالون", value: String(leads.filter((l) => l.status !== "lost").length) },
           { label: "عمولات مستحقة", value: sar(payableTotal) },
         ].map(({ label, value }) => (
           <div key={label} className="bg-card border rounded-2xl p-4 text-center shadow-clean">
@@ -347,8 +385,9 @@ export function PartnersPanel({ token }: { token: string }) {
           <div className="space-y-3">
             {active.map((p) => {
               const mine = leads.filter((l) => l.partnerCode === p.id);
-              const due = mine.filter((l) => l.status === "paid" && l.eligible).reduce((s, l) => s + commissionOf(l), 0);
-              const earned = mine.filter((l) => l.status === "settled").reduce((s, l) => s + commissionOf(l), 0);
+              const due = unsettledOrders(mine).reduce((s, { order }) => s + commissionOf(order.amount), 0);
+              const earned = mine.flatMap((l) => l.orders.filter((o) => o.settledAt))
+                .reduce((s, o) => s + commissionOf(o.amount), 0);
               return (
                 <div key={p.id} className="border rounded-xl p-3 space-y-3">
                   <div className="flex flex-wrap items-start justify-between gap-2">
@@ -386,10 +425,7 @@ export function PartnersPanel({ token }: { token: string }) {
                     <StatementView
                       partner={p} leads={leads} token={token}
                       onClose={() => setStatementFor(null)}
-                      onSettled={(ids) => {
-                        const now = new Date().toISOString();
-                        setLeads((list) => list.map((l) => (ids.includes(l.id) ? { ...l, status: "settled", settledAt: now } : l)));
-                      }}
+                      onSettled={load}
                     />
                   )}
                 </div>
@@ -402,7 +438,7 @@ export function PartnersPanel({ token }: { token: string }) {
       <Card title="العملاء المحالون">
         <AddLead partners={partners} onAdded={load} />
         <div className="flex flex-wrap gap-1.5 mb-3">
-          {([["open", "المفتوحون"], ...LEAD_STATUS_ORDER.map((s) => [s, LEAD_STATUS_LABEL[s]]), ["all", "الكل"]] as const).map(([key, label]) => (
+          {([["open", "الحاليون"], ...LEAD_STATUS_ORDER.map((s) => [s, LEAD_STATUS_LABEL[s]]), ["all", "الكل"]] as const).map(([key, label]) => (
             <button key={key} type="button" onClick={() => setFilter(key as typeof filter)}
                     className={cn("text-xs rounded-full px-3 py-1 border",
                       filter === key ? "bg-primary text-primary-foreground border-primary" : "hover:bg-muted")}>
