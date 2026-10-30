@@ -22,6 +22,7 @@ import { CustomerSearch } from "@/components/pricing/CustomerSearch";
 import { InspectionForm } from "@/components/pricing/InspectionForm";
 import { QualityControlForm } from "@/components/pricing/QualityControlForm";
 import { PartnersPanel } from "@/components/pricing/PartnersPanel";
+import { loadPartnersData } from "@/lib/partners/api";
 
 // التوكن في localStorage لا sessionStorage: الأخير ينمسح بإغلاق التبويب،
 // فيضطر المشرف لكتابة كلمة المرور كل مرة يفتح فيها الأداة على جواله.
@@ -81,6 +82,25 @@ export default function PricingAdmin() {
   const customerQuery = searchParams.get("q") ?? "";
   const openPanelRef = useRef<HTMLElement | null>(null);
   const [showCodes, setShowCodes] = useState(false);
+  // عدد العملاء المحالين اللي ما تواصلنا معهم — يظهر رقماً أحمر على «الشركاء»
+  const [newLeads, setNewLeads] = useState(0);
+
+  useEffect(() => {
+    // يتحدث عند الدخول وكل ما رجع المشرف من تبويب الشركاء
+    if (!token || mode === "partners") return;
+    let cancelled = false;
+    loadPartnersData(token)
+      .then(({ leads }) => { if (!cancelled) setNewLeads(leads.filter((l) => l.status === "new").length); })
+      .catch(() => { /* العدّاد تكميلي — الخطأ يظهر داخل التبويب نفسه */ });
+    return () => { cancelled = true; };
+  }, [token, mode]);
+
+  const NewBadge = ({ k }: { k: string }) =>
+    k === "partners" && newLeads > 0 ? (
+      <span className="min-w-5 h-5 px-1.5 rounded-full bg-red-500 text-white text-[11px] font-bold leading-5 text-center">
+        {newLeads}
+      </span>
+    ) : null;
 
   const startSession = useCallback((newToken: string, newCatalogue: Catalogue) => {
     localStorage.setItem(TOKEN_KEY, newToken);
@@ -309,6 +329,7 @@ export default function PricingAdmin() {
               >
                 <Icon className="h-4 w-4" />
                 {label}
+                <NewBadge k={key} />
               </button>
             ))}
           </div>
@@ -392,6 +413,7 @@ export default function PricingAdmin() {
                       <Icon className="h-5 w-5" />
                     </div>
                     <span className="font-bold text-lg">{label}</span>
+                    <NewBadge k={key} />
                   </div>
                   <p className="text-sm text-muted-foreground leading-relaxed">{desc}</p>
                   <span className="mt-3 inline-flex items-center gap-1 text-xs font-semibold text-brand-blue-dark opacity-0 group-hover:opacity-100 transition-opacity">

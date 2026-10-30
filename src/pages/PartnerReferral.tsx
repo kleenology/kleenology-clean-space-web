@@ -4,9 +4,9 @@ import { SEO } from "@/components/SEO";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { CheckCircle2, Loader2, MessageCircle, Handshake } from "lucide-react";
+import { CheckCircle2, Loader2, MessageCircle, Handshake, Gift } from "lucide-react";
 import { toast } from "sonner";
-import { lookupPartner, submitLead, PartnersError } from "@/lib/partners/api";
+import { lookupPartner, submitLead, PartnersError, CUSTOMER_DISCOUNT_PERCENT } from "@/lib/partners/api";
 
 const WHATSAPP_NUMBER = "966537519929";
 
@@ -45,7 +45,7 @@ export default function PartnerReferral() {
 
   const whatsappHref = () => {
     const msg = partner
-      ? `مرحباً، أبي أحجز خدمة تنظيف.\nوصلتكم عن طريق: ${partner.partnerName} (${partner.code})`
+      ? `مرحباً، أبي أحجز خدمة تنظيف.\nوصلتكم عن طريق: ${partner.partnerName} (${partner.code})\nخصم الشريك ${CUSTOMER_DISCOUNT_PERCENT}٪ على أول طلب`
       : "مرحباً، أبي أحجز خدمة تنظيف.";
     return `https://wa.me/${WHATSAPP_NUMBER}?text=${encodeURIComponent(msg)}`;
   };
@@ -81,16 +81,26 @@ export default function PartnerReferral() {
               <CheckCircle2 className="h-14 w-14 text-green-600 mx-auto mb-4" />
               <h1 className="text-xl font-bold mb-2">وصلنا طلبك ✅</h1>
               <p className="text-sm text-muted-foreground leading-relaxed mb-6">
-                بنتواصل معك قريب على الواتس لتحديد الموعد وإرسال عرض السعر.
+                بنتواصل معك قريب على الواتس لتحديد الموعد وإرسال عرض السعر بعد خصم {CUSTOMER_DISCOUNT_PERCENT}٪.
               </p>
               <a href="/"><Button variant="outline" className="w-full">تعرّف على خدماتنا</Button></a>
             </div>
           ) : (
             <>
               {partner && (
-                <div className="flex items-center gap-2 bg-primary/5 border border-primary/20 rounded-xl px-3 py-2.5 mb-5 text-sm">
-                  <Handshake className="h-4 w-4 text-primary shrink-0" />
-                  <span>بالتعاون مع <b>{partner.partnerName}</b></span>
+                <div className="mb-5 space-y-2">
+                  <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                    <Handshake className="h-4 w-4 shrink-0" />
+                    <span>بالتعاون مع <b className="text-foreground">{partner.partnerName}</b></span>
+                  </div>
+                  {/* الخصم أول شي يشوفه — هو سبب إن العميل يكمل الحجز من هنا */}
+                  <div className="flex items-center gap-3 rounded-lg bg-brand-yellow/20 border border-brand-yellow/60 px-4 py-3">
+                    <Gift className="h-6 w-6 text-brand-blue-deeper shrink-0" />
+                    <div>
+                      <div className="font-bold text-brand-blue-deeper">خصم {CUSTOMER_DISCOUNT_PERCENT}٪ على أول طلب</div>
+                      <div className="text-xs text-foreground/70">لأنك جاي من طرف {partner.partnerName}</div>
+                    </div>
+                  </div>
                 </div>
               )}
               <h1 className="text-xl font-bold mb-1">احجز خدمة التنظيف</h1>
