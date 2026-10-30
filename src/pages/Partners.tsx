@@ -13,16 +13,21 @@ import {
 } from "@/components/ui/accordion";
 import {
   UserPlus, Send, Wallet, CheckCircle2, Loader2, CalendarCheck, BadgePercent,
-  FileText, ChevronDown, MessageCircle, ArrowLeft, Pencil, TrendingUp,
+  ChevronDown, MessageCircle, ArrowLeft, Pencil, TrendingUp, Copy, Download, Gift,
 } from "lucide-react";
+import { QRCodeCanvas } from "qrcode.react";
 import { toast } from "sonner";
 import { cn } from "@/lib/utils";
 import heroImage from "@/assets/rehab-cleaning.jpg";
-import { registerPartner, submitLead, PartnersError, COMMISSION_RATE } from "@/lib/partners/api";
+import {
+  registerPartner, submitLead, loadAccount, PartnersError, COMMISSION_RATE, CUSTOMER_DISCOUNT_PERCENT,
+  LEAD_STATUS_LABEL, shareMessage, type PartnerAccount,
+} from "@/lib/partners/api";
 
 const WHATSAPP_NUMBER = "966537519929";
 // الكود يُحفظ على جهاز الشريك: يكتبه مرة، والمرات الجاية يسجّل العميل بالاسم والجوال فقط
 const CODE_KEY = "kleenology_partner_code";
+const PHONE_KEY = "kleenology_partner_phone";
 
 const SERVICES = [
   "تنظيف ما بعد البناء",
@@ -42,15 +47,19 @@ const ORDER_PRESETS = [
 ];
 
 const STEPS = [
-  { Icon: UserPlus, title: "سجّل في دقيقة", text: "اسمك وجوالك بس — نعتمدك ونرسل لك كودك ورابطك على الواتس." },
-  { Icon: Send, title: "أرسل لنا عملاءك", text: "سجّل العميل بالاسم والجوال، أو أرسل له رابطك ويحجز بنفسه." },
-  { Icon: Wallet, title: "استلم عمولتك", text: "10٪ من كل طلب يدفعه العميل، تحويل بنكي كل شهر مع كشف واضح." },
+  { title: "سجّل في دقيقة", text: "اسمك وجوالك بس. نعتمدك ونرسل لك كودك ورابطك على الواتس." },
+  { title: "أرسل لنا عملاءك", text: `سجّل العميل بالاسم والجوال، أو أرسل له رابطك أو الباركود ويحجز بنفسه بخصم ${CUSTOMER_DISCOUNT_PERCENT}٪.` },
+  { title: "استلم عمولتك", text: "10٪ من كل طلب يدفعه العميل، تحويل بنكي كل شهر، وتتابع كل شيء من «حسابي»." },
 ];
 
 const FAQ = [
   {
     q: "كم العمولة؟ وعلى وش تنحسب؟",
     a: "10٪ من قيمة كل طلب للعميل اللي تحيله، بعد الخصم وقبل ضريبة القيمة المضافة. مو أول طلب بس — كل مرة يطلب نفس العميل تاخذ عمولتك.",
+  },
+  {
+    q: "وش يستفيد عميلي؟",
+    a: `ياخذ خصم ${CUSTOMER_DISCOUNT_PERCENT}٪ على أول طلب لما يحجز عن طريقك، من رابطك أو لما تسجّله أنت. كذا يصير أسهل تقنعه، وأنت تاخذ عمولتك كاملة.`,
   },
   {
     q: "متى أستلم عمولتي؟",
@@ -66,7 +75,7 @@ const FAQ = [
   },
   {
     q: "كيف أعرف وين وصل عميلي؟",
-    a: "الكشف الشهري يوضح كل عميل أحلته: جديد، تم التسعير، أو صار عميل وطلباته المدفوعة.",
+    a: "من «حسابي» في هذي الصفحة بكودك وجوالك: تشوف كل عميل أحلته ووين وصل، وعمولتك المستحقة والمصروفة. وكمان يوصلك كشف شهري على الواتس.",
   },
   {
     q: "متى ممكن يتوقف حسابي؟",
@@ -76,21 +85,24 @@ const FAQ = [
 
 const sar = (value: number) => `${Math.round(value).toLocaleString("en-US")} ر.س`;
 
-function readSavedCode() {
+function readSaved(key: string) {
   try {
-    return localStorage.getItem(CODE_KEY) ?? "";
+    return localStorage.getItem(key) ?? "";
   } catch {
     return "";
   }
 }
 
-function saveCode(code: string) {
+function save(key: string, value: string) {
   try {
-    localStorage.setItem(CODE_KEY, code);
+    localStorage.setItem(key, value);
   } catch {
-    // التخزين محجوب (تصفح خاص) — يكتب الكود كل مرة، لا أكثر
+    // التخزين محجوب (تصفح خاص) — يكتبه كل مرة، لا أكثر
   }
 }
+
+const readSavedCode = () => readSaved(CODE_KEY);
+const saveCode = (code: string) => save(CODE_KEY, code);
 
 function Honeypot({ value, onChange }: { value: string; onChange: (v: string) => void }) {
   return (
@@ -286,8 +298,19 @@ function LeadForm() {
 
   if (done) {
     return (
-      <Done title="سجّلنا العميل ✅" text={`بنتواصل مع ${form.customerName} ونرسل له عرض السعر، وتشوف وين وصل في كشفك الشهري.`}>
-        <Button onClick={() => {
+      <Done title="سجّلنا العميل ✅" text={`بنتواصل مع ${form.customerName} ونرسل له عرض السعر بخصم ${CUSTOMER_DISCOUNT_PERCENT}٪، وتشوف وين وصل من «حسابي».`}>
+        {/* يوصلنا العميل فوراً على الواتس بدل ما ينتظر حتى نفتح لوحة الإدارة */}
+        <a href={`https://wa.me/${WHATSAPP_NUMBER}?text=${encodeURIComponent(
+          `عميل جديد من شريك (${savedCode}):\n• الاسم: ${form.customerName}\n• الجوال: ${form.phone}` +
+          (form.neighborhood ? `\n• الحي: ${form.neighborhood}` : "") +
+          (moreOpen ? `\n• الخدمة: ${form.serviceType}` : "") +
+          (form.notes ? `\n• ملاحظات: ${form.notes}` : ""),
+        )}`} target="_blank" rel="noopener noreferrer">
+          <Button className="w-full bg-[#25D366] hover:bg-[#20BA5A] text-white">
+            <MessageCircle className="h-4 w-4 ml-2" />بلّغنا على الواتس عشان نكلمه أسرع
+          </Button>
+        </a>
+        <Button variant="outline" onClick={() => {
           setForm((f) => ({ ...f, customerName: "", phone: "", neighborhood: "", notes: "" }));
           setDone(false);
         }}>
@@ -366,11 +389,160 @@ function LeadForm() {
   );
 }
 
+/* ——————————————— حسابي ——————————————— */
+
+function AccountView() {
+  const [code, setCode] = useState(readSavedCode);
+  const [phone, setPhone] = useState(() => readSaved(PHONE_KEY));
+  const [busy, setBusy] = useState(false);
+  const [data, setData] = useState<PartnerAccount | null>(null);
+
+  const login = async (e?: React.FormEvent) => {
+    e?.preventDefault();
+    setBusy(true);
+    try {
+      const result = await loadAccount(code, phone);
+      setData(result);
+      saveCode(result.partner.code);
+      save(PHONE_KEY, phone);
+    } catch (error) {
+      if (e) toast.error(error instanceof PartnersError ? error.message : "تعذّر الدخول");
+    } finally {
+      setBusy(false);
+    }
+  };
+
+  // الكود والجوال محفوظين على جهازه — يدخل مباشرة بدون ما يكتب شيء
+  useEffect(() => {
+    if (code && phone) login();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
+  if (!data) {
+    return (
+      <form onSubmit={login} className="space-y-4">
+        <div className="grid sm:grid-cols-2 gap-4">
+          <div className="space-y-1.5">
+            <Label htmlFor="a-code">كود الشريك</Label>
+            <Input id="a-code" required dir="ltr" className="h-12 text-base uppercase tracking-widest text-right"
+                   value={code} onChange={(e) => setCode(e.target.value)} placeholder="P-XXXXX" />
+          </div>
+          <div className="space-y-1.5">
+            <Label htmlFor="a-phone">جوالك المسجّل</Label>
+            <Input id="a-phone" required type="tel" dir="ltr" className="h-12 text-base text-right"
+                   value={phone} onChange={(e) => setPhone(e.target.value)} placeholder="05xxxxxxxx" />
+          </div>
+        </div>
+        <Button type="submit" size="lg" className="w-full h-12 text-base" disabled={busy}>
+          {busy ? <Loader2 className="h-5 w-5 animate-spin" /> : "ادخل حسابي"}
+        </Button>
+        <p className="text-xs text-muted-foreground text-center">نحفظ بياناتك على جوالك، فالمرة الجاية تدخل مباشرة.</p>
+      </form>
+    );
+  }
+
+  const link = `https://kleenology.me/p/${data.partner.code}`;
+  const orders = data.leads.filter((l) => l.eligible).flatMap((l) => l.orders);
+  const due = orders.filter((o) => !o.settledAt).reduce((sum, o) => sum + o.amount * COMMISSION_RATE, 0);
+  const paid = orders.filter((o) => o.settledAt).reduce((sum, o) => sum + o.amount * COMMISSION_RATE, 0);
+
+  const downloadQr = () => {
+    const canvas = document.getElementById("partner-qr") as HTMLCanvasElement | null;
+    if (!canvas) return;
+    const a = document.createElement("a");
+    a.href = canvas.toDataURL("image/png");
+    a.download = `kleenology-${data.partner.code}.png`;
+    a.click();
+  };
+
+  return (
+    <div className="space-y-6">
+      <div className="flex items-start justify-between gap-3">
+        <div>
+          <div className="font-bold text-lg">{data.partner.company}</div>
+          <div className="text-xs text-muted-foreground" dir="ltr">{data.partner.code}</div>
+        </div>
+        <button type="button" onClick={() => setData(null)} className="text-xs text-muted-foreground hover:text-foreground underline">
+          خروج
+        </button>
+      </div>
+
+      <div className="grid grid-cols-3 divide-x divide-x-reverse border rounded-lg text-center">
+        {[
+          [String(data.leads.length), "عميل أحلته"],
+          [sar(due), "عمولة مستحقة"],
+          [sar(paid), "انصرفت لك"],
+        ].map(([v, l]) => (
+          <div key={l} className="py-3 px-1">
+            <div className="font-bold tabular-nums">{v}</div>
+            <div className="text-[11px] text-muted-foreground">{l}</div>
+          </div>
+        ))}
+      </div>
+
+      {/* أدوات النشر: باركود ورابط ورسالة جاهزة */}
+      <div className="rounded-lg border p-4 flex flex-col sm:flex-row gap-4 items-center">
+        <div className="bg-white p-2 rounded border shrink-0">
+          <QRCodeCanvas id="partner-qr" value={link} size={128} marginSize={1} />
+        </div>
+        <div className="flex-1 w-full space-y-2">
+          <p className="text-sm font-semibold">رابطك الخاص</p>
+          <p className="text-xs text-muted-foreground break-all" dir="ltr">{link}</p>
+          <div className="grid grid-cols-3 gap-2 pt-1">
+            <a href={`https://wa.me/?text=${encodeURIComponent(shareMessage(data.partner.company, link))}`}
+               target="_blank" rel="noopener noreferrer">
+              <Button size="sm" className="w-full bg-[#25D366] hover:bg-[#20BA5A] text-white">
+                <MessageCircle className="h-4 w-4 ml-1" />شارك
+              </Button>
+            </a>
+            <Button size="sm" variant="outline"
+                    onClick={() => navigator.clipboard.writeText(link).then(() => toast.success("تم نسخ الرابط"))}>
+              <Copy className="h-4 w-4 ml-1" />نسخ
+            </Button>
+            <Button size="sm" variant="outline" onClick={downloadQr}>
+              <Download className="h-4 w-4 ml-1" />الباركود
+            </Button>
+          </div>
+          <p className="text-[11px] text-muted-foreground">اطبع الباركود على كرتك أو علّقه في الموقع — العميل يصوّره ويحجز بخصم {CUSTOMER_DISCOUNT_PERCENT}٪.</p>
+        </div>
+      </div>
+
+      <div>
+        <p className="text-sm font-semibold mb-2">عملاؤك</p>
+        {data.leads.length === 0 ? (
+          <p className="text-sm text-muted-foreground">ما أحلت أحد للحين. شارك رابطك وابدأ.</p>
+        ) : (
+          <ul className="divide-y border-y">
+            {data.leads.map((lead, i) => {
+              const commission = lead.eligible ? lead.orders.reduce((s, o) => s + o.amount * COMMISSION_RATE, 0) : 0;
+              return (
+                <li key={i} className="py-3 flex items-center justify-between gap-3 text-sm">
+                  <div className="min-w-0">
+                    <div className="font-medium truncate">{lead.customerName}</div>
+                    <div className="text-[11px] text-muted-foreground">
+                      {[lead.neighborhood, new Date(lead.createdAt).toLocaleDateString("ar-SA-u-ca-gregory", { day: "numeric", month: "short" }),
+                        lead.orders.length ? `${lead.orders.length} طلب` : ""].filter(Boolean).join(" · ")}
+                    </div>
+                  </div>
+                  <div className="text-end shrink-0">
+                    <div className="text-xs">{LEAD_STATUS_LABEL[lead.status]}</div>
+                    {commission > 0 && <div className="text-xs font-semibold text-green-700">{sar(commission)}</div>}
+                  </div>
+                </li>
+              );
+            })}
+          </ul>
+        )}
+      </div>
+    </div>
+  );
+}
+
 /* ——————————————— الصفحة ——————————————— */
 
 export default function Partners() {
   // الشريك اللي سجّل عميلاً من قبل يرجع غالباً ليسجّل غيره، فيُفتح له تبويبه مباشرة
-  const [tab, setTab] = useState<"register" | "lead">(() => (readSavedCode() ? "lead" : "register"));
+  const [tab, setTab] = useState<"register" | "lead" | "account">(() => (readSavedCode() ? "lead" : "register"));
   const formRef = useRef<HTMLDivElement>(null);
   const [formVisible, setFormVisible] = useState(false);
   const [heroPassed, setHeroPassed] = useState(false);
@@ -389,7 +561,7 @@ export default function Partners() {
     return () => observer.disconnect();
   }, []);
 
-  const goToForm = (which: "register" | "lead") => {
+  const goToForm = (which: "register" | "lead" | "account") => {
     setTab(which);
     formRef.current?.scrollIntoView({ behavior: "smooth", block: "start" });
   };
@@ -397,7 +569,7 @@ export default function Partners() {
   const trust = useMemo(() => [
     { Icon: BadgePercent, text: "10٪ على كل طلب" },
     { Icon: CalendarCheck, text: "تحويل شهري" },
-    { Icon: FileText, text: "كشف واضح على الواتس" },
+    { Icon: Gift, text: `عميلك ياخذ خصم ${CUSTOMER_DISCOUNT_PERCENT}٪` },
   ], []);
 
   return (
@@ -425,8 +597,8 @@ export default function Partners() {
               <span className="text-brand-yellow">لك 10٪</span> من كل طلب.
             </h1>
             <p className="text-lg sm:text-xl text-white/85 leading-relaxed mb-8">
-              أحِل لنا عملاءك وخلّ الباقي علينا. نخدمهم باحترافية، وأنت تستلم عمولتك كل شهر —
-              على كل طلب، مو أول طلب بس.
+              أحِل لنا عملاءك وخلّ الباقي علينا. أنت تستلم عمولتك كل شهر على كل طلب،
+              وعميلك ياخذ خصم {CUSTOMER_DISCOUNT_PERCENT}٪ على أول طلب.
             </p>
             <div className="flex flex-col sm:flex-row gap-3 mb-10">
               <Button size="lg" onClick={() => goToForm("register")}
@@ -453,23 +625,17 @@ export default function Partners() {
 
       {/* ——— الخطوات ——— */}
       <section className="max-w-6xl mx-auto px-4 py-16 sm:py-20">
-        <h2 className="text-3xl font-bold text-center mb-3">بسيطة: ثلاث خطوات</h2>
-        <p className="text-muted-foreground text-center mb-12">بدون عقود ولا رسوم ولا حد أدنى</p>
-        <div className="grid md:grid-cols-3 gap-6 relative">
-          <div className="hidden md:block absolute top-10 right-[16%] left-[16%] h-0.5 bg-gradient-to-l from-primary/20 via-primary/50 to-primary/20" aria-hidden="true" />
-          {STEPS.map(({ Icon, title, text }, i) => (
-            <div key={title} className="relative text-center">
-              <div className="relative w-20 h-20 mx-auto mb-5 rounded-2xl bg-gradient-to-br from-brand-blue to-brand-blue-dark text-white flex items-center justify-center shadow-float">
-                <Icon className="h-9 w-9" />
-                <span className="absolute -top-2 -left-2 w-8 h-8 rounded-full bg-brand-yellow text-brand-blue-deeper font-bold flex items-center justify-center text-sm shadow">
-                  {i + 1}
-                </span>
-              </div>
-              <h3 className="font-bold text-lg mb-2">{title}</h3>
-              <p className="text-sm text-muted-foreground leading-relaxed max-w-xs mx-auto">{text}</p>
-            </div>
+        <h2 className="text-2xl sm:text-3xl font-bold mb-2">كيف يشتغل البرنامج</h2>
+        <p className="text-muted-foreground mb-8">بدون عقود ولا رسوم ولا حد أدنى.</p>
+        <ol className="grid md:grid-cols-3 gap-x-10 border-t">
+          {STEPS.map(({ title, text }, i) => (
+            <li key={title} className="py-6 border-b md:border-b-0">
+              <span className="text-sm font-bold text-brand-blue tabular-nums">0{i + 1}</span>
+              <h3 className="font-bold text-lg mt-1 mb-1">{title}</h3>
+              <p className="text-sm text-muted-foreground leading-relaxed">{text}</p>
+            </li>
           ))}
-        </div>
+        </ol>
       </section>
 
       {/* ——— الحاسبة والنموذج ——— */}
@@ -478,10 +644,11 @@ export default function Partners() {
           <EarningsCalculator onJoin={() => goToForm("register")} />
 
           <div ref={formRef} className="bg-card border rounded-3xl shadow-float overflow-hidden scroll-mt-24">
-            <div className="grid grid-cols-2 p-1.5 m-4 mb-0 rounded-2xl bg-muted">
+            <div className="grid grid-cols-3 p-1.5 m-4 mb-0 rounded-2xl bg-muted">
               {([
-                { key: "register", label: "انضم كشريك", Icon: UserPlus },
+                { key: "register", label: "انضم", Icon: UserPlus },
                 { key: "lead", label: "سجّل عميل", Icon: Send },
+                { key: "account", label: "حسابي", Icon: Wallet },
               ] as const).map(({ key, label, Icon }) => (
                 <button
                   key={key} type="button" onClick={() => setTab(key)}
@@ -502,11 +669,17 @@ export default function Partners() {
                   <p className="text-sm text-muted-foreground mb-6">ثلاث خانات بس، والباقي نكمله معك على الواتس.</p>
                   <RegisterForm onSwitchToLead={() => setTab("lead")} />
                 </>
-              ) : (
+              ) : tab === "lead" ? (
                 <>
                   <h2 className="text-2xl font-bold mb-1">سجّل عميل جديد</h2>
-                  <p className="text-sm text-muted-foreground mb-6">الاسم والجوال يكفون، ونتواصل معه حنا.</p>
+                  <p className="text-sm text-muted-foreground mb-6">الاسم والجوال يكفون، ونتواصل معه حنا بخصم {CUSTOMER_DISCOUNT_PERCENT}٪ على أول طلب.</p>
                   <LeadForm />
+                </>
+              ) : (
+                <>
+                  <h2 className="text-2xl font-bold mb-1">حسابي</h2>
+                  <p className="text-sm text-muted-foreground mb-6">عملاؤك وعمولاتك، ورابطك وباركودك للنشر.</p>
+                  <AccountView />
                 </>
               )}
             </div>

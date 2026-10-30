@@ -5,6 +5,9 @@ import { toWhatsAppNumber } from "@/lib/pricing/quoteMessage";
 /** عمولة الشريك: 10٪ من قيمة كل طلب لكل عميل يحيله، بعد الخصم وقبل الضريبة */
 export const COMMISSION_RATE = 0.1;
 
+/** خصم العميل المحال على أول طلب — نفس القيمة في netlify/lib/partners.mjs */
+export const CUSTOMER_DISCOUNT_PERCENT = 10;
+
 export type PartnerStatus = "pending" | "approved" | "suspended";
 export type LeadStatus = "new" | "quoted" | "active" | "lost";
 
@@ -62,6 +65,8 @@ export interface Lead {
   status: LeadStatus;
   /** للعلم فقط: نفس العميل مسجّل عند شريك آخر */
   duplicateNote?: string;
+  /** نسبة خصم العميل المحال على أول طلب، محفوظة لحظة الإحالة */
+  customerDiscount?: number;
   eligible: boolean;
   orders: Order[];
   createdAt: string;
@@ -92,6 +97,7 @@ function messageFor(status: number, code?: string): string {
   if (code === "missing_fields") return "عبّ الحقول المطلوبة ورقم جوال صحيح";
   if (code === "terms_required") return "لازم توافق على الشروط";
   if (code === "invalid_amount") return "اكتب مبلغ الطلب";
+  if (code === "invalid_login") return "الكود أو الجوال غير صحيح";
   if (status === 429) return "طلبات كثيرة — حاول بعد دقائق";
   if (status === 401) return "انتهت الجلسة — سجّل الدخول من جديد";
   if (status === 503 || code === "store_unavailable")
@@ -144,6 +150,26 @@ export interface LeadSubmission {
   notes: string;
   source: "partner" | "link";
   website?: string;
+}
+
+/** حساب الشريك كما يراه هو — بلا جوالات العملاء */
+export interface PartnerAccount {
+  partner: { company: string; contactName: string; code: string };
+  leads: {
+    customerName: string;
+    neighborhood: string;
+    status: LeadStatus;
+    eligible: boolean;
+    createdAt: string;
+    orders: { amount: number; paidAt: string; settledAt: string | null }[];
+  }[];
+}
+
+export function loadAccount(code: string, phone: string) {
+  return call<PartnerAccount>(PUBLIC, {
+    method: "POST",
+    body: JSON.stringify({ action: "account", code, phone }),
+  });
 }
 
 export function lookupPartner(code: string) {
@@ -217,6 +243,15 @@ export function deleteRecord(token: string, kind: "partner" | "lead", id: string
 
 /* ——— الرسائل ——— */
 
+/** الرسالة اللي يرسلها الشريك لعملائه مع رابطه */
+export function shareMessage(company: string, link: string) {
+  return [
+    "إذا تحتاج تنظيف (منزل، مكتب، أو بعد البناء) أنصحك بكلينولوجي 👌",
+    `احجز من هذا الرابط وتاخذ خصم ${CUSTOMER_DISCOUNT_PERCENT}٪ على أول طلب لأنك جاي من طرف ${company}:`,
+    link,
+  ].join("\n");
+}
+
 export function partnerLink(code: string) {
   return `https://kleenology.me/p/${displayCode(code)}`;
 }
@@ -235,6 +270,9 @@ export function approvalMessage(partner: Partner) {
     "https://kleenology.me/partners",
     "",
     "عمولتك 10٪ من قيمة كل طلب لكل عميل تحيله (بعد الخصم وقبل الضريبة)، وتصلك بكشف شهري بعد سداد العميل.",
+    `وعميلك ياخذ خصم ${CUSTOMER_DISCOUNT_PERCENT}٪ على أول طلب لما يحجز عن طريقك 🎁`,
+    "",
+    "تتابع عملاءك وعمولاتك من «حسابي» في صفحة الشركاء بكودك وجوالك.",
     // نموذج التسجيل ما يطلب الآيبان — يُطلب هنا مرة وحدة
     ...(partner.iban ? [] : ["", "أرسل لنا رقم الآيبان واسم صاحب الحساب عشان نحوّل لك عمولاتك 🏦"]),
   ].join("\n");

@@ -203,6 +203,12 @@ function LeadRow({ lead, token, onChange, onDelete }: {
         </span>
       </div>
 
+      {lead.customerDiscount && lead.orders.length === 0 ? (
+        <div className="text-xs font-semibold text-brand-blue-deeper bg-brand-yellow/25 rounded px-2 py-1 w-fit">
+          🎁 للعميل خصم {lead.customerDiscount}٪ على أول طلب — اخصمه قبل ما تكتب المبلغ
+        </div>
+      ) : null}
+
       {lead.duplicateNote && (
         <div className="flex items-center gap-1.5 text-xs text-amber-700">
           <Info className="h-3.5 w-3.5" />

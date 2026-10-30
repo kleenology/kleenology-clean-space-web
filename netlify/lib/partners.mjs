@@ -14,6 +14,9 @@ const CODE_ALPHABET = "ABCDEFGHJKLMNPQRSTUVWXYZ23456789";
 export const LEAD_STATUSES = ["new", "quoted", "active", "lost"];
 export const PARTNER_STATUSES = ["pending", "approved", "suspended"];
 
+// خصم العميل المحال على أول طلب — يُحفظ مع كل عميل حتى لو تغيّرت النسبة لاحقاً
+export const CUSTOMER_DISCOUNT_PERCENT = 10;
+
 export function partnersStore() {
   return recordStore(PARTNERS_STORE);
 }
