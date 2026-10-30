@@ -5,6 +5,8 @@
 /api/pricing/inspections    /.netlify/functions/pricing-inspections    200
 /api/pricing/qc    /.netlify/functions/pricing-qc    200
 /api/pricing/qc-photo    /.netlify/functions/pricing-qc-photo    200
+/api/pricing/partners    /.netlify/functions/pricing-partners    200
+/api/partners    /.netlify/functions/partners    200
 
 /*    /index.html   200
 /terms-and-conditions    /index.html   200
