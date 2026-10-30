@@ -16,6 +16,8 @@ import { MessageCircle } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useTranslation } from "react-i18next";
 import { SEO } from "@/components/SEO";
+import { Reveal, ScrollProgress } from "@/components/Reveal";
+import { CleanIntro } from "@/components/CleanIntro";
 
 const Index = () => {
   const { t, i18n } = useTranslation();
@@ -41,15 +43,17 @@ const Index = () => {
       <PromoBanner />
       <Header />
 
+      <CleanIntro />
+      <ScrollProgress />
       <Hero />
       <Stats />
-      <TrustBadges />
-      <ClientSectors />
-      <Services />
-      <BeforeAfterShowcase />
-      <Testimonials />
-      <FAQ />
-      <Contact />
+      <Reveal><TrustBadges /></Reveal>
+      <Reveal><ClientSectors /></Reveal>
+      <Reveal><Services /></Reveal>
+      <Reveal><BeforeAfterShowcase /></Reveal>
+      <Reveal><Testimonials /></Reveal>
+      <Reveal><FAQ /></Reveal>
+      <Reveal><Contact /></Reveal>
       
       <Footer />
     </div>
