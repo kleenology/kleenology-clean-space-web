@@ -25,7 +25,7 @@ function useCountUp(target: number, duration = 1500, start: boolean) {
   return count;
 }
 
-const StatCard = ({ icon: Icon, valueAr, valueEn, suffixAr, suffixEn, labelAr, labelEn, count, isRTL, start }: any) => {
+const StatCard = ({ valueAr, valueEn, suffixAr, suffixEn, labelAr, labelEn, count, isRTL, start }: any) => {
   const animated = useCountUp(count, 1500, start);
   const displayValue = count === 0
     ? (isRTL ? "الرياض" : "Riyadh")
@@ -36,11 +36,9 @@ const StatCard = ({ icon: Icon, valueAr, valueEn, suffixAr, suffixEn, labelAr, l
     : isRTL ? valueAr : valueEn;
 
   return (
-    <div className="text-center group">
-      <div className="inline-flex items-center justify-center w-14 h-14 rounded-2xl bg-primary/10 group-hover:bg-primary/20 transition-colors mb-4 mx-auto">
-        <Icon className="h-7 w-7 text-primary" />
-      </div>
-      <div className="text-4xl font-bold text-foreground mb-1" dir="ltr">
+    // رقم ونص فقط — مربعات الأيقونات فوق كل رقم كانت من علامات القالب الجاهز
+    <div className="px-4 py-2 text-center md:text-start">
+      <div className="text-3xl md:text-4xl font-bold text-brand-blue-deeper mb-1" dir={isRTL ? "rtl" : "ltr"}>
         {count === 3 ? (isRTL ? "٣" : "3") + (isRTL ? suffixAr : suffixEn) : displayValue}
       </div>
       <p className="text-muted-foreground text-sm font-medium">
@@ -66,9 +64,9 @@ export const Stats = () => {
   }, []);
 
   return (
-    <section ref={ref} className="py-16 bg-white border-y border-border" dir={isRTL ? "rtl" : "ltr"}>
+    <section ref={ref} className="py-10 bg-white border-y border-border" dir={isRTL ? "rtl" : "ltr"}>
       <div className="max-w-5xl mx-auto px-4">
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-8">
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-y-6 md:divide-x md:rtl:divide-x-reverse divide-border">
           {stats.map((s) => (
             <StatCard key={s.labelAr} {...s} isRTL={isRTL} start={visible} />
           ))}

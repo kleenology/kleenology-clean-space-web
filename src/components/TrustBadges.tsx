@@ -1,42 +1,32 @@
 import { useTranslation } from "react-i18next";
-import { ShieldCheck, Leaf, BadgeCheck, Clock } from "lucide-react";
+import teamPhoto from "@/assets/deep-cleaning.jpg";
 
+// وعودنا بجانب صورة حقيقية لفريقنا بالزي — بدل أربع بطاقات بأيقونات ملونة
+// كانت تبان قالباً جاهزاً.
 const badges = [
   {
-    icon: ShieldCheck,
     titleAr: "ضمان ١٠٠٪",
     titleEn: "100% Guarantee",
     descAr: "راضٍ أو نعود مجاناً",
     descEn: "Satisfied or we return free",
-    color: "text-emerald-600",
-    bg: "bg-emerald-50",
   },
   {
-    icon: BadgeCheck,
     titleAr: "فريق معتمد",
     titleEn: "Certified Team",
     descAr: "خبرة ومهنية عالية",
     descEn: "Highly trained professionals",
-    color: "text-blue-600",
-    bg: "bg-blue-50",
   },
   {
-    icon: Leaf,
     titleAr: "مواد آمنة",
     titleEn: "Eco-Friendly",
     descAr: "آمنة لعائلتك والبيئة",
     descEn: "Safe for family & environment",
-    color: "text-green-600",
-    bg: "bg-green-50",
   },
   {
-    icon: Clock,
     titleAr: "خدمة سريعة",
     titleEn: "Fast Service",
     descAr: "نصل في الوقت المحدد دائماً",
     descEn: "Always on time delivery",
-    color: "text-primary",
-    bg: "bg-primary/10",
   },
 ];
 
@@ -45,22 +35,29 @@ export const TrustBadges = () => {
   const isRTL = i18n.dir() === "rtl";
 
   return (
-    <section className="py-12 bg-white border-y border-border" dir={isRTL ? "rtl" : "ltr"}>
-      <div className="max-w-5xl mx-auto px-4">
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-          {badges.map((b, i) => (
-            <div key={i} className="flex flex-col items-center text-center p-5 rounded-2xl border border-border hover:shadow-sm transition-shadow">
-              <div className={`w-14 h-14 rounded-2xl ${b.bg} flex items-center justify-center mb-3`}>
-                <b.icon className={`h-7 w-7 ${b.color}`} />
-              </div>
-              <h3 className="font-bold text-foreground text-sm mb-1">
-                {isRTL ? b.titleAr : b.titleEn}
-              </h3>
-              <p className="text-xs text-muted-foreground">
-                {isRTL ? b.descAr : b.descEn}
-              </p>
-            </div>
-          ))}
+    <section className="py-14 bg-white" dir={isRTL ? "rtl" : "ltr"}>
+      <div className="max-w-5xl mx-auto px-4 grid md:grid-cols-2 gap-8 md:gap-12 items-center">
+        <img
+          src={teamPhoto}
+          alt={isRTL ? "عامل من فريق كلينولوجي أثناء التنظيف" : "A Kleenology team member at work"}
+          loading="lazy"
+          className="w-full aspect-[4/3] object-cover rounded-lg"
+        />
+        <div>
+          <h2 className="text-2xl font-bold text-foreground mb-5">
+            {isRTL ? "وش تضمن لما تحجز معنا" : "What you get when you book with us"}
+          </h2>
+          <ol className="divide-y border-y">
+            {badges.map((b, i) => (
+              <li key={b.titleEn} className="py-4 flex gap-4">
+                <span className="text-sm font-bold text-brand-blue tabular-nums pt-0.5">0{i + 1}</span>
+                <div>
+                  <h3 className="font-bold text-foreground">{isRTL ? b.titleAr : b.titleEn}</h3>
+                  <p className="text-sm text-muted-foreground">{isRTL ? b.descAr : b.descEn}</p>
+                </div>
+              </li>
+            ))}
+          </ol>
         </div>
       </div>
     </section>

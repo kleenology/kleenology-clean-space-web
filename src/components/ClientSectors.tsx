@@ -1,13 +1,15 @@
 import { useTranslation } from "react-i18next";
-import { Building2, Stethoscope, UtensilsCrossed, Hotel, HardHat, Home, Users } from "lucide-react";
+import { Link } from "react-router-dom";
+import { ArrowLeft, ArrowRight } from "lucide-react";
 
-const sectors = [
-  { icon: Home, key: "homes" },
-  { icon: Building2, key: "offices" },
-  { icon: Stethoscope, key: "medical" },
-  { icon: UtensilsCrossed, key: "restaurants" },
-  { icon: Hotel, key: "hotels" },
-  { icon: HardHat, key: "construction" },
+// قائمة نصية بدل ست بطاقات بأيقونات — والقطاع اللي له صفحة خدمة يوديك لها
+const sectors: { key: string; href?: string }[] = [
+  { key: "homes", href: "/home-cleaning" },
+  { key: "offices", href: "/office-cleaning" },
+  { key: "medical" },
+  { key: "restaurants" },
+  { key: "hotels" },
+  { key: "construction", href: "/post-construction-cleaning" },
 ];
 
 const content = {
@@ -42,45 +44,39 @@ export const ClientSectors = () => {
   const isRTL = i18n.dir() === "rtl";
   const c = isRTL ? content.ar : content.en;
 
-  return (
-    <section className="py-20 bg-muted/30" dir={isRTL ? "rtl" : "ltr"}>
-      <div className="max-w-6xl mx-auto px-4">
-        {/* Header */}
-        <div className="text-center mb-14">
-          <div className="inline-flex items-center gap-2 bg-primary/10 text-primary px-4 py-1.5 rounded-full text-sm font-semibold mb-4">
-            <Users className="h-4 w-4" />
-            {isRTL ? "عملاؤنا" : "Our Clients"}
-          </div>
-          <h2 className="text-3xl md:text-4xl font-bold text-foreground mb-4">
-            {c.title}
-          </h2>
-          <p className="text-muted-foreground text-lg max-w-2xl mx-auto">
-            {c.subtitle}
-          </p>
-        </div>
+  const Arrow = isRTL ? ArrowLeft : ArrowRight;
 
-        {/* Sectors Grid */}
-        <div className="grid grid-cols-2 md:grid-cols-3 gap-5">
-          {sectors.map(({ icon: Icon, key }) => {
+  return (
+    <section className="py-16 bg-muted/30 border-y" dir={isRTL ? "rtl" : "ltr"}>
+      <div className="max-w-5xl mx-auto px-4">
+        <h2 className="text-2xl md:text-3xl font-bold text-foreground mb-2">{c.title}</h2>
+        <p className="text-muted-foreground mb-8 max-w-2xl">{c.subtitle}</p>
+
+        <ul className="grid md:grid-cols-2 gap-x-12 border-t">
+          {sectors.map(({ key, href }) => {
             const sector = c.sectors[key as keyof typeof c.sectors];
-            return (
-              <div
-                key={key}
-                className="group bg-white rounded-2xl p-6 border border-border hover:border-primary/40 hover:shadow-clean transition-all duration-300"
-              >
-                <div className="inline-flex items-center justify-center w-12 h-12 rounded-xl bg-primary/10 group-hover:bg-primary/20 transition-colors mb-4">
-                  <Icon className="h-6 w-6 text-primary" />
+            const body = (
+              <>
+                <div>
+                  <h3 className="font-bold text-foreground">{sector.label}</h3>
+                  <p className="text-sm text-muted-foreground">{sector.desc}</p>
                 </div>
-                <h3 className="font-bold text-foreground mb-1 text-base">
-                  {sector.label}
-                </h3>
-                <p className="text-sm text-muted-foreground leading-relaxed">
-                  {sector.desc}
-                </p>
-              </div>
+                {href && <Arrow className="h-4 w-4 text-brand-blue shrink-0 transition-transform rtl:group-hover:-translate-x-1 ltr:group-hover:translate-x-1" />}
+              </>
+            );
+            return (
+              <li key={key} className="border-b">
+                {href ? (
+                  <Link to={href} className="group flex items-center justify-between gap-4 py-4 hover:text-brand-blue">
+                    {body}
+                  </Link>
+                ) : (
+                  <div className="flex items-center justify-between gap-4 py-4">{body}</div>
+                )}
+              </li>
             );
           })}
-        </div>
+        </ul>
       </div>
     </section>
   );
