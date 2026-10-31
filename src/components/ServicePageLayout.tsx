@@ -3,7 +3,11 @@ import { Header } from "@/components/Header";
 import { Footer } from "@/components/Footer";
 import { SEO } from "@/components/SEO";
 import { Button } from "@/components/ui/button";
-import { MessageCircle, Calendar, Check } from "lucide-react";
+import { MessageCircle, Calendar, Check, ArrowLeft, ArrowRight } from "lucide-react";
+import { Link } from "react-router-dom";
+import {
+  Accordion, AccordionContent, AccordionItem, AccordionTrigger,
+} from "@/components/ui/accordion";
 import { useTranslation } from "react-i18next";
 import { cn } from "@/lib/utils";
 // صور فريق كلينولوجي الحقيقية بالزي — نفس أسلوب صفحة المكاتب، بلا صور مولّدة
@@ -24,6 +28,10 @@ export interface ServiceContent {
   cta: { title: string; subtitle: string; whatsappLabel: string; bookLabel: string };
   breadcrumb: string;
   heroGradient?: string;
+  /** أسئلة شائعة — تظهر في الصفحة وتُضاف كبيانات FAQPage لقوقل والذكاء الاصطناعي */
+  faq?: { q: string; a: string }[];
+  /** روابط لخدمات قريبة — تربط الصفحات ببعض وتساعد ترتيبها */
+  related?: { title: string; href: string }[];
 }
 
 interface ServicePageLayoutProps {
@@ -66,20 +74,35 @@ export const ServicePageLayout = ({ ar, en, photo, photoAlt }: ServicePageLayout
   };
 
   const breadcrumbJsonLd = {
-    "@context": "https://schema.org",
     "@type": "BreadcrumbList",
     "itemListElement": [
       { "@type": "ListItem", "position": 1, "name": isRTL ? "الرئيسية" : "Home", "item": "https://kleenology.me" },
       { "@type": "ListItem", "position": 2, "name": c.breadcrumb, "item": c.seo.url },
     ],
   };
+  // نفس الأسئلة الظاهرة في الصفحة — قوقل يتجاهل FAQ مخفية عن الزائر
+  const faqJsonLd = c.faq?.length
+    ? {
+        "@type": "FAQPage",
+        "mainEntity": c.faq.map(({ q, a }) => ({
+          "@type": "Question",
+          "name": q,
+          "acceptedAnswer": { "@type": "Answer", "text": a },
+        })),
+      }
+    : null;
+  const pageJsonLd = {
+    "@context": "https://schema.org",
+    "@graph": faqJsonLd ? [breadcrumbJsonLd, faqJsonLd] : [breadcrumbJsonLd],
+  };
+  const Arrow = isRTL ? ArrowLeft : ArrowRight;
 
   // صور الشريط: كل صور الفريق ما عدا صورة الواجهة
   const gallery = TEAM_PHOTOS.filter((src) => src !== photo).slice(0, 4);
 
   return (
     <div className={`min-h-screen bg-background ${isRTL ? "rtl" : "ltr"}`} dir={isRTL ? "rtl" : "ltr"}>
-      <SEO {...c.seo} jsonLd={breadcrumbJsonLd} />
+      <SEO {...c.seo} jsonLd={pageJsonLd} />
       <Header />
 
       <main>
@@ -173,6 +196,38 @@ export const ServicePageLayout = ({ ar, en, photo, photoAlt }: ServicePageLayout
             </ol>
           </div>
         </section>
+
+        {/* ——— أسئلة شائعة ——— */}
+        {c.faq?.length ? (
+          <section className="max-w-3xl mx-auto px-4 pb-16">
+            <h2 className="text-2xl font-bold mb-6">{isRTL ? "أسئلة شائعة" : "Common questions"}</h2>
+            <Accordion type="single" collapsible className="border-t">
+              {c.faq.map(({ q, a }, i) => (
+                <AccordionItem key={q} value={`q${i}`}>
+                  <AccordionTrigger className="text-start font-semibold hover:no-underline py-5">{q}</AccordionTrigger>
+                  <AccordionContent className="text-muted-foreground leading-relaxed">{a}</AccordionContent>
+                </AccordionItem>
+              ))}
+            </Accordion>
+          </section>
+        ) : null}
+
+        {/* ——— خدمات قريبة ——— */}
+        {c.related?.length ? (
+          <section className="max-w-6xl mx-auto px-4 pb-16">
+            <h2 className="text-xl font-bold mb-4">{isRTL ? "خدمات قد تحتاجها" : "Related services"}</h2>
+            <ul className="grid sm:grid-cols-2 lg:grid-cols-3 gap-x-10 border-t">
+              {c.related.map(({ title, href }) => (
+                <li key={href} className="border-b">
+                  <Link to={href} className="group flex items-center justify-between py-4 font-medium hover:text-brand-blue">
+                    {title}
+                    <Arrow className="h-4 w-4 text-brand-blue shrink-0" />
+                  </Link>
+                </li>
+              ))}
+            </ul>
+          </section>
+        ) : null}
 
         {/* ——— الختام ——— */}
         <section className="bg-brand-blue-deeper text-white py-14 px-4">

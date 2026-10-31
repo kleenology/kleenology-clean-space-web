@@ -16,7 +16,9 @@ const services = [
   { icon: "✨", title: "التنظيف العميق الشامل",     href: "/deep-cleaning" },
   { icon: "🧽", title: "تنظيف السجاد بالبخار",      href: "/carpet-cleaning" },
   { icon: "🏢", title: "تنظيف المكاتب والشركات",    href: "/office-cleaning" },
-  { icon: "🔨", title: "تنظيف ما بعد البناء",       href: "/post-construction-cleaning" },
+  { icon: "🔨", title: "التنظيف التأهيلي بعد البناء", href: "/post-construction-cleaning" },
+  { icon: "🏢", title: "تنظيف الشقق",               href: "/apartment-cleaning-riyadh" },
+  { icon: "🏡", title: "تنظيف الفلل",               href: "/villa-cleaning-riyadh" },
 ];
 
 const reviews = [

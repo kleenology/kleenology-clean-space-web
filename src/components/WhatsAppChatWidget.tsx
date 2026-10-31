@@ -24,6 +24,7 @@ const WHATSAPP_NUMBER = "966537519929";
 const HIDDEN_ON_PATHS = [
   "/offer", "/partners", "/office-cleaning",
   "/home-cleaning", "/deep-cleaning", "/carpet-cleaning", "/post-construction-cleaning",
+  "/apartment-cleaning-riyadh", "/villa-cleaning-riyadh",
 ];
 
 // كل ما تحت /admin/ صفحات داخلية لا يفتحها عميل، والودجت يغطي فيها

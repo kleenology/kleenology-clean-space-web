@@ -4,7 +4,7 @@ import { Shield, Zap, Star, Leaf, Droplets, Clock } from "lucide-react";
 
 const ar: ServiceContent = {
   seo: {
-    title: "تنظيف سجاد وموكيت احترافي | كلينولوجي",
+    title: "تنظيف سجاد وكنب بالرياض | تنظيف بالبخار | كلينولوجي",
     description: "تنظيف السجاد والموكيت بالبخار وإزالة البقع العنيدة. معدات احترافية ومواد آمنة. نتائج مضمونة.",
     keywords: "تنظيف سجاد, تنظيف موكيت, إزالة بقع السجاد, تنظيف بالبخار, كلينولوجي",
     url: "https://kleenology.me/carpet-cleaning",

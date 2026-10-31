@@ -6,17 +6,17 @@ const HardHatIcon = () => <HardHat className="h-10 w-10 text-white" />;
 
 const ar: ServiceContent = {
   seo: {
-    title: "تنظيف ما بعد البناء والتشطيب | كلينولوجي",
-    description: "تنظيف متخصص بعد البناء والتجديد. إزالة الغبار والأتربة وبقايا الطلاء والإسمنت. نسلمك المكان جاهزاً للسكن.",
-    keywords: "تنظيف بعد البناء, تنظيف تشطيبات, تنظيف ما بعد التجديد, تنظيف عمارات, كلينولوجي",
+    title: "تنظيف تأهيلي بالرياض | تنظيف بعد البناء والترميم | كلينولوجي",
+    description: "تنظيف تأهيلي بالرياض للفلل والشقق والمكاتب بعد البناء أو الترميم: إزالة غبار البناء وبقايا الإسمنت والدهان والسيليكون وتنظيف الزجاج والأرضيات، وتسليم المكان جاهزاً للسكن.",
+    keywords: "تنظيف تأهيلي, تنظيف تأهيلي بالرياض, تنظيف بعد البناء, تنظيف بعد الترميم, تنظيف بعد التشطيب, تنظيف فلل جديدة, كلينولوجي",
     url: "https://kleenology.me/post-construction-cleaning",
   },
   heroGradient: "bg-gradient-to-br from-slate-700 via-slate-600 to-slate-500",
   hero: {
     icon: <HardHatIcon />,
-    title: "تنظيف ما بعد البناء والتشطيب",
-    subtitle: "نتولى التنظيف الشامل بعد أعمال البناء والتجديد. نزيل كل الغبار والبقايا ونسلمك المكان جاهزاً للسكن.",
-    whatsappText: "مرحباً، أود الاستفسار عن خدمة تنظيف ما بعد البناء",
+    title: "التنظيف التأهيلي بالرياض",
+    subtitle: "تنظيف شامل بعد البناء أو الترميم أو التشطيب: نشيل غبار البناء وبقايا الإسمنت والدهان من كل زاوية، ونسلمك الفيلا أو الشقة أو المكتب جاهز للسكن.",
+    whatsappText: "مرحباً، أبي عرض سعر لتنظيف تأهيلي (بعد بناء أو ترميم)",
   },
   stats: [
     { value: "١ يوم", label: "مدة الخدمة العادية" },
@@ -24,7 +24,7 @@ const ar: ServiceContent = {
     { value: "+٢٠٠", label: "مشروع منجز" },
   ],
   includes: {
-    title: "ماذا تشمل خدمة تنظيف ما بعد البناء؟",
+    title: "وش يشمل التنظيف التأهيلي؟",
     items: [
       "إزالة غبار البناء من جميع الأسطح",
       "تنظيف بقايا الإسمنت والطلاء والسيراميك",
@@ -66,12 +66,25 @@ const ar: ServiceContent = {
     whatsappLabel: "اطلب عرض سعر الآن",
     bookLabel: "احجز الآن",
   },
-  breadcrumb: "تنظيف بعد البناء",
+  breadcrumb: "التنظيف التأهيلي",
+  faq: [
+    { q: "وش هو التنظيف التأهيلي؟", a: "هو التنظيف اللي يجي بعد البناء أو الترميم أو التشطيب، عشان يتأهل المكان للسكن أو الاستخدام: إزالة غبار البناء وبقايا الإسمنت والدهان والسيليكون والغراء، وتنظيف الزجاج والأرضيات والحمامات والمطابخ." },
+    { q: "متى أحتاج تنظيف تأهيلي؟", a: "بعد استلام فيلا أو شقة جديدة من المقاول، بعد ترميم أو تجديد بيت أو مكتب، وقبل تسليم وحدات لملاكها أو مستأجريها." },
+    { q: "كم ياخذ التنظيف التأهيلي؟", a: "الشقة أو الدور غالباً يوم عمل واحد، والفلل الكبيرة قد تاخذ يومين حسب المساحة وكمية المخلفات. نحدد المدة بعد معاينة الموقع أو صوره." },
+    { q: "هل تشيلون مخلفات البناء الكبيرة؟", a: "نجمع الأتربة والمخلفات الخفيفة. المخلفات الكبيرة مثل الحجر وبقايا الطوب وقطع الخشب تكون عادة على المقاول قبل التنظيف." },
+    { q: "تخدمون أي أحياء في الرياض؟", a: "نخدم كل أحياء الرياض، وخاصة الأحياء الجديدة اللي فيها بناء كثير مثل الملقا والنرجس والياسمين والعارض والقيروان." },
+    { q: "كيف أحجز وأعرف السعر؟", a: "أرسل لنا على الواتس نوع المكان ومساحته التقريبية وصور له، ونرسل لك عرض سعر. السعر يعتمد على المساحة وكمية بقايا البناء." },
+  ],
+  related: [
+    { title: "تنظيف فلل بالرياض", href: "/villa-cleaning-riyadh" },
+    { title: "تنظيف شقق بالرياض", href: "/apartment-cleaning-riyadh" },
+    { title: "التنظيف العميق", href: "/deep-cleaning" },
+  ],
 };
 
 const en: ServiceContent = {
   seo: {
-    title: "Post-Construction Cleaning Services | Kleenology",
+    title: "Post-Construction & Renovation Cleaning in Riyadh | Kleenology",
     description: "Specialized cleaning after construction and renovation. Dust, paint, and cement removal. We hand over your space move-in ready.",
     keywords: "post construction cleaning, after renovation cleaning, construction cleanup, kleenology",
     url: "https://kleenology.me/post-construction-cleaning",
@@ -132,6 +145,11 @@ const en: ServiceContent = {
     bookLabel: "Book Now",
   },
   breadcrumb: "Post-Construction Cleaning",
+  related: [
+    { title: "Villa Cleaning in Riyadh", href: "/villa-cleaning-riyadh" },
+    { title: "Apartment Cleaning in Riyadh", href: "/apartment-cleaning-riyadh" },
+    { title: "Deep Cleaning", href: "/deep-cleaning" },
+  ],
 };
 
 const PostConstructionCleaning = () => (
