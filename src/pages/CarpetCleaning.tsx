@@ -1,3 +1,4 @@
+import sofaPhoto from "@/assets/carpet-sofa-real.jpg";
 import { ServicePageLayout, ServiceContent } from "@/components/ServicePageLayout";
 import { Shield, Zap, Star, Leaf, Droplets, Clock } from "lucide-react";
 
@@ -131,5 +132,8 @@ const en: ServiceContent = {
   breadcrumb: "Carpet Cleaning",
 };
 
-const CarpetCleaning = () => <ServicePageLayout ar={ar} en={en} />;
+const CarpetCleaning = () => (
+  <ServicePageLayout ar={ar} en={en} photo={sofaPhoto}
+    photoAlt={{ ar: "تنظيف كنب بالآلة من فريق كلينولوجي", en: "Kleenology team machine-cleaning a sofa" }} />
+);
 export default CarpetCleaning;

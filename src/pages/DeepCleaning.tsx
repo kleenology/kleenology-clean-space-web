@@ -1,3 +1,4 @@
+import teamGlass from "@/assets/deep-cleaning.jpg";
 import { ServicePageLayout, ServiceContent } from "@/components/ServicePageLayout";
 import { Sparkles, Shield, Clock, Star, Leaf, Users } from "lucide-react";
 
@@ -131,5 +132,8 @@ const en: ServiceContent = {
   breadcrumb: "Deep Cleaning",
 };
 
-const DeepCleaning = () => <ServicePageLayout ar={ar} en={en} />;
+const DeepCleaning = () => (
+  <ServicePageLayout ar={ar} en={en} photo={teamGlass}
+    photoAlt={{ ar: "عامل من فريق كلينولوجي ينظف الزجاج والجدار", en: "A Kleenology team member deep-cleaning glass and walls" }} />
+);
 export default DeepCleaning;

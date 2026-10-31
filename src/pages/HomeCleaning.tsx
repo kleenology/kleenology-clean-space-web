@@ -1,3 +1,4 @@
+import teamShelves from "@/assets/home-cleaning.jpg";
 import { ServicePageLayout, ServiceContent } from "@/components/ServicePageLayout";
 import { Home, Shield, Leaf, Clock, Star, Users } from "lucide-react";
 
@@ -131,5 +132,8 @@ const en: ServiceContent = {
   breadcrumb: "Home Cleaning",
 };
 
-const HomeCleaning = () => <ServicePageLayout ar={ar} en={en} />;
+const HomeCleaning = () => (
+  <ServicePageLayout ar={ar} en={en} photo={teamShelves}
+    photoAlt={{ ar: "فريق كلينولوجي ينظف رفوف وشاشة في منزل", en: "Kleenology team cleaning shelves and a TV wall in a home" }} />
+);
 export default HomeCleaning;

@@ -1,3 +1,4 @@
+import teamStairs from "@/assets/rehab-cleaning.jpg";
 import { ServicePageLayout, ServiceContent } from "@/components/ServicePageLayout";
 import { HardHat, Shield, Clock, CheckCircle, Zap, Star } from "lucide-react";
 
@@ -133,5 +134,8 @@ const en: ServiceContent = {
   breadcrumb: "Post-Construction Cleaning",
 };
 
-const PostConstructionCleaning = () => <ServicePageLayout ar={ar} en={en} />;
+const PostConstructionCleaning = () => (
+  <ServicePageLayout ar={ar} en={en} photo={teamStairs}
+    photoAlt={{ ar: "تنظيف درج من مخلفات البناء", en: "Cleaning construction debris off a staircase" }} />
+);
 export default PostConstructionCleaning;
