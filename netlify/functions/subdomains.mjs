@@ -5,6 +5,8 @@
 // Only public passive sources that need no API key are used. No traffic is
 // ever sent to the target domain itself — data comes from third-party indexes.
 
+import { rateLimited, clientIp } from "../lib/rate-limit.mjs";
+
 const json = (body, status = 200) =>
   new Response(JSON.stringify(body), {
     status,
@@ -95,6 +97,8 @@ const SOURCES = {
 };
 
 export default async (req) => {
+  // كل طلب يطلق سبع طلبات خارجية — الحد يمنع استغلال الدالة كأداة مجانية
+  if (rateLimited(`subdomains:${clientIp(req)}`, { max: 20 })) return json({ error: "too many requests" }, 429);
   const domain = (new URL(req.url).searchParams.get("domain") ?? "").trim().toLowerCase().replace(/^\*\./, "");
   if (!domain) return json({ error: "missing domain parameter" }, 400);
   if (!isValidDomain(domain)) return json({ error: "invalid domain" }, 400);
