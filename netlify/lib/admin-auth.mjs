@@ -2,6 +2,7 @@
 // ولا تصل المتصفح إطلاقاً. المتصفح يستلم توكناً موقّعاً محدود الصلاحية فقط.
 
 import crypto from "node:crypto";
+import { verifyTotp } from "./totp.mjs";
 
 // الجلسة طويلة عمداً: المشرف يفتح الأداة عدة مرات يومياً في الموقع، وكتابة
 // كلمة المرور كل مرة على الجوال متعبة. يمكن ضبطها بمتغير PRICING_SESSION_DAYS.
@@ -24,6 +25,20 @@ export function getAdminPassword() {
 
 export function isConfigured() {
   return getAdminPassword().length > 0;
+}
+
+// التحقق بخطوتين اختياري: يُفعَّل فقط إذا ضُبط السر في بيئة Netlify، فلا
+// يُقفل الموقع على المشرف قبل أن يجهّز تطبيق المصادقة.
+export function getTotpSecret() {
+  return process.env.PRICING_ADMIN_TOTP_SECRET || "";
+}
+
+export function isTotpEnabled() {
+  return getTotpSecret().length > 0;
+}
+
+export function checkTotp(code) {
+  return isTotpEnabled() && verifyTotp(getTotpSecret(), code);
 }
 
 // سر التوقيع: متغير مستقل إن وُجد، وإلا يُشتق من كلمة المرور نفسها.

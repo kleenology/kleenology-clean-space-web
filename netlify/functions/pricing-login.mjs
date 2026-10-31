@@ -9,6 +9,8 @@ import {
   isLockedOut,
   recordFailure,
   clearFailures,
+  isTotpEnabled,
+  checkTotp,
   jsonResponse,
 } from "../lib/admin-auth.mjs";
 import { CATALOGUE } from "../lib/pricing-catalogue.mjs";
@@ -37,6 +39,20 @@ export default async (request) => {
   if (!checkPassword(payload?.password)) {
     recordFailure(key);
     return jsonResponse({ error: "invalid_password" }, 401);
+  }
+
+  // خطوة ثانية: رمز من تطبيق المصادقة — فقط إذا فعّلها المشرف
+  if (isTotpEnabled()) {
+    const code = payload?.code;
+    // كلمة المرور صحيحة لكن لم يُرسل الرمز بعد: نطلبه بلا احتساب محاولة فاشلة
+    if (!code) {
+      return jsonResponse({ error: "totp_required" }, 401);
+    }
+    // رمز خاطئ يُحتسب كمحاولة تخمين
+    if (!checkTotp(code)) {
+      recordFailure(key);
+      return jsonResponse({ error: "invalid_totp" }, 401);
+    }
   }
 
   clearFailures(key);
