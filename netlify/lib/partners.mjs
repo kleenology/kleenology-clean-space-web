@@ -105,21 +105,9 @@ export function leadStatusOf(lead) {
   return ["done", "paid", "settled"].includes(lead?.status) ? "active" : lead?.status || "new";
 }
 
-/* ——— حد بسيط للطلبات العامة ———
-   داخل الذاكرة مثل عدّاد محاولات الدخول: يبطئ الإغراق الآلي ولا يُعتمد عليه
-   وحده، والمراجعة اليدوية للشركاء والعملاء هي الحماية الفعلية. */
-
-const WINDOW_MS = 10 * 60 * 1000;
-const MAX_PER_WINDOW = 15;
-const hits = new Map();
+// الحد العام مشترك بين المسارات العامة — netlify/lib/rate-limit.mjs
+import { rateLimited as limit } from "./rate-limit.mjs";
 
 export function rateLimited(key) {
-  const now = Date.now();
-  const record = hits.get(key);
-  if (!record || now > record.resetAt) {
-    hits.set(key, { count: 1, resetAt: now + WINDOW_MS });
-    return false;
-  }
-  record.count += 1;
-  return record.count > MAX_PER_WINDOW;
+  return limit(`partners:${key}`);
 }

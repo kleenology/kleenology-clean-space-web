@@ -6,40 +6,17 @@
 // SSRF hardening: only public http(s) targets are allowed. Localhost, private
 // ranges, and the cloud metadata address are rejected before any fetch.
 
+import { unsafeTarget } from "../lib/safe-target.mjs";
+import { rateLimited, clientIp } from "../lib/rate-limit.mjs";
+
 const json = (body, status = 200) =>
   new Response(JSON.stringify(body), {
     status,
     headers: { "content-type": "application/json; charset=utf-8" },
   });
 
-// Reject hostnames that resolve to non-public space by literal form. This is a
-// best-effort guard (DNS rebinding is out of scope for a header probe); it
-// blocks the obvious internal targets and the metadata endpoint.
-function isBlockedHost(hostname) {
-  const h = hostname.toLowerCase();
-  if (h === "localhost" || h.endsWith(".localhost") || h.endsWith(".internal")) return true;
-  if (h === "metadata.google.internal") return true;
-
-  // IPv4 literal ranges.
-  const m = h.match(/^(\d{1,3})\.(\d{1,3})\.(\d{1,3})\.(\d{1,3})$/);
-  if (m) {
-    const [a, b] = [Number(m[1]), Number(m[2])];
-    if (a === 10) return true;
-    if (a === 127) return true;
-    if (a === 0) return true;
-    if (a === 169 && b === 254) return true; // link-local + cloud metadata
-    if (a === 192 && b === 168) return true;
-    if (a === 172 && b >= 16 && b <= 31) return true;
-    if (a >= 224) return true; // multicast / reserved
-  }
-
-  // IPv6 loopback / link-local / unique-local.
-  if (h === "::1" || h.startsWith("fe80:") || h.startsWith("fc") || h.startsWith("fd")) return true;
-
-  return false;
-}
-
 export default async (req) => {
+  if (rateLimited(`headers:${clientIp(req)}`, { max: 30 })) return json({ error: "too many requests" }, 429);
   const raw = new URL(req.url).searchParams.get("url");
   if (!raw) return json({ error: "missing url parameter" }, 400);
 
@@ -50,12 +27,9 @@ export default async (req) => {
     return json({ error: "invalid url" }, 400);
   }
 
-  if (target.protocol !== "https:" && target.protocol !== "http:") {
-    return json({ error: "only http(s) targets are allowed" }, 400);
-  }
-  if (isBlockedHost(target.hostname)) {
-    return json({ error: "target host is not permitted" }, 400);
-  }
+  // يحل الاسم فعلياً ويرفض أي عنوان داخلي — فحص النص وحده كان يُتجاوز
+  const unsafe = await unsafeTarget(target);
+  if (unsafe) return json({ error: unsafe }, 400);
 
   const controller = new AbortController();
   // Stay under Netlify's ~10s synchronous-function limit.

@@ -6,39 +6,10 @@
   "scripts": {
     "dev": "vite",
     "build": "vite build",
-    "postbuild": "react-snap && node scripts/prerender-riyadh.mjs",
     "build:dev": "vite build --mode development",
     "build:prerender": "vite build && vite build --ssr src/entry-server.tsx --outDir dist-ssr && node scripts/prerender.mjs",
     "lint": "eslint .",
     "preview": "vite preview"
-  },
-  "reactSnap": {
-    "source": "dist",
-    "destinationDir": "dist",
-    "routes": [
-      "/cleaning-riyadh",
-      "/",
-      "/home-cleaning",
-      "/office-cleaning",
-      "/deep-cleaning",
-      "/carpet-cleaning",
-      "/post-construction-cleaning",
-      "/about",
-      "/booking"
-    ],
-    "puppeteerArgs": [
-      "--no-sandbox",
-      "--disable-setuid-sandbox"
-    ],
-    "headless": true,
-    "inlineCss": false,
-    "skipThirdPartyRequests": true,
-    "maxConcurrentRoutes": 1,
-    "timeout": 20000,
-    "minifyHtml": {
-      "collapseWhitespace": false,
-      "removeComments": false
-    }
   },
   "dependencies": {
     "@hookform/resolvers": "^3.9.0",
@@ -109,7 +80,6 @@
     "globals": "^15.9.0",
     "lovable-tagger": "^1.1.7",
     "postcss": "^8.4.47",
-    "react-snap": "^1.23.0",
     "tailwindcss": "^3.4.11",
     "typescript": "^5.5.3",
     "typescript-eslint": "^8.0.1",
