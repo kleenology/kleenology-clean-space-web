@@ -4,7 +4,7 @@ import { Sparkles, Shield, Clock, Star, Leaf, Users } from "lucide-react";
 
 const ar: ServiceContent = {
   seo: {
-    title: "تنظيف عميق احترافي | كلينولوجي",
+    title: "تنظيف عميق بالرياض | تنظيف شامل للمنازل | كلينولوجي",
     description: "خدمة تنظيف عميق شاملة من الأعلى للأسفل. تنظيف الخزائن، الأجهزة، الأسقف، والمناطق صعبة الوصول بأحدث المعدات.",
     keywords: "تنظيف عميق, تنظيف شامل, تنظيف احترافي, كلينولوجي, deep cleaning الرياض",
     url: "https://kleenology.me/deep-cleaning",

@@ -4,7 +4,7 @@ import { Home, Shield, Leaf, Clock, Star, Users } from "lucide-react";
 
 const ar: ServiceContent = {
   seo: {
-    title: "تنظيف منازل احترافي | كلينولوجي",
+    title: "تنظيف منازل بالرياض | تنظيف بيوت وشقق احترافي | كلينولوجي",
     description: "خدمة تنظيف منازل احترافية بأحدث المعدات ومواد آمنة وصديقة للبيئة. نظافة شاملة مع ضمان الرضا التام.",
     keywords: "تنظيف منازل, تنظيف شقق, تنظيف بيت, خدمة تنظيف, كلينولوجي, تنظيف الرياض",
     url: "https://kleenology.me/home-cleaning",

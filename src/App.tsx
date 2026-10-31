@@ -29,6 +29,8 @@ import PricingAdmin from "./pages/PricingAdmin";
 import QcReport from "./pages/QcReport";
 import Partners from "./pages/Partners";
 import PartnerReferral from "./pages/PartnerReferral";
+import ApartmentCleaning from "./pages/ApartmentCleaning";
+import VillaCleaning from "./pages/VillaCleaning";
 import { PixelTracker } from "@/components/PixelTracker";
 import { WhatsAppChatWidget } from "@/components/WhatsAppChatWidget";
 import { PerformanceMonitor } from "@/components/PerformanceMonitor";
@@ -129,6 +131,8 @@ const App = ({ wrapRouter = browserRouter }: { wrapRouter?: RouterWrap }) => {
               <Route path="/deep-cleaning" element={<DeepCleaning />} />
               <Route path="/carpet-cleaning" element={<CarpetCleaning />} />
               <Route path="/post-construction-cleaning" element={<PostConstructionCleaning />} />
+              <Route path="/apartment-cleaning-riyadh" element={<ApartmentCleaning />} />
+              <Route path="/villa-cleaning-riyadh" element={<VillaCleaning />} />
               <Route path="/about" element={<AboutUs />} />
               <Route path="/cleaning-riyadh" element={<RiyadhCleaning />} />
               <Route path="/cleaning-riyadh/:neighborhood" element={<NeighborhoodCleaning />} />

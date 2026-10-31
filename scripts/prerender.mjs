@@ -60,7 +60,9 @@ function applyHead(html, head) {
 }
 
 async function main() {
-  const template = readFileSync(join(dist, "index.html"), "utf8");
+  // بعد أول تشغيل يصير index.html الرئيسية المصيَّرة، فالقالب النظيف هو app.html
+  const appShell = join(dist, "app.html");
+  const template = readFileSync(existsSync(appShell) ? appShell : join(dist, "index.html"), "utf8");
   // القالب النظيف أولاً — قاعدة /* تعتمد عليه حتى لو فشل كل شي بعده
   writeFileSync(join(dist, "app.html"), template);
 
@@ -77,7 +79,11 @@ async function main() {
       console.log = log;
       if (head?.noindex) continue;
 
-      const page = applyHead(template, head).replace('<div id="root"></div>', `<div id="root">${html}</div>`);
+      let page = applyHead(template, head).replace('<div id="root"></div>', `<div id="root">${html}</div>`);
+      // أسئلة الرئيسية في القالب تخص الرئيسية فقط — قوقل يرفض FAQ ما تظهر في الصفحة
+      if (route !== "/") {
+        page = page.replace(/<script type="application\/ld\+json">(?:(?!<\/script>)[\s\S])*?"FAQPage"[\s\S]*?<\/script>\s*/, "");
+      }
       const file = route === "/" ? join(dist, "index.html") : join(dist, `${route.slice(1)}.html`);
       mkdirSync(dirname(file), { recursive: true });
       writeFileSync(file, page);
