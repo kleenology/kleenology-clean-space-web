@@ -5,6 +5,7 @@ import {
   createInvoice,
   jsonResponse,
 } from "../lib/moyasar.mjs";
+import { rateLimited, clientIp } from "../lib/rate-limit.mjs";
 
 const MAX_FIELD_LENGTH = 200;
 
@@ -15,6 +16,11 @@ function clean(value) {
 export default async (request) => {
   if (request.method !== "POST") {
     return jsonResponse({ error: "method_not_allowed" }, 405);
+  }
+
+  // كل طلب ينشئ فاتورة في ميسر — الحد يمنع إغراق الحساب بفواتير وهمية
+  if (rateLimited(`deposit:${clientIp(request)}`, { max: 10 })) {
+    return jsonResponse({ error: "too_many_requests" }, 429);
   }
 
   const mode = getMode(getSecretKey());
