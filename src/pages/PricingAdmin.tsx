@@ -68,6 +68,8 @@ function QtyStepper({ value, onChange }: { value: number; onChange: (n: number) 
 export default function PricingAdmin() {
   const [token, setToken] = useState<string | null>(null);
   const [catalogue, setCatalogue] = useState<Catalogue | null>(null);
+  // دور الجلسة: المشرف لا يرى تبويب الشركاء
+  const [role, setRole] = useState<"admin" | "supervisor">("admin");
   const [restoring, setRestoring] = useState(true);
 
   const [input, setInput] = useState<QuoteInput | null>(null);
@@ -102,10 +104,11 @@ export default function PricingAdmin() {
       </span>
     ) : null;
 
-  const startSession = useCallback((newToken: string, newCatalogue: Catalogue) => {
+  const startSession = useCallback((newToken: string, newCatalogue: Catalogue, newRole?: "admin" | "supervisor") => {
     localStorage.setItem(TOKEN_KEY, newToken);
     setToken(newToken);
     setCatalogue(newCatalogue);
+    setRole(newRole === "supervisor" ? "supervisor" : "admin");
     setInput((current) => current ?? emptyInput);
   }, []);
 
@@ -127,7 +130,7 @@ export default function PricingAdmin() {
     let cancelled = false;
     fetch("/api/pricing/catalogue", { headers: { Authorization: `Bearer ${saved}` } })
       .then((res) => (res.ok ? res.json() : Promise.reject(new Error("unauthorized"))))
-      .then((data) => { if (!cancelled) startSession(saved, data.catalogue); })
+      .then((data) => { if (!cancelled) startSession(saved, data.catalogue, data.role); })
       .catch(() => { if (!cancelled) localStorage.removeItem(TOKEN_KEY); })
       .finally(() => { if (!cancelled) setRestoring(false); });
     return () => { cancelled = true; };
@@ -313,7 +316,7 @@ export default function PricingAdmin() {
               { key: "inspection", label: "معاينة", Icon: ClipboardList },
               { key: "qc", label: "فحص الجودة", Icon: ShieldCheck },
               { key: "partners", label: "الشركاء", Icon: Handshake },
-            ] as const).map(({ key, label, Icon }) => (
+            ] as const).filter((t) => role === "admin" || t.key !== "partners").map(({ key, label, Icon }) => (
               <button
                 key={key}
                 type="button"
@@ -401,7 +404,7 @@ export default function PricingAdmin() {
                   key: "partners", Icon: Handshake, label: "الشركاء",
                   desc: "اعتمد المقاولين وتابع عملاءهم المحالين وأرسل كشف العمولات الشهري",
                 },
-              ] as const).map(({ key, Icon, label, desc }) => (
+              ] as const).filter((c) => role === "admin" || c.key !== "partners").map(({ key, Icon, label, desc }) => (
                 <button
                   key={key}
                   type="button"

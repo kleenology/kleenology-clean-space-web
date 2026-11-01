@@ -8,7 +8,7 @@
 //   DELETE ?kind=partner|lead&id=X
 
 import {
-  isConfigured, requireSession, jsonResponse,
+  isConfigured, requireSession, sessionRole, jsonResponse,
   isPartnersLocked, checkPartnersPassword, createPartnersToken,
   verifyPartnersToken, partnersTokenFromRequest,
 } from "../lib/admin-auth.mjs";
@@ -121,6 +121,8 @@ async function settle(items) {
 export default async (request) => {
   if (!isConfigured()) return jsonResponse({ error: "not_configured" }, 503);
   if (!requireSession(request)) return jsonResponse({ error: "unauthorized" }, 401);
+  // الشركاء للإدارة فقط — جلسة المشرف لا تصلها مهما كان
+  if (sessionRole(request) !== "admin") return jsonResponse({ error: "forbidden" }, 403);
 
   const url = new URL(request.url);
 

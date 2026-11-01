@@ -3,7 +3,7 @@
 
 import {
   isConfigured,
-  checkPassword,
+  roleForPassword,
   createToken,
   clientKey,
   isLockedOut,
@@ -36,13 +36,15 @@ export default async (request) => {
     return jsonResponse({ error: "invalid_body" }, 400);
   }
 
-  if (!checkPassword(payload?.password)) {
+  // كلمة المرور تحدد الدور: الإدارة (أنت) أو المشرف (ميداني)
+  const role = roleForPassword(payload?.password);
+  if (!role) {
     recordFailure(key);
     return jsonResponse({ error: "invalid_password" }, 401);
   }
 
-  // خطوة ثانية: رمز من تطبيق المصادقة — فقط إذا فعّلها المشرف
-  if (isTotpEnabled()) {
+  // التحقق بخطوتين للإدارة فقط — المشرف يدخل بكلمة المرور وحدها
+  if (role === "admin" && isTotpEnabled()) {
     const code = payload?.code;
     // كلمة المرور صحيحة لكن لم يُرسل الرمز بعد: نطلبه بلا احتساب محاولة فاشلة
     if (!code) {
@@ -56,6 +58,6 @@ export default async (request) => {
   }
 
   clearFailures(key);
-  const { token, expiresAt } = createToken();
-  return jsonResponse({ token, expiresAt, catalogue: CATALOGUE });
+  const { token, expiresAt } = createToken(role);
+  return jsonResponse({ token, expiresAt, catalogue: CATALOGUE, role });
 };

@@ -8,7 +8,7 @@ import type { Catalogue } from "@/lib/pricing/types";
 // بطاقة دخول مشتركة بين صفحة الأداة وصفحة تقرير الجودة، حتى لا يتفرّع
 // شكل الدخول ولا منطق رسائل الخطأ في مكانين.
 // الدخول خطوتان: كلمة المرور، ثم رمز التحقق إن كان مفعّلاً في Netlify.
-export function LoginCard({ onSuccess }: { onSuccess: (token: string, catalogue: Catalogue) => void }) {
+export function LoginCard({ onSuccess }: { onSuccess: (token: string, catalogue: Catalogue, role?: "admin" | "supervisor") => void }) {
   const [password, setPassword] = useState("");
   const [code, setCode] = useState("");
   const [step, setStep] = useState<"password" | "totp">("password");
@@ -38,7 +38,7 @@ export function LoginCard({ onSuccess }: { onSuccess: (token: string, catalogue:
       const { res, data } = await attempt(password, step === "totp" ? code : "");
 
       if (res.ok && data?.token && data?.catalogue) {
-        onSuccess(data.token, data.catalogue);
+        onSuccess(data.token, data.catalogue, data.role);
         return;
       }
 
