@@ -7,6 +7,7 @@
 // بيانات الإدارة الكاملة في مسار الإدارة المحمي.
 
 import { jsonResponse, clientKey } from "../lib/admin-auth.mjs";
+import { notifyAdmin } from "../lib/notify.mjs";
 import { newKey, MAX_BODY_BYTES } from "../lib/blob-records.mjs";
 import { normalizePhone } from "../lib/search-text.mjs";
 import {
@@ -51,6 +52,18 @@ async function register(payload) {
     acceptedTermsAt: new Date().toISOString(),
     createdAt: new Date().toISOString(),
   });
+
+  // تنبيه لحظي للإدارة — عشان تعتمد الشريك بسرعة بلا ما تفتح اللوحة
+  await notifyAdmin(
+    `🤝 شريك جديد سجّل في كلينولوجي\n\n` +
+    `الاسم: ${record.contactName}\n` +
+    `الجوال: ${record.phone}\n` +
+    (record.company ? `الجهة: ${record.company}\n` : "") +
+    (record.partnerType ? `النوع: ${record.partnerType}\n` : "") +
+    (record.city ? `المدينة: ${record.city}\n` : "") +
+    `\nادخل لوحة الإدارة ← تبويب الشركاء لاعتماده وإرسال كوده.`,
+  );
+
   // الكود لا يُرسل الآن: لا يعمل قبل الاعتماد، والإدارة ترسله مع الموافقة
   return jsonResponse({ ok: true });
 }
