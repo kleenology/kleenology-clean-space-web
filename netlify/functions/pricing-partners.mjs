@@ -14,10 +14,33 @@ import {
 } from "../lib/admin-auth.mjs";
 import crypto from "node:crypto";
 import { MAX_BODY_BYTES } from "../lib/blob-records.mjs";
+import { normalizePhone } from "../lib/search-text.mjs";
 import {
   partnersStore, leadsStore, allRecords, clean, ordersOf, leadStatusOf,
-  LEAD_STATUSES, PARTNER_STATUSES,
+  newPartnerCode, LEAD_STATUSES, PARTNER_STATUSES,
 } from "../lib/partners.mjs";
+
+// إضافة شريك فوراً من لوحة الإدارة: يُنشأ معتمداً مباشرة ويرجع كوده، فيعطيه
+// المشرف للمقاول في نفس اللحظة بدل دورة التسجيل والاعتماد.
+async function createPartner(data) {
+  const contactName = clean(data.contactName, 80);
+  const phone = clean(data.phone, 20);
+  if (!contactName || normalizePhone(phone).length < 9) {
+    return jsonResponse({ error: "missing_fields" }, 400);
+  }
+  const company = clean(data.company, 120) || contactName;
+  const now = new Date().toISOString();
+  const store = partnersStore();
+  const code = await newPartnerCode(store);
+  const record = {
+    company, contactName, phone,
+    partnerType: "", city: "", iban: "", notes: "",
+    status: "approved", addedByAdmin: true,
+    approvedAt: now, createdAt: now,
+  };
+  await store.setJSON(code, record);
+  return jsonResponse({ partner: { ...record, id: code } });
+}
 
 const PARTNER_FIELDS = ["company", "contactName", "phone", "partnerType", "city", "iban", "notes"];
 const LEAD_FIELDS = ["customerName", "phone", "neighborhood", "serviceType", "notes", "adminNotes"];
@@ -164,6 +187,7 @@ export default async (request) => {
     if (request.method === "POST") {
       const changes = payload.changes && typeof payload.changes === "object" ? payload.changes : {};
 
+      if (payload.kind === "create") return await createPartner(payload);
       if (payload.kind === "partner" && payload.id) return await updatePartner(payload.id, changes);
       if (payload.kind === "lead" && payload.id) return await updateLead(payload.id, changes);
       if (payload.kind === "order" && payload.id) return await changeOrder(payload.id, payload);

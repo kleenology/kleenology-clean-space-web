@@ -246,6 +246,14 @@ export function loadPartnersData(token: string) {
   return adminCall<{ partners: Partner[]; leads: Lead[] }>(ADMIN, {}, token);
 }
 
+/** إضافة شريك فوراً من الإدارة — يرجع معتمداً بكوده */
+export function createPartner(token: string, data: { company: string; contactName: string; phone: string }) {
+  return adminCall<{ partner: Partner }>(ADMIN, {
+    method: "POST",
+    body: JSON.stringify({ kind: "create", ...data }),
+  }, token);
+}
+
 export function updatePartner(token: string, id: string, changes: Partial<Partner>) {
   return adminCall<{ partner: Partner }>(ADMIN, {
     method: "POST",
