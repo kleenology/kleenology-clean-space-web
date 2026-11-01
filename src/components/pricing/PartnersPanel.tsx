@@ -8,7 +8,7 @@ import {
 import { toast } from "sonner";
 import { cn } from "@/lib/utils";
 import {
-  loadPartnersData, updatePartner, updateLead, settleOrders, addOrder, removeOrder,
+  loadPartnersData, createPartner, updatePartner, updateLead, settleOrders, addOrder, removeOrder,
   deleteRecord, submitLead, unsettledOrders, unlockPartners,
   PartnersError, PARTNER_STATUS_LABEL, LEAD_STATUS_LABEL, LEAD_STATUS_ORDER,
   displayCode, partnerLink, approvalMessage, whatsappUrl, buildStatement, commissionOf, sar,
@@ -318,6 +318,64 @@ function LeadRow({ lead, token, onChange, onDelete }: {
   );
 }
 
+// إضافة شريك فوراً وأنت مع المقاول: اسمه وجواله ← كوده يطلع، وترسله له واتساب
+function AddPartner({ token, onAdded }: { token: string; onAdded: (p: Partner) => void }) {
+  const [open, setOpen] = useState(false);
+  const [form, setForm] = useState({ company: "", contactName: "", phone: "" });
+  const [busy, setBusy] = useState(false);
+  const set = (c: Partial<typeof form>) => setForm((f) => ({ ...f, ...c }));
+
+  const submit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setBusy(true);
+    try {
+      const { partner } = await createPartner(token, form);
+      toast.success(`أضيف ${partner.company} — كوده ${displayCode(partner.id)}`);
+      onAdded(partner);
+      setForm({ company: "", contactName: "", phone: "" });
+      setOpen(false);
+    } catch (error) {
+      fail(error);
+    } finally {
+      setBusy(false);
+    }
+  };
+
+  if (!open) {
+    return (
+      <Button size="sm" onClick={() => setOpen(true)} className="mb-4">
+        <Plus className="h-4 w-4 ml-1" />أضف شريك الآن
+      </Button>
+    );
+  }
+
+  return (
+    <form onSubmit={submit} className="mb-4 p-3 rounded-xl bg-muted/50 space-y-2">
+      <div className="grid sm:grid-cols-3 gap-2">
+        <div className="space-y-1">
+          <Label className="text-xs">اسم الشريك</Label>
+          <Input required className="h-9" value={form.contactName} onChange={(e) => set({ contactName: e.target.value })} />
+        </div>
+        <div className="space-y-1">
+          <Label className="text-xs">الجوال</Label>
+          <Input required className="h-9" dir="ltr" value={form.phone} onChange={(e) => set({ phone: e.target.value })} placeholder="05xxxxxxxx" />
+        </div>
+        <div className="space-y-1">
+          <Label className="text-xs">الشركة (اختياري)</Label>
+          <Input className="h-9" value={form.company} onChange={(e) => set({ company: e.target.value })} />
+        </div>
+      </div>
+      <div className="flex gap-2">
+        <Button type="submit" size="sm" className="h-9" disabled={busy}>
+          {busy ? <Loader2 className="h-4 w-4 animate-spin" /> : <><Check className="h-4 w-4 ml-1" />اعتمده وأرسل كوده</>}
+        </Button>
+        <Button type="button" size="sm" variant="ghost" className="h-9" onClick={() => setOpen(false)}>إلغاء</Button>
+      </div>
+      <p className="text-[11px] text-muted-foreground">يُعتمد فوراً، ويفتح الواتس برسالة فيها كوده ورابطه جاهزة ترسلها له.</p>
+    </form>
+  );
+}
+
 export function PartnersPanel({ token }: { token: string }) {
   const [partners, setPartners] = useState<Partner[]>([]);
   const [leads, setLeads] = useState<Lead[]>([]);
@@ -438,9 +496,16 @@ export function PartnersPanel({ token }: { token: string }) {
           </Button>
         }
       >
+        <AddPartner
+          token={token}
+          onAdded={(partner) => {
+            setPartners((list) => [partner, ...list]);
+            window.open(whatsappUrl(partner.phone, approvalMessage(partner)), "_blank");
+          }}
+        />
         {active.length === 0 ? (
           <p className="text-sm text-muted-foreground">
-            ما فيه شركاء معتمدين بعد. أرسل رابط التسجيل للمقاولين: <b dir="ltr">kleenology.me/partners</b>
+            ما فيه شركاء معتمدين بعد. أضف شريكاً من الزر فوق، أو أرسل رابط التسجيل: <b dir="ltr">kleenology.me/partners</b>
           </p>
         ) : (
           <div className="space-y-3">
