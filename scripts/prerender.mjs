@@ -21,7 +21,8 @@ const dist = join(root, "dist");
 const SITE = "https://kleenology.me";
 
 // صفحات عامة ليست في sitemap.xml
-const EXTRA_ROUTES = ["/privacy-policy"];
+// /partners يُجهَّز للمعاينة عند المشاركة، ويبقى noindex وخارج sitemap/llms
+const EXTRA_ROUTES = ["/privacy-policy", "/partners"];
 
 const escapeHtml = (s) =>
   String(s).replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;");
@@ -50,6 +51,8 @@ function applyHead(html, head) {
   html = setMeta(html, "property", "og:image", head.image);
   html = setMeta(html, "name", "twitter:title", head.title);
   html = setMeta(html, "name", "twitter:description", head.description);
+  // noindex يبقي الصفحة خارج بحث قوقل لكن معاينة واتساب/فيسبوك تقرأ og مهما كان
+  html = setMeta(html, "name", "robots", head.noindex ? "noindex, follow" : "index, follow");
   html = html.replace(/<link\s+rel="canonical"[^>]*>/i, `<link rel="canonical" href="${escapeHtml(head.url)}" />`);
   if (head.jsonLd) {
     // نفس المعرّف اللي يستخدمه مكوّن SEO في المتصفح، فيستبدله بدل ما يكرره
@@ -77,7 +80,6 @@ async function main() {
       console.log = () => {};
       const { html, head } = render(route);
       console.log = log;
-      if (head?.noindex) continue;
 
       let page = applyHead(template, head).replace('<div id="root"></div>', `<div id="root">${html}</div>`);
       // أسئلة الرئيسية في القالب تخص الرئيسية فقط — قوقل يرفض FAQ ما تظهر في الصفحة
@@ -94,10 +96,29 @@ async function main() {
     }
   }
 
+  // رابط الإحالة /p/<code> ديناميكي، فنجهّز قالباً واحداً بمعاينة عامة (خصم 10٪)
+  // ونعيد توجيه /p/* إليه؛ المستخدم الحقيقي يُكمّل العرض بالجافاسكربت
+  let referralRule = "";
+  try {
+    console.log = () => {};
+    const { html, head } = render("/p/__share__");
+    console.log = log;
+    head.url = "https://kleenology.me/p"; // لا نكشف كوداً وهمياً في og:url
+    const page = applyHead(template, head).replace('<div id="root"></div>', `<div id="root">${html}</div>`);
+    writeFileSync(join(dist, "partner-referral.html"), page);
+    referralRule = "/p/*    /partner-referral.html   200";
+  } catch (error) {
+    console.log = log;
+    console.warn(`⚠️  prerender skipped /p/*: ${error.message.split("\n")[0]}`);
+  }
+
   // قواعد صريحة قبل /* — ونجعل /* يخدم القالب النظيف بدل الرئيسية المصيَّرة
   const redirectsPath = join(dist, "_redirects");
   if (existsSync(redirectsPath)) {
-    const rules = done.filter((r) => r !== "/").map((r) => `${r}    ${r}.html   200`).join("\n");
+    const rules = [
+      ...(referralRule ? [referralRule] : []),
+      ...done.filter((r) => r !== "/").map((r) => `${r}    ${r}.html   200`),
+    ].join("\n");
     const lines = readFileSync(redirectsPath, "utf8")
       .replace(/^(\/\S*\s+)\/index\.html(\s+200)/gm, "$1/app.html$2");
     const updated = lines.replace(/^\/\*\s+\/app\.html\s+200/m, (catchAll) => `# صفحات مصيَّرة مسبقاً (scripts/prerender.mjs)\n${rules}\n${catchAll}`);

@@ -65,8 +65,12 @@ export default function PartnerReferral() {
 
   return (
     <div dir="rtl" className="min-h-screen bg-gradient-to-b from-primary/5 to-background flex items-center justify-center px-4 py-10">
-      <SEO title="احجز تنظيفك | كلينولوجي" description="خدمات التنظيف الاحترافي بالرياض"
-           url={`https://kleenology.me/p/${code}`} noindex />
+      <SEO
+        title="احجز تنظيفك مع كلينولوجي | خصم ١٠٪ على أول طلب"
+        description="احجز خدمة تنظيف في الرياض عبر رابط شريك كلينولوجي واحصل على خصم ١٠٪ على أول طلب — منازل، شقق، فلل، مكاتب، وتنظيف بعد البناء."
+        url={`https://kleenology.me/p/${code}`}
+        noindex
+      />
       <div className="w-full max-w-md">
         <div className="text-center mb-6">
           <a href="/"><img src="/logo.png" alt="كلينولوجي" className="h-16 mx-auto mb-2" /></a>
