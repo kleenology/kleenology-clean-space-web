@@ -67,9 +67,25 @@ export function checkPassword(candidate) {
   return safeEqual(candidate, expected);
 }
 
-export function createToken() {
+// كلمة مرور المشرف (المعاينة وفحص الجودة) — بلا تحقق بخطوتين، للعمل الميداني.
+// اختيارية: بلا PRICING_SUPERVISOR_PASSWORD يبقى دخول واحد بكلمة الإدارة.
+export function getSupervisorPassword() {
+  return process.env.PRICING_SUPERVISOR_PASSWORD || "";
+}
+
+// يحدد دور كلمة المرور: "admin" أو "supervisor" أو null. الإدارة أولاً.
+export function roleForPassword(candidate) {
+  if (typeof candidate !== "string" || !candidate) return null;
+  const admin = getAdminPassword();
+  if (admin && safeEqual(candidate, admin)) return "admin";
+  const supervisor = getSupervisorPassword();
+  if (supervisor && safeEqual(candidate, supervisor)) return "supervisor";
+  return null;
+}
+
+export function createToken(role = "admin") {
   const expiresAt = Date.now() + sessionDays() * 24 * 60 * 60 * 1000;
-  const payload = Buffer.from(JSON.stringify({ exp: expiresAt })).toString("base64url");
+  const payload = Buffer.from(JSON.stringify({ exp: expiresAt, role })).toString("base64url");
   return { token: `${payload}.${sign(payload)}`, expiresAt };
 }
 
@@ -81,12 +97,19 @@ export function verifyToken(token) {
   if (!safeEqual(signature, sign(payload))) return null;
 
   try {
-    const { exp } = JSON.parse(Buffer.from(payload, "base64url").toString());
+    const { exp, role } = JSON.parse(Buffer.from(payload, "base64url").toString());
     if (typeof exp !== "number" || Date.now() > exp) return null;
-    return exp;
+    // التوكنات القديمة بلا دور تُعتبر إدارة
+    return { exp, role: role === "supervisor" ? "supervisor" : "admin" };
   } catch {
     return null;
   }
+}
+
+// دور الجلسة من التوكن، أو null إن لم تكن صالحة
+export function sessionRole(request) {
+  const session = verifyToken(tokenFromRequest(request));
+  return session ? session.role : null;
 }
 
 // يقرأ التوكن من ترويسة Authorization: Bearer <token>

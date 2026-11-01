@@ -13,10 +13,11 @@ export default async (request) => {
     return jsonResponse({ error: "not_configured" }, 503);
   }
 
-  const expiresAt = requireSession(request);
-  if (!expiresAt) {
+  const session = requireSession(request);
+  if (!session) {
     return jsonResponse({ error: "unauthorized" }, 401);
   }
 
-  return jsonResponse({ expiresAt, catalogue: CATALOGUE });
+  // يُرجع الدور أيضاً حتى تعرف الصفحة بعد إعادة التحميل ماذا تُظهر للمشرف
+  return jsonResponse({ expiresAt: session.exp, role: session.role, catalogue: CATALOGUE });
 };
