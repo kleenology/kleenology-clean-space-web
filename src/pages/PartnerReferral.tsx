@@ -108,47 +108,62 @@ export default function PartnerReferral() {
                 </div>
               )}
               <h1 className="text-xl font-bold mb-1">احجز خدمة التنظيف</h1>
-              <p className="text-sm text-muted-foreground mb-5">اترك بياناتك ونتواصل معك خلال ساعات العمل.</p>
+              <p className="text-sm text-muted-foreground mb-5">اختر الأسرع لك — نرد عليك على طول.</p>
 
-              {partner ? (
-                <form onSubmit={submit} className="space-y-4 relative">
-                  <input type="text" tabIndex={-1} autoComplete="off" aria-hidden="true" name="website"
-                         value={form.website} onChange={(e) => set({ website: e.target.value })}
-                         className="absolute -left-[9999px] w-px h-px opacity-0" />
-                  <div className="space-y-1.5">
-                    <Label htmlFor="r-name">الاسم *</Label>
-                    <Input id="r-name" required value={form.customerName}
-                           onChange={(e) => set({ customerName: e.target.value })} />
-                  </div>
-                  <div className="space-y-1.5">
-                    <Label htmlFor="r-phone">الجوال *</Label>
-                    <Input id="r-phone" required type="tel" dir="ltr" placeholder="05xxxxxxxx"
-                           value={form.phone} onChange={(e) => set({ phone: e.target.value })} />
-                  </div>
-                  <div className="space-y-1.5">
-                    <Label htmlFor="r-area">الحي</Label>
-                    <Input id="r-area" value={form.neighborhood}
-                           onChange={(e) => set({ neighborhood: e.target.value })} />
-                  </div>
-                  <div className="space-y-1.5">
-                    <Label htmlFor="r-service">الخدمة</Label>
-                    <select id="r-service" className={selectClass} value={form.serviceType}
-                            onChange={(e) => set({ serviceType: e.target.value })}>
-                      {SERVICES.map((s) => <option key={s}>{s}</option>)}
-                    </select>
-                  </div>
-                  <Button type="submit" size="lg" className="w-full" disabled={busy}>
-                    {busy ? <Loader2 className="h-4 w-4 animate-spin" /> : "أرسل الطلب"}
-                  </Button>
-                </form>
-              ) : null}
-
-              <a href={whatsappHref()} target="_blank" rel="noopener noreferrer" className="block mt-3">
-                <Button variant={partner ? "outline" : "default"} size="lg" className="w-full">
-                  <MessageCircle className="h-4 w-4 ml-2" />
-                  {partner ? "أو احجز مباشرة عبر واتساب" : "احجز عبر واتساب"}
+              {/* الواتساب أولاً وأبرز: أسهل طريقة للعميل، ضغطة وحدة والرسالة جاهزة */}
+              <a href={whatsappHref()} target="_blank" rel="noopener noreferrer" className="block">
+                <Button
+                  size="lg"
+                  className="w-full h-14 text-base bg-[#25D366] hover:bg-[#1da851] text-white shadow-md"
+                >
+                  <MessageCircle className="h-5 w-5 ml-2" />
+                  احجز الآن عبر واتساب
                 </Button>
               </a>
+              <p className="text-center text-xs text-muted-foreground mt-2">
+                الأسرع — نرد عليك خلال دقائق في ساعات العمل
+              </p>
+
+              {partner ? (
+                <>
+                  <div className="flex items-center gap-3 my-5">
+                    <div className="h-px flex-1 bg-border" />
+                    <span className="text-xs text-muted-foreground">أو اترك بياناتك ونكلمك</span>
+                    <div className="h-px flex-1 bg-border" />
+                  </div>
+
+                  <form onSubmit={submit} className="space-y-4 relative">
+                    <input type="text" tabIndex={-1} autoComplete="off" aria-hidden="true" name="website"
+                           value={form.website} onChange={(e) => set({ website: e.target.value })}
+                           className="absolute -left-[9999px] w-px h-px opacity-0" />
+                    <div className="space-y-1.5">
+                      <Label htmlFor="r-name">الاسم *</Label>
+                      <Input id="r-name" required value={form.customerName}
+                             onChange={(e) => set({ customerName: e.target.value })} />
+                    </div>
+                    <div className="space-y-1.5">
+                      <Label htmlFor="r-phone">الجوال *</Label>
+                      <Input id="r-phone" required type="tel" dir="ltr" placeholder="05xxxxxxxx"
+                             value={form.phone} onChange={(e) => set({ phone: e.target.value })} />
+                    </div>
+                    <div className="space-y-1.5">
+                      <Label htmlFor="r-area">الحي</Label>
+                      <Input id="r-area" value={form.neighborhood}
+                             onChange={(e) => set({ neighborhood: e.target.value })} />
+                    </div>
+                    <div className="space-y-1.5">
+                      <Label htmlFor="r-service">الخدمة</Label>
+                      <select id="r-service" className={selectClass} value={form.serviceType}
+                              onChange={(e) => set({ serviceType: e.target.value })}>
+                        {SERVICES.map((s) => <option key={s}>{s}</option>)}
+                      </select>
+                    </div>
+                    <Button type="submit" size="lg" variant="outline" className="w-full" disabled={busy}>
+                      {busy ? <Loader2 className="h-4 w-4 animate-spin" /> : "أرسل الطلب"}
+                    </Button>
+                  </form>
+                </>
+              ) : null}
             </>
           )}
         </div>
