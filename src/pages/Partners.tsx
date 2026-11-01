@@ -578,6 +578,7 @@ export default function Partners() {
         title="برنامج شركاء كلينولوجي | عمولة 10٪ للمقاولين والشركات"
         description="انضم لبرنامج شركاء كلينولوجي: أحِل عملاء التنظيف من مشاريعك واحصل على 10٪ من قيمة كل طلب، بكشف شهري وتحويل بنكي."
         url="https://kleenology.me/partners"
+        noindex
       />
       <Header />
 
