@@ -84,11 +84,13 @@ export const unsettledOrders = (leads: Lead[]) =>
 export const sar = (value: number) =>
   `${(Math.round(value * 100) / 100).toLocaleString("en-US")} ر.س`;
 
-/** خطأ يحمل رسالة عربية جاهزة للعرض */
+/** خطأ يحمل رسالة عربية جاهزة للعرض، وكود الخطأ من الخادم للتمييز */
 export class PartnersError extends Error {
-  constructor(message: string) {
+  code?: string;
+  constructor(message: string, code?: string) {
     super(message);
     this.name = "PartnersError";
+    this.code = code;
   }
 }
 
@@ -98,6 +100,8 @@ function messageFor(status: number, code?: string): string {
   if (code === "terms_required") return "لازم توافق على الشروط";
   if (code === "invalid_amount") return "اكتب مبلغ الطلب";
   if (code === "invalid_login") return "الكود أو الجوال غير صحيح";
+  if (code === "invalid_partners_password") return "كلمة سر الشركاء غير صحيحة";
+  if (code === "partners_locked") return "تبويب الشركاء مقفل — أدخل كلمة السر";
   if (status === 429) return "طلبات كثيرة — حاول بعد دقائق";
   if (status === 401) return "انتهت الجلسة — سجّل الدخول من جديد";
   if (status === 503 || code === "store_unavailable")
@@ -121,8 +125,52 @@ async function call<T>(url: string, init: RequestInit = {}, token?: string): Pro
     throw new PartnersError("تعذّر الاتصال بالخادم");
   }
   const data = await res.json().catch(() => null);
-  if (!res.ok) throw new PartnersError(messageFor(res.status, data?.error));
+  if (!res.ok) throw new PartnersError(messageFor(res.status, data?.error), data?.error);
   return data as T;
+}
+
+/* ——— قفل تبويب الشركاء (اختياري) ———
+   توكن منفصل عن جلسة الإدارة، يُطلب فقط إذا فعّل المالك القفل في Netlify. */
+const PARTNERS_UNLOCK_KEY = "kleenology_partners_unlock";
+
+function partnersUnlockToken(): string {
+  try {
+    return localStorage.getItem(PARTNERS_UNLOCK_KEY) ?? "";
+  } catch {
+    return "";
+  }
+}
+
+function setPartnersUnlockToken(token: string) {
+  try {
+    if (token) localStorage.setItem(PARTNERS_UNLOCK_KEY, token);
+    else localStorage.removeItem(PARTNERS_UNLOCK_KEY);
+  } catch {
+    /* التخزين محجوب — يُدخل كلمة السر كل مرة */
+  }
+}
+
+/** نداء لمسار الإدارة يرفق توكن القفل تلقائياً */
+function adminCall<T>(url: string, init: RequestInit, token: string): Promise<T> {
+  const unlock = partnersUnlockToken();
+  return call<T>(url, {
+    ...init,
+    headers: { ...init.headers, ...(unlock ? { "x-partners-token": unlock } : {}) },
+  }, token);
+}
+
+/** يفتح القفل بكلمة سر الشركاء ويحفظ التوكن على الجهاز */
+export async function unlockPartners(token: string, password: string) {
+  const res = await call<{ unlocked: boolean; token?: string }>(ADMIN, {
+    method: "POST",
+    body: JSON.stringify({ action: "unlock", password }),
+  }, token);
+  if (res.token) setPartnersUnlockToken(res.token);
+  return res;
+}
+
+export function clearPartnersUnlock() {
+  setPartnersUnlockToken("");
 }
 
 /* ——— المسار العام ——— */
@@ -195,46 +243,46 @@ export function submitLead(lead: LeadSubmission) {
 const ADMIN = "/api/pricing/partners";
 
 export function loadPartnersData(token: string) {
-  return call<{ partners: Partner[]; leads: Lead[] }>(ADMIN, {}, token);
+  return adminCall<{ partners: Partner[]; leads: Lead[] }>(ADMIN, {}, token);
 }
 
 export function updatePartner(token: string, id: string, changes: Partial<Partner>) {
-  return call<{ partner: Partner }>(ADMIN, {
+  return adminCall<{ partner: Partner }>(ADMIN, {
     method: "POST",
     body: JSON.stringify({ kind: "partner", id, changes }),
   }, token);
 }
 
 export function updateLead(token: string, id: string, changes: Partial<Lead>) {
-  return call<{ lead: Lead }>(ADMIN, {
+  return adminCall<{ lead: Lead }>(ADMIN, {
     method: "POST",
     body: JSON.stringify({ kind: "lead", id, changes }),
   }, token);
 }
 
 export function addOrder(token: string, id: string, amount: number, note = "") {
-  return call<{ lead: Lead }>(ADMIN, {
+  return adminCall<{ lead: Lead }>(ADMIN, {
     method: "POST",
     body: JSON.stringify({ kind: "order", id, amount, note }),
   }, token);
 }
 
 export function removeOrder(token: string, id: string, orderId: string) {
-  return call<{ lead: Lead }>(ADMIN, {
+  return adminCall<{ lead: Lead }>(ADMIN, {
     method: "POST",
     body: JSON.stringify({ kind: "order", id, orderId, remove: true }),
   }, token);
 }
 
 export function settleOrders(token: string, items: { id: string; orderId: string }[]) {
-  return call<{ settled: { id: string; orderId: string }[]; settledAt: string }>(ADMIN, {
+  return adminCall<{ settled: { id: string; orderId: string }[]; settledAt: string }>(ADMIN, {
     method: "POST",
     body: JSON.stringify({ kind: "settle", items }),
   }, token);
 }
 
 export function deleteRecord(token: string, kind: "partner" | "lead", id: string) {
-  return call<{ deleted: string }>(
+  return adminCall<{ deleted: string }>(
     `${ADMIN}?kind=${kind}&id=${encodeURIComponent(id)}`,
     { method: "DELETE" },
     token,
