@@ -7,13 +7,13 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
-import { Slider } from "@/components/ui/slider";
 import {
   Accordion, AccordionContent, AccordionItem, AccordionTrigger,
 } from "@/components/ui/accordion";
 import {
   UserPlus, Send, Wallet, CheckCircle2, Loader2, CalendarCheck, BadgePercent,
-  ChevronDown, MessageCircle, ArrowLeft, Pencil, TrendingUp, Copy, Download, Gift,
+  ChevronDown, MessageCircle, ArrowLeft, Pencil, Copy, Download, Gift,
+  ShieldCheck, Camera, Banknote,
 } from "lucide-react";
 import { QRCodeCanvas } from "qrcode.react";
 import { toast } from "sonner";
@@ -36,14 +36,6 @@ const SERVICES = [
   "تنظيف عميق",
   "تنظيف مكاتب وشركات",
   "تنظيف سجاد ومفروشات",
-];
-
-// متوسطات تقديرية لقيمة الطلب قبل الضريبة — للحاسبة فقط، عدّلها لتطابق أسعاركم
-const ORDER_PRESETS = [
-  { label: "ما بعد البناء", value: 2500 },
-  { label: "تسليم وحدات", value: 1200 },
-  { label: "منازل وشقق", value: 600 },
-  { label: "مكاتب", value: 1500 },
 ];
 
 const STEPS = [
@@ -127,73 +119,68 @@ function Done({ title, text, children }: { title: string; text: string; children
   );
 }
 
-/* ——————————————— الحاسبة ——————————————— */
+/* ——————————————— ملخّص الشراكة ——————————————— */
 
-function EarningsCalculator({ onJoin }: { onJoin: () => void }) {
-  const [customers, setCustomers] = useState(5);
-  const [orderValue, setOrderValue] = useState(ORDER_PRESETS[0].value);
-  const monthly = customers * orderValue * COMMISSION_RATE;
+const PARTNERSHIP = [
+  {
+    Icon: BadgePercent,
+    title: "عمولة 10٪ على كل طلب",
+    text: "من قيمة كل طلب لكل عميل تحيله، بعد الخصم وقبل الضريبة. لكل طلب عمولته، مو أول طلب فقط.",
+  },
+  {
+    Icon: Gift,
+    title: "خصم 10٪ لعميلك",
+    text: "على أول طلب، تقدّمه له باسمك، فيسهل عليك إقناعه وأنت تستلم عمولتك كاملة.",
+  },
+  {
+    Icon: Banknote,
+    title: "تحويل بنكي شهري",
+    text: "تُجمَع عمولاتك وتُحوَّل مرة كل شهر، مع كشف مفصّل بكل عميل وكل طلب.",
+  },
+  {
+    Icon: ShieldCheck,
+    title: "بدون رسوم ولا التزام",
+    text: "التسجيل مجاني، بلا عقد ولا حد أدنى. تحيل متى ما ناسبك.",
+  },
+];
 
+function PartnershipSummary() {
   return (
-    <div className="bg-card border rounded-3xl shadow-float p-6 sm:p-8">
-      <div className="flex items-center gap-2 text-primary font-semibold text-sm mb-1">
-        <TrendingUp className="h-4 w-4" />
-        احسب أرباحك
+    <div className="lg:sticky lg:top-28 space-y-5">
+      <div className="bg-card border rounded-2xl shadow-clean p-6 sm:p-7">
+        <h2 className="text-xl font-bold mb-5">الشراكة باختصار</h2>
+        <ul className="space-y-5">
+          {PARTNERSHIP.map(({ Icon, title, text }) => (
+            <li key={title} className="flex gap-4">
+              <div className="w-10 h-10 rounded-lg bg-brand-blue/10 text-brand-blue flex items-center justify-center shrink-0">
+                <Icon className="h-5 w-5" />
+              </div>
+              <div>
+                <h3 className="font-bold mb-0.5">{title}</h3>
+                <p className="text-sm text-muted-foreground leading-relaxed">{text}</p>
+              </div>
+            </li>
+          ))}
+        </ul>
       </div>
-      <h2 className="text-2xl font-bold mb-6">كم بتكسب معنا؟</h2>
-
-      <div className="space-y-7">
-        <div>
-          <div className="flex items-baseline justify-between mb-3">
-            <Label>عدد العملاء شهرياً</Label>
-            <span className="text-2xl font-bold tabular-nums text-primary">{customers}</span>
-          </div>
-          <Slider
-            dir="rtl" value={[customers]} min={1} max={30} step={1}
-            onValueChange={([v]) => setCustomers(v)}
-            aria-label="عدد العملاء شهرياً"
-          />
-        </div>
-
-        <div>
-          <Label className="block mb-3">نوع الشغل الغالب</Label>
-          <div className="grid grid-cols-2 gap-2">
-            {ORDER_PRESETS.map((preset) => (
-              <button
-                key={preset.label} type="button" onClick={() => setOrderValue(preset.value)}
-                className={cn(
-                  "rounded-xl border px-3 py-2.5 text-sm text-right transition-all",
-                  orderValue === preset.value
-                    ? "border-primary bg-primary/10 text-primary font-semibold ring-1 ring-primary"
-                    : "hover:border-primary/40 hover:bg-muted",
-                )}
-              >
-                {preset.label}
-                <span className="block text-[11px] text-muted-foreground font-normal">
-                  متوسط {sar(preset.value)}
-                </span>
-              </button>
-            ))}
-          </div>
-        </div>
+      {/* إشارات ثقة: الشريك يسلّم عميله لنا، فيحتاج يطمئن لجودة الخدمة */}
+      <div className="rounded-2xl border bg-muted/40 p-5">
+        <p className="text-sm font-semibold mb-3">نخدم عملاءك باحترافية</p>
+        <ul className="space-y-2 text-sm text-muted-foreground">
+          <li className="flex items-center gap-2.5">
+            <Camera className="h-4 w-4 text-brand-blue shrink-0" />
+            فحص جودة موثّق بالصور بعد كل زيارة
+          </li>
+          <li className="flex items-center gap-2.5">
+            <ShieldCheck className="h-4 w-4 text-brand-blue shrink-0" />
+            فريق مؤمَّن عليه ومدرّب
+          </li>
+          <li className="flex items-center gap-2.5">
+            <CheckCircle2 className="h-4 w-4 text-brand-blue shrink-0" />
+            +690 عميل · رضا 98٪ · خدمة كل أحياء الرياض
+          </li>
+        </ul>
       </div>
-
-      <div className="mt-7 rounded-2xl bg-gradient-to-l from-brand-blue-deep to-brand-blue-deeper text-white p-5 text-center">
-        <div className="text-sm text-white/75">أرباحك المتوقعة شهرياً</div>
-        <div className="text-4xl sm:text-5xl font-bold text-brand-yellow tabular-nums my-1 transition-all">
-          {sar(monthly)}
-        </div>
-        <div className="text-sm text-white/75">
-          يعني <b className="text-white">{sar(monthly * 12)}</b> في السنة
-        </div>
-      </div>
-      <p className="text-[11px] text-muted-foreground text-center mt-3">
-        أرقام تقديرية — العمولة الفعلية 10٪ من قيمة كل طلب قبل الضريبة.
-      </p>
-      <Button size="lg" className="w-full mt-4" onClick={onJoin}>
-        ابدأ الحين — مجاناً
-        <ArrowLeft className="h-4 w-4 mr-2" />
-      </Button>
     </div>
   );
 }
@@ -567,9 +554,9 @@ export default function Partners() {
   };
 
   const trust = useMemo(() => [
-    { Icon: BadgePercent, text: "10٪ على كل طلب" },
-    { Icon: CalendarCheck, text: "تحويل شهري" },
-    { Icon: Gift, text: `عميلك ياخذ خصم ${CUSTOMER_DISCOUNT_PERCENT}٪` },
+    { Icon: ShieldCheck, text: "فريق مؤمَّن عليه" },
+    { Icon: Camera, text: "فحص جودة بالصور" },
+    { Icon: CalendarCheck, text: "تحويل بنكي شهري" },
   ], []);
 
   return (
@@ -590,32 +577,31 @@ export default function Partners() {
         <div className="relative max-w-6xl mx-auto px-4 pt-28 pb-20 sm:pt-32 sm:pb-28">
           <div className="max-w-2xl">
             <span className="inline-flex items-center gap-2 rounded-full bg-white/15 backdrop-blur px-4 py-1.5 text-sm font-medium mb-6">
-              للمقاولين · شركات الإنشاءات · مكاتب العقار
+              برنامج الشركاء · للمقاولين وشركات الإنشاءات ومكاتب العقار
             </span>
-            <h1 className="text-4xl sm:text-6xl font-bold leading-tight mb-5">
-              عملاؤك يحتاجون تنظيف؟
-              <br />
-              <span className="text-brand-yellow">لك 10٪</span> من كل طلب.
+            <h1 className="text-4xl sm:text-5xl font-bold leading-[1.3] mb-5">
+              شريكك في تنظيف ما بعد البناء والتسليم
             </h1>
             <p className="text-lg sm:text-xl text-white/85 leading-relaxed mb-8">
-              أحِل لنا عملاءك وخلّ الباقي علينا. أنت تستلم عمولتك كل شهر على كل طلب،
-              وعميلك ياخذ خصم {CUSTOMER_DISCOUNT_PERCENT}٪ على أول طلب.
+              نكمّل مشاريعك بتنظيف احترافي يسلّم العميل مكاناً جاهزاً، وتكسب
+              عمولة <span className="font-semibold text-white">10٪</span> على كل طلب،
+              مع خصم {CUSTOMER_DISCOUNT_PERCENT}٪ لعميلك على أول طلب.
             </p>
             <div className="flex flex-col sm:flex-row gap-3 mb-10">
               <Button size="lg" onClick={() => goToForm("register")}
-                      className="h-14 px-8 text-lg bg-brand-yellow text-brand-blue-deeper hover:bg-brand-yellow/90 font-bold shadow-float">
-                انضم مجاناً
+                      className="h-12 px-8 text-base bg-white text-brand-blue-deeper hover:bg-white/90 font-bold shadow-float">
+                سجّل كشريك
                 <ArrowLeft className="h-5 w-5 mr-2" />
               </Button>
               <Button size="lg" variant="outline" onClick={() => goToForm("lead")}
-                      className="h-14 px-8 text-lg bg-white/10 border-white/40 text-white hover:bg-white/20 hover:text-white">
+                      className="h-12 px-8 text-base bg-transparent border-white/40 text-white hover:bg-white/15 hover:text-white">
                 عندي كود — سجّل عميل
               </Button>
             </div>
             <div className="flex flex-wrap gap-x-6 gap-y-3">
               {trust.map(({ Icon, text }) => (
                 <span key={text} className="flex items-center gap-2 text-sm text-white/90">
-                  <Icon className="h-5 w-5 text-brand-yellow" />
+                  <Icon className="h-5 w-5 text-white/70" />
                   {text}
                 </span>
               ))}
@@ -639,10 +625,10 @@ export default function Partners() {
         </ol>
       </section>
 
-      {/* ——— الحاسبة والنموذج ——— */}
+      {/* ——— ملخّص الشراكة والنموذج ——— */}
       <section className="bg-muted/40 py-16 sm:py-20">
         <div className="max-w-6xl mx-auto px-4 grid lg:grid-cols-2 gap-8 items-start">
-          <EarningsCalculator onJoin={() => goToForm("register")} />
+          <PartnershipSummary />
 
           <div ref={formRef} className="bg-card border rounded-3xl shadow-float overflow-hidden scroll-mt-24">
             <div className="grid grid-cols-3 p-1.5 m-4 mb-0 rounded-2xl bg-muted">
@@ -722,7 +708,7 @@ export default function Partners() {
         )}
       >
         <Button size="lg" className="w-full h-12 text-base font-bold" onClick={() => goToForm(readSavedCode() ? "lead" : "register")}>
-          {readSavedCode() ? "سجّل عميل جديد" : "انضم الآن ← 10٪ على كل طلب"}
+          {readSavedCode() ? "سجّل عميل جديد" : "سجّل كشريك"}
         </Button>
       </div>
     </div>
