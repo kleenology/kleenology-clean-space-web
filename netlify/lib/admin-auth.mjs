@@ -125,3 +125,53 @@ export function jsonResponse(body, status = 200) {
     },
   });
 }
+
+// قفل إضافي لتبويب «الشركاء» داخل لوحة الإدارة: كلمة سر منفصلة يعرفها المالك
+// والمشرف الموثوق فقط، فلا يفتح العمولات وأرقام الشركاء كل موظف تسعير.
+// اختياري: بلا PRICING_PARTNERS_SECRET يبقى التبويب مفتوحاً لأي جلسة إدارة.
+export function getPartnersSecret() {
+  return process.env.PRICING_PARTNERS_SECRET || "";
+}
+
+export function isPartnersLocked() {
+  return getPartnersSecret().length > 0;
+}
+
+export function checkPartnersPassword(candidate) {
+  const expected = getPartnersSecret();
+  if (!expected || typeof candidate !== "string") return false;
+  return safeEqual(candidate, expected);
+}
+
+// توكن وصول التبويب — موقّع بسر مشتق من كلمة سر الشركاء، مستقل عن جلسة الإدارة
+function partnersSecret() {
+  return crypto.createHash("sha256").update(`kleenology-partners:${getPartnersSecret()}`).digest("hex");
+}
+
+function signPartners(data) {
+  return crypto.createHmac("sha256", partnersSecret()).update(data).digest("base64url");
+}
+
+export function createPartnersToken() {
+  const expiresAt = Date.now() + sessionDays() * 24 * 60 * 60 * 1000;
+  const payload = Buffer.from(JSON.stringify({ exp: expiresAt })).toString("base64url");
+  return { token: `${payload}.${signPartners(payload)}`, expiresAt };
+}
+
+export function verifyPartnersToken(token) {
+  if (typeof token !== "string" || !token.includes(".")) return null;
+  const [payload, signature] = token.split(".");
+  if (!payload || !signature) return null;
+  if (!safeEqual(signature, signPartners(payload))) return null;
+  try {
+    const { exp } = JSON.parse(Buffer.from(payload, "base64url").toString());
+    if (typeof exp !== "number" || Date.now() > exp) return null;
+    return exp;
+  } catch {
+    return null;
+  }
+}
+
+export function partnersTokenFromRequest(request) {
+  return request.headers.get("x-partners-token") || "";
+}

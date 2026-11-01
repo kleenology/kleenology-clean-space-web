@@ -7,7 +7,11 @@
 //   POST {kind:"settle", items:[{id, orderId}]}    تعليم عمولات كمدفوعة بعد التحويل
 //   DELETE ?kind=partner|lead&id=X
 
-import { isConfigured, requireSession, jsonResponse } from "../lib/admin-auth.mjs";
+import {
+  isConfigured, requireSession, jsonResponse,
+  isPartnersLocked, checkPartnersPassword, createPartnersToken,
+  verifyPartnersToken, partnersTokenFromRequest,
+} from "../lib/admin-auth.mjs";
 import crypto from "node:crypto";
 import { MAX_BODY_BYTES } from "../lib/blob-records.mjs";
 import {
@@ -120,7 +124,33 @@ export default async (request) => {
 
   const url = new URL(request.url);
 
+  // نقرأ جسم POST مرة واحدة حتى نفحص «فتح القفل» قبل بوابة القفل
+  let payload = null;
+  if (request.method === "POST") {
+    const raw = await request.text();
+    if (raw.length > MAX_BODY_BYTES) return jsonResponse({ error: "too_large" }, 413);
+    try {
+      payload = JSON.parse(raw);
+    } catch {
+      return jsonResponse({ error: "invalid_body" }, 400);
+    }
+  }
+
   try {
+    // فتح القفل: جلسة إدارة صالحة + كلمة سر الشركاء ← توكن وصول للتبويب
+    if (payload?.action === "unlock") {
+      if (!isPartnersLocked()) return jsonResponse({ unlocked: true, locked: false });
+      if (!checkPartnersPassword(payload.password)) {
+        return jsonResponse({ error: "invalid_partners_password" }, 401);
+      }
+      return jsonResponse({ unlocked: true, ...createPartnersToken() });
+    }
+
+    // بوابة القفل: إذا فُعّل القفل يلزم توكن وصول صالح لكل العمليات
+    if (isPartnersLocked() && !verifyPartnersToken(partnersTokenFromRequest(request))) {
+      return jsonResponse({ error: "partners_locked" }, 403);
+    }
+
     if (request.method === "GET") {
       const [partners, leads] = await Promise.all([
         allRecords(partnersStore()),
@@ -130,14 +160,6 @@ export default async (request) => {
     }
 
     if (request.method === "POST") {
-      const raw = await request.text();
-      if (raw.length > MAX_BODY_BYTES) return jsonResponse({ error: "too_large" }, 413);
-      let payload;
-      try {
-        payload = JSON.parse(raw);
-      } catch {
-        return jsonResponse({ error: "invalid_body" }, 400);
-      }
       const changes = payload.changes && typeof payload.changes === "object" ? payload.changes : {};
 
       if (payload.kind === "partner" && payload.id) return await updatePartner(payload.id, changes);

@@ -3,13 +3,13 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import {
-  Loader2, RefreshCw, Check, Trash2, Copy, MessageCircle, FileText, Ban, Play, X, Plus, Info, Pencil,
+  Loader2, RefreshCw, Check, Trash2, Copy, MessageCircle, FileText, Ban, Play, X, Plus, Info, Pencil, Lock,
 } from "lucide-react";
 import { toast } from "sonner";
 import { cn } from "@/lib/utils";
 import {
   loadPartnersData, updatePartner, updateLead, settleOrders, addOrder, removeOrder,
-  deleteRecord, submitLead, unsettledOrders,
+  deleteRecord, submitLead, unsettledOrders, unlockPartners,
   PartnersError, PARTNER_STATUS_LABEL, LEAD_STATUS_LABEL, LEAD_STATUS_ORDER,
   displayCode, partnerLink, approvalMessage, whatsappUrl, buildStatement, commissionOf, sar,
   type Partner, type Lead, type LeadStatus,
@@ -17,6 +17,48 @@ import {
 
 const fail = (error: unknown) =>
   toast.error(error instanceof PartnersError ? error.message : "تعذّر الاتصال بالخادم");
+
+// نموذج فتح تبويب الشركاء بكلمة السر المنفصلة (يظهر فقط إذا فعّل المالك القفل)
+function PartnersUnlock({ token, onUnlocked }: { token: string; onUnlocked: () => void }) {
+  const [password, setPassword] = useState("");
+  const [busy, setBusy] = useState(false);
+
+  const submit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!password.trim() || busy) return;
+    setBusy(true);
+    try {
+      await unlockPartners(token, password);
+      onUnlocked();
+    } catch (error) {
+      fail(error);
+    } finally {
+      setBusy(false);
+      setPassword("");
+    }
+  };
+
+  return (
+    <form onSubmit={submit} className="max-w-sm mx-auto text-center py-12">
+      <div className="w-14 h-14 rounded-full bg-brand-blue/10 text-brand-blue flex items-center justify-center mx-auto mb-4">
+        <Lock className="h-7 w-7" />
+      </div>
+      <h2 className="text-lg font-bold mb-1">تبويب الشركاء مقفل</h2>
+      <p className="text-sm text-muted-foreground mb-6">
+        هذا القسم للمالك والمشرف المعتمد فقط. أدخل كلمة سر الشركاء للمتابعة.
+      </p>
+      <Input
+        type="password" autoComplete="off" dir="ltr"
+        className="h-12 text-center tracking-widest mb-3"
+        placeholder="كلمة سر الشركاء"
+        value={password} onChange={(e) => setPassword(e.target.value)} disabled={busy}
+      />
+      <Button type="submit" className="w-full h-12" disabled={busy || !password.trim()}>
+        {busy ? <Loader2 className="h-5 w-5 animate-spin" /> : "فتح التبويب"}
+      </Button>
+    </form>
+  );
+}
 
 const dateAr = (iso?: string) =>
   iso ? new Date(iso).toLocaleDateString("ar-SA-u-ca-gregory", { day: "numeric", month: "short", year: "numeric" }) : "";
@@ -280,6 +322,7 @@ export function PartnersPanel({ token }: { token: string }) {
   const [partners, setPartners] = useState<Partner[]>([]);
   const [leads, setLeads] = useState<Lead[]>([]);
   const [loading, setLoading] = useState(true);
+  const [locked, setLocked] = useState(false);
   const [statementFor, setStatementFor] = useState<string | null>(null);
   const [filter, setFilter] = useState<LeadStatus | "all" | "open">("open");
 
@@ -289,14 +332,24 @@ export function PartnersPanel({ token }: { token: string }) {
       const data = await loadPartnersData(token);
       setPartners(data.partners);
       setLeads(data.leads);
+      setLocked(false);
     } catch (error) {
-      fail(error);
+      // التبويب مقفل بكلمة سر منفصلة — نعرض نموذج الفتح بدل رسالة خطأ
+      if (error instanceof PartnersError && error.code === "partners_locked") {
+        setLocked(true);
+      } else {
+        fail(error);
+      }
     } finally {
       setLoading(false);
     }
   }, [token]);
 
   useEffect(() => { load(); }, [load]);
+
+  if (locked) {
+    return <PartnersUnlock token={token} onUnlocked={load} />;
+  }
 
   const changePartner = async (partner: Partner, changes: Partial<Partner>) => {
     try {
