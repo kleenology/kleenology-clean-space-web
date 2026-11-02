@@ -437,7 +437,7 @@ export default function PricingAdmin() {
             <QualityControlForm token={token} />
           </main>
         ) : mode === "partners" ? (
-          <main className="max-w-4xl mx-auto px-4 pt-6">
+          <main className="max-w-5xl mx-auto px-4 pt-6">
             <PartnersPanel token={token} />
           </main>
         ) : (
