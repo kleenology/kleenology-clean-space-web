@@ -7,7 +7,7 @@ import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import {
   Calculator, LogOut, Loader2, Copy, MessageCircle, RotateCcw,
-  Minus, Plus, Search, X, Package, PlusCircle, ClipboardList, ShieldCheck, ArrowRight, Handshake,
+  Minus, Plus, Search, X, Package, PlusCircle, ClipboardList, ShieldCheck, ArrowRight, ArrowLeft, Handshake,
 } from "lucide-react";
 import { toast } from "sonner";
 import { cn } from "@/lib/utils";
@@ -288,8 +288,13 @@ export default function PricingAdmin() {
                      width={135} height={36} />
               </div>
               <div className="min-w-0 hidden md:block">
-                <h1 className="font-bold leading-tight truncate text-sm">أداة المشرف</h1>
-                <p className="text-[11px] text-white/70 truncate">{catalogue.version}</p>
+                <h1 className="font-bold leading-tight truncate text-sm">
+                  {role === "admin" ? "لوحة الإدارة" : "أداة المشرف"}
+                </h1>
+                {/* سطر النسخة يبقى للمشرف فقط — لوحة الإدارة أنظف بدونه */}
+                {role !== "admin" && (
+                  <p className="text-[11px] text-white/70 truncate">{catalogue.version}</p>
+                )}
               </div>
             </div>
             <div className="flex items-center gap-2">
@@ -382,46 +387,53 @@ export default function PricingAdmin() {
             />
 
             <div>
-            <div className="text-center mb-6">
-              <h2 className="text-xl font-bold">وش تبي تسوي؟</h2>
-              <span className="block w-12 h-1 rounded-full bg-brand-yellow mx-auto mt-2" aria-hidden />
+            <div className="text-center mb-7">
+              <h2 className="text-2xl font-bold">وش تبي تسوي؟</h2>
+              <p className="text-sm text-muted-foreground mt-1.5">اختر المهمة وابدأ على طول</p>
+              <span className="block w-12 h-1 rounded-full bg-brand-yellow mx-auto mt-3" aria-hidden />
             </div>
-            <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
+            <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
               {([
                 {
                   key: "quote", Icon: Calculator, label: "تسعير",
                   desc: "اختر الباقات والبنود من قائمة الأسعار واطلع بعرض جاهز للعميل",
+                  iconClass: "bg-blue-100 text-blue-700", bar: "bg-blue-500",
                 },
                 {
                   key: "inspection", Icon: ClipboardList, label: "معاينة ميدانية",
                   desc: "سجّل معاينة الموقع بالمستويات والغرف وأرسل التقرير",
+                  iconClass: "bg-indigo-100 text-indigo-700", bar: "bg-indigo-500",
                 },
                 {
                   key: "qc", Icon: ShieldCheck, label: "فحص الجودة",
                   desc: "افحص الشغل بعد انتهائه بند بند مع الصور قبل التسليم للعميل",
+                  iconClass: "bg-emerald-100 text-emerald-700", bar: "bg-emerald-500",
                 },
                 {
                   key: "partners", Icon: Handshake, label: "الشركاء",
                   desc: "اعتمد المقاولين وتابع عملاءهم المحالين وأرسل كشف العمولات الشهري",
+                  iconClass: "bg-amber-100 text-amber-700", bar: "bg-amber-500",
                 },
-              ] as const).filter((c) => role === "admin" || c.key !== "partners").map(({ key, Icon, label, desc }) => (
+              ] as const).filter((c) => role === "admin" || c.key !== "partners").map(({ key, Icon, label, desc, iconClass, bar }) => (
                 <button
                   key={key}
                   type="button"
                   onClick={() => setMode(key)}
-                  className="group w-full h-full text-right bg-card border rounded-2xl p-5 shadow-clean hover:shadow-float hover:border-brand-blue hover:-translate-y-0.5 transition-all"
+                  className="group relative w-full h-full text-right bg-card border rounded-2xl p-5 pt-6 shadow-clean hover:shadow-float hover:-translate-y-1 transition-all overflow-hidden"
                 >
-                  <div className="flex items-center gap-3 mb-2">
-                    <div className="w-11 h-11 rounded-xl bg-gradient-to-br from-brand-blue to-brand-blue-dark text-white flex items-center justify-center shrink-0 shadow-clean">
-                      <Icon className="h-5 w-5" />
+                  {/* شريط لوني علوي يعطي كل مهمة هويتها */}
+                  <span className={cn("absolute inset-x-0 top-0 h-1.5", bar)} aria-hidden />
+                  <div className="flex items-center justify-between mb-3">
+                    <div className={cn("w-12 h-12 rounded-2xl flex items-center justify-center shrink-0", iconClass)}>
+                      <Icon className="h-6 w-6" />
                     </div>
-                    <span className="font-bold text-lg">{label}</span>
                     <NewBadge k={key} />
                   </div>
-                  <p className="text-sm text-muted-foreground leading-relaxed">{desc}</p>
-                  <span className="mt-3 inline-flex items-center gap-1 text-xs font-semibold text-brand-blue-dark opacity-0 group-hover:opacity-100 transition-opacity">
+                  <span className="font-bold text-lg block">{label}</span>
+                  <p className="text-sm text-muted-foreground leading-relaxed mt-1.5 min-h-[40px]">{desc}</p>
+                  <span className="mt-4 inline-flex items-center gap-1.5 text-sm font-semibold text-brand-blue-dark">
                     ابدأ
-                    <ArrowRight className="h-3.5 w-3.5" />
+                    <ArrowLeft className="h-4 w-4 transition-transform group-hover:-translate-x-1" />
                   </span>
                 </button>
               ))}
