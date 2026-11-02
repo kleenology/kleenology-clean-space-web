@@ -469,12 +469,12 @@ export function PartnersPanel({ token }: { token: string }) {
             Icon: Wallet, iconClass: "bg-emerald-100 text-emerald-700", valueClass: "text-emerald-700",
           },
         ].map(({ label, value, Icon, iconClass, valueClass }) => (
-          <div key={label} className="bg-card border rounded-2xl p-3 sm:p-4 shadow-clean flex flex-col items-center text-center gap-1.5">
-            <div className={cn("w-9 h-9 rounded-xl flex items-center justify-center shrink-0", iconClass)}>
+          <div key={label} className="bg-card border rounded-2xl p-3 sm:p-5 shadow-clean flex flex-col items-center text-center gap-1.5 sm:gap-2">
+            <div className={cn("w-10 h-10 rounded-xl flex items-center justify-center shrink-0", iconClass)}>
               <Icon className="h-5 w-5" />
             </div>
-            <div className={cn("text-lg sm:text-xl font-bold tabular-nums leading-none", valueClass)}>{value}</div>
-            <div className="text-[11px] sm:text-xs text-muted-foreground leading-tight">{label}</div>
+            <div className={cn("text-xl sm:text-2xl font-bold tabular-nums leading-none", valueClass)}>{value}</div>
+            <div className="text-xs sm:text-sm text-muted-foreground leading-tight">{label}</div>
           </div>
         ))}
       </div>
@@ -521,7 +521,7 @@ export function PartnersPanel({ token }: { token: string }) {
             ما فيه شركاء معتمدين بعد. أضف شريكاً من الزر فوق، أو أرسل رابط التسجيل: <b dir="ltr">kleenology.me/partners</b>
           </p>
         ) : (
-          <div className="space-y-3">
+          <div className="grid gap-3 md:grid-cols-2">
             {active.map((p) => {
               const mine = leads.filter((l) => l.partnerCode === p.id);
               const due = unsettledOrders(mine).reduce((s, { order }) => s + commissionOf(order.amount), 0);
@@ -539,22 +539,22 @@ export function PartnersPanel({ token }: { token: string }) {
                   {/* الرأس: صورة رمزية + الاسم والكود + الجوال */}
                   <div className="flex items-start gap-3">
                     <div className={cn(
-                      "w-11 h-11 rounded-full flex items-center justify-center font-bold text-base shrink-0 shadow-clean",
+                      "w-12 h-12 rounded-full flex items-center justify-center font-bold text-lg shrink-0 shadow-clean",
                       suspended ? "bg-muted text-muted-foreground" : "bg-gradient-to-br from-brand-blue to-brand-blue-dark text-white",
                     )}>
                       {p.company.trim().charAt(0) || "؟"}
                     </div>
                     <div className="min-w-0 flex-1">
                       <div className="flex items-center gap-2 flex-wrap">
-                        <span className="font-bold leading-tight">{p.company}</span>
-                        <span className="text-[11px] font-mono bg-muted rounded px-1.5 py-0.5 text-foreground/70" dir="ltr">{displayCode(p.id)}</span>
+                        <span className="text-base font-bold leading-tight">{p.company}</span>
+                        <span className="text-xs font-mono bg-muted rounded px-1.5 py-0.5 text-foreground/70" dir="ltr">{displayCode(p.id)}</span>
                         {suspended && (
-                          <span className="text-[11px] font-semibold text-red-700 bg-red-100 rounded-full px-2 py-0.5">
+                          <span className="text-xs font-semibold text-red-700 bg-red-100 rounded-full px-2 py-0.5">
                             {PARTNER_STATUS_LABEL.suspended}
                           </span>
                         )}
                       </div>
-                      <div className="text-xs text-muted-foreground mt-0.5">
+                      <div className="text-[13px] text-muted-foreground mt-1">
                         {p.contactName} · <span dir="ltr">{p.phone}</span>
                       </div>
                     </div>
@@ -567,28 +567,28 @@ export function PartnersPanel({ token }: { token: string }) {
                       { k: "مستحق", v: sar(due), tone: due > 0 ? "text-emerald-700" : "text-muted-foreground" },
                       { k: "مصروف", v: sar(earned), tone: "text-muted-foreground" },
                     ].map(({ k, v, tone }) => (
-                      <div key={k} className="rounded-lg bg-muted/50 px-2 py-1.5 text-center">
-                        <div className={cn("text-sm font-bold tabular-nums leading-none", tone)}>{v}</div>
-                        <div className="text-[10px] text-muted-foreground mt-0.5">{k}</div>
+                      <div key={k} className="rounded-lg bg-muted/50 px-2 py-2 text-center">
+                        <div className={cn("text-base font-bold tabular-nums leading-none", tone)}>{v}</div>
+                        <div className="text-[11px] text-muted-foreground mt-1">{k}</div>
                       </div>
                     ))}
                   </div>
 
                   {/* شريط الأزرار: الكشف بارز، والباقي أيقونات مرتبة بحدود */}
-                  <div className="flex items-center gap-1.5 pt-2.5 border-t">
-                    <Button size="sm" variant="outline" className="h-9"
+                  <div className="flex items-center gap-1.5 pt-3 border-t">
+                    <Button size="sm" variant="outline" className="h-10 text-sm"
                             onClick={() => setStatementFor(statementFor === p.id ? null : p.id)}>
                       <FileText className="h-4 w-4 ml-1.5" />الكشف الشهري
                     </Button>
                     <div className="flex items-center gap-1 mr-auto">
                       <a href={whatsappUrl(p.phone, approvalMessage(p))} target="_blank" rel="noopener noreferrer"
                          aria-label="إرسال الكود والرابط واتساب" title="إرسال الكود والرابط"
-                         className="h-9 w-9 rounded-lg border flex items-center justify-center hover:bg-green-50 transition-colors">
+                         className="h-10 w-10 rounded-lg border flex items-center justify-center hover:bg-green-50 transition-colors">
                         <MessageCircle className="h-4 w-4 text-green-600" />
                       </a>
                       <button type="button" aria-label="نسخ رابط الشريك" title="نسخ رابط الشريك"
                               onClick={() => navigator.clipboard.writeText(partnerLink(p.id)).then(() => toast.success("تم نسخ رابط الشريك"))}
-                              className="h-9 w-9 rounded-lg border flex items-center justify-center hover:bg-muted transition-colors">
+                              className="h-10 w-10 rounded-lg border flex items-center justify-center hover:bg-muted transition-colors">
                         <Copy className="h-4 w-4" />
                       </button>
                       <button type="button" aria-label="الآيبان" title={p.iban || "أضف الآيبان"}
@@ -596,14 +596,14 @@ export function PartnersPanel({ token }: { token: string }) {
                                 const iban = window.prompt(`آيبان ${p.company}`, p.iban || "SA");
                                 if (iban !== null) changePartner(p, { iban: iban.toUpperCase().replace(/\s/g, "") });
                               }}
-                              className={cn("h-9 w-9 rounded-lg border flex items-center justify-center hover:bg-muted transition-colors",
+                              className={cn("h-10 w-10 rounded-lg border flex items-center justify-center hover:bg-muted transition-colors",
                                 !p.iban && "border-amber-300 bg-amber-50")}>
                         <Pencil className={cn("h-4 w-4", !p.iban && "text-amber-600")} />
                       </button>
                       <button type="button" aria-label={suspended ? "تفعيل الشريك" : "إيقاف الشريك"}
                               title={suspended ? "تفعيل الشريك" : "إيقاف الشريك"}
                               onClick={() => changePartner(p, { status: suspended ? "approved" : "suspended" })}
-                              className="h-9 w-9 rounded-lg border flex items-center justify-center hover:bg-muted transition-colors">
+                              className="h-10 w-10 rounded-lg border flex items-center justify-center hover:bg-muted transition-colors">
                         {suspended ? <Play className="h-4 w-4 text-green-600" /> : <Ban className="h-4 w-4 text-red-600" />}
                       </button>
                     </div>
