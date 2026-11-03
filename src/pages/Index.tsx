@@ -14,6 +14,7 @@ import { Contact } from "@/components/Contact";
 import { Footer } from "@/components/Footer";
 import { MessageCircle } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { useEffect } from "react";
 import { useTranslation } from "react-i18next";
 import { SEO } from "@/components/SEO";
 import { Reveal, ScrollProgress } from "@/components/Reveal";
@@ -23,7 +24,17 @@ const Index = () => {
   const { t, i18n } = useTranslation();
   
   console.log('Index component rendering, i18n language:', i18n.language);
-  
+
+  // عند الوصول للرئيسية برابط قسم (/#services مثلاً) ننزل للقسم بعد رسم الصفحة
+  useEffect(() => {
+    const id = window.location.hash.replace("#", "");
+    if (!id || id === "home") return;
+    const timer = setTimeout(() => {
+      document.getElementById(id)?.scrollIntoView({ behavior: "smooth" });
+    }, 600);
+    return () => clearTimeout(timer);
+  }, []);
+
   const handleWhatsAppClick = () => {
     if ((window as any).pixelTracker) {
       (window as any).pixelTracker.trackWhatsAppClick();

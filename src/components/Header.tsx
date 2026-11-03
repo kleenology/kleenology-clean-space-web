@@ -49,16 +49,21 @@ export const Header = ({ onLogoClick, onNavClick }: HeaderProps) => {
     sectionId: string,
     isMobile = false,
   ) => {
+    e.preventDefault();
     if (onNavClick) onNavClick();
     if (isMobile) setOpen(false);
     if (onHomePage()) {
-      // داخل الرئيسية: تمرير سلس بدل قفزة الرابط
-      e.preventDefault();
+      // داخل الرئيسية: تمرير سلس للقسم
       setTimeout(() => {
         document.getElementById(sectionId)?.scrollIntoView({ behavior: "smooth" });
       }, isMobile ? 200 : 100);
+    } else {
+      // خارج الرئيسية: انتقال صريح للرئيسية ثم للقسم — لا نعتمد على سلوك الرابط
+      // لأن قائمة الموبايل (Drawer) قد تبتلع الضغطة فلا يحدث انتقال
+      setTimeout(() => {
+        window.location.href = `/#${sectionId}`;
+      }, isMobile ? 180 : 0);
     }
-    // خارج الرئيسية: نترك المتصفح يتبع href="/#sectionId" فينتقل وينزل للقسم
   };
 
   return (
