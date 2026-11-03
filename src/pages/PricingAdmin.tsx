@@ -7,7 +7,7 @@ import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import {
   Calculator, LogOut, Loader2, Copy, MessageCircle, RotateCcw,
-  Minus, Plus, Search, X, Package, PlusCircle, ClipboardList, ShieldCheck, ArrowRight, ArrowLeft, Handshake,
+  Minus, Plus, Search, X, Package, PlusCircle, ClipboardList, ShieldCheck, ArrowRight, ArrowLeft, Handshake, BookOpen,
 } from "lucide-react";
 import { toast } from "sonner";
 import { cn } from "@/lib/utils";
@@ -22,6 +22,7 @@ import { CustomerSearch } from "@/components/pricing/CustomerSearch";
 import { InspectionForm } from "@/components/pricing/InspectionForm";
 import { QualityControlForm } from "@/components/pricing/QualityControlForm";
 import { PartnersPanel } from "@/components/pricing/PartnersPanel";
+import { WorkGuide } from "@/components/pricing/WorkGuide";
 import { loadPartnersData } from "@/lib/partners/api";
 
 // التوكن في localStorage لا sessionStorage: الأخير ينمسح بإغلاق التبويب،
@@ -76,7 +77,7 @@ export default function PricingAdmin() {
   const [customer, setCustomer] = useState<CustomerInfo>(emptyCustomer);
   const [search, setSearch] = useState("");
   // لا وضع مختاراً عند الدخول — المشرف يقرر أولاً ماذا يفعل
-  const [mode, setMode] = useState<"quote" | "inspection" | "qc" | "partners" | null>(null);
+  const [mode, setMode] = useState<"quote" | "inspection" | "qc" | "partners" | "guide" | null>(null);
   const [openGroup, setOpenGroup] = useState<string | null>(null);
   const [openInspectionId, setOpenInspectionId] = useState<string | null>(null);
   // البحث في الرابط: يعود كما هو بعد فتح سجل، ويصلح للحفظ والمشاركة
@@ -320,6 +321,7 @@ export default function PricingAdmin() {
               { key: "quote", label: "تسعير", Icon: Calculator },
               { key: "inspection", label: "معاينة", Icon: ClipboardList },
               { key: "qc", label: "فحص الجودة", Icon: ShieldCheck },
+              { key: "guide", label: "الدليل", Icon: BookOpen },
               { key: "partners", label: "الشركاء", Icon: Handshake },
             ] as const).filter((t) => role === "admin" || t.key !== "partners").map(({ key, label, Icon }) => (
               <button
@@ -410,6 +412,11 @@ export default function PricingAdmin() {
                   iconClass: "bg-emerald-100 text-emerald-700", bar: "bg-emerald-500",
                 },
                 {
+                  key: "guide", Icon: BookOpen, label: "دليل العمل",
+                  desc: "خطوات العمل الصحيحة، التوثيق بالصور، نطاق الخدمة، وقائمة التحقق قبل التسليم",
+                  iconClass: "bg-rose-100 text-rose-700", bar: "bg-rose-500",
+                },
+                {
                   key: "partners", Icon: Handshake, label: "الشركاء",
                   desc: "اعتمد المقاولين وتابع عملاءهم المحالين وأرسل كشف العمولات الشهري",
                   iconClass: "bg-amber-100 text-amber-700", bar: "bg-amber-500",
@@ -447,6 +454,10 @@ export default function PricingAdmin() {
         ) : mode === "qc" ? (
           <main className="max-w-6xl mx-auto px-4 pt-6">
             <QualityControlForm token={token} />
+          </main>
+        ) : mode === "guide" ? (
+          <main className="max-w-3xl mx-auto px-4 pt-6">
+            <WorkGuide />
           </main>
         ) : mode === "partners" ? (
           <main className="max-w-5xl mx-auto px-4 pt-6">
