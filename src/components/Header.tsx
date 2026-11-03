@@ -38,12 +38,27 @@ export const Header = ({ onLogoClick, onNavClick }: HeaderProps) => {
     document.documentElement.dir = newLang === 'ar' ? 'rtl' : 'ltr';
   };
 
-  // Helper for smooth mobile nav
-  const handleMobileNav = (sectionId: string) => {
-    setOpen(false);
-    setTimeout(() => {
-      document.getElementById(sectionId)?.scrollIntoView({ behavior: 'smooth' });
-    }, 200);
+  // روابط الأقسام (#home, #services ...) تعمل بالتمرير داخل الصفحة الرئيسية فقط.
+  // من أي صفحة أخرى (مدونة، من نحن...) لازم ننتقل للرئيسية أولاً ثم ننزل للقسم،
+  // وإلا ما يصير شيء لأن القسم غير موجود في تلك الصفحة.
+  const onHomePage = () =>
+    typeof window !== "undefined" && window.location.pathname === "/";
+
+  const navToSection = (
+    e: React.MouseEvent<HTMLAnchorElement>,
+    sectionId: string,
+    isMobile = false,
+  ) => {
+    if (onNavClick) onNavClick();
+    if (isMobile) setOpen(false);
+    if (onHomePage()) {
+      // داخل الرئيسية: تمرير سلس بدل قفزة الرابط
+      e.preventDefault();
+      setTimeout(() => {
+        document.getElementById(sectionId)?.scrollIntoView({ behavior: "smooth" });
+      }, isMobile ? 200 : 100);
+    }
+    // خارج الرئيسية: نترك المتصفح يتبع href="/#sectionId" فينتقل وينزل للقسم
   };
 
   return (
@@ -69,17 +84,9 @@ export const Header = ({ onLogoClick, onNavClick }: HeaderProps) => {
         </div>
         {/* Desktop Nav */}
         <nav className={`hidden lg:flex items-center ${isRTL ? 'flex-row-reverse gap-x-6 xl:gap-x-8' : 'flex-row gap-x-6 xl:gap-x-8'}`}>
-          <a 
-            href="#home" 
-            onClick={(e) => {
-              e.preventDefault();
-              if (onNavClick) {
-                onNavClick();
-              }
-              setTimeout(() => {
-                document.getElementById('home')?.scrollIntoView({ behavior: 'smooth' });
-              }, 100);
-            }}
+          <a
+            href="/#home"
+            onClick={(e) => navToSection(e, 'home')}
             className="text-foreground hover:text-primary transition-colors cursor-pointer font-medium"
           >
             {t('nav.home')}
@@ -90,47 +97,23 @@ export const Header = ({ onLogoClick, onNavClick }: HeaderProps) => {
           >
             {t('nav.about')}
           </a>
-          <a 
-            href="#services" 
-            onClick={(e) => {
-              e.preventDefault();
-              if (onNavClick) {
-                onNavClick();
-              }
-              setTimeout(() => {
-                document.getElementById('services')?.scrollIntoView({ behavior: 'smooth' });
-              }, 100);
-            }}
+          <a
+            href="/#services"
+            onClick={(e) => navToSection(e, 'services')}
             className="text-foreground hover:text-primary transition-colors cursor-pointer font-medium"
           >
             {t('nav.services')}
           </a>
-          <a 
-            href="#showcase" 
-            onClick={(e) => {
-              e.preventDefault();
-              if (onNavClick) {
-                onNavClick();
-              }
-              setTimeout(() => {
-                document.getElementById('showcase')?.scrollIntoView({ behavior: 'smooth' });
-              }, 100);
-            }}
+          <a
+            href="/#showcase"
+            onClick={(e) => navToSection(e, 'showcase')}
             className="text-foreground hover:text-primary transition-colors cursor-pointer font-medium"
           >
             {t('nav.showcase')}
           </a>
           <a
-            href="#contact"
-            onClick={(e) => {
-              e.preventDefault();
-              if (onNavClick) {
-                onNavClick();
-              }
-              setTimeout(() => {
-                document.getElementById('contact')?.scrollIntoView({ behavior: 'smooth' });
-              }, 100);
-            }}
+            href="/#contact"
+            onClick={(e) => navToSection(e, 'contact')}
             className="text-foreground hover:text-primary transition-colors cursor-pointer font-medium"
           >
             {t('nav.contact')}
@@ -182,14 +165,8 @@ export const Header = ({ onLogoClick, onNavClick }: HeaderProps) => {
               <DrawerDescription className="sr-only">Main navigation for Kleenology website</DrawerDescription>
               <nav className="flex flex-col gap-4 mt-4">
                 <a
-                  href="#home"
-                  onClick={(e) => {
-                    e.preventDefault();
-                    if (onNavClick) {
-                      onNavClick();
-                    }
-                    handleMobileNav('home');
-                  }}
+                  href="/#home"
+                  onClick={(e) => navToSection(e, 'home', true)}
                   className="text-lg font-medium text-foreground hover:text-primary transition-colors"
                 >
                   {t('nav.home')}
@@ -202,40 +179,22 @@ export const Header = ({ onLogoClick, onNavClick }: HeaderProps) => {
                   {t('nav.about')}
                 </a>
                 <a
-                  href="#services"
-                  onClick={(e) => {
-                    e.preventDefault();
-                    if (onNavClick) {
-                      onNavClick();
-                    }
-                    handleMobileNav('services');
-                  }}
+                  href="/#services"
+                  onClick={(e) => navToSection(e, 'services', true)}
                   className="text-lg font-medium text-foreground hover:text-primary transition-colors"
                 >
                   {t('nav.services')}
                 </a>
                 <a
-                  href="#showcase"
-                  onClick={(e) => {
-                    e.preventDefault();
-                    if (onNavClick) {
-                      onNavClick();
-                    }
-                    handleMobileNav('showcase');
-                  }}
+                  href="/#showcase"
+                  onClick={(e) => navToSection(e, 'showcase', true)}
                   className="text-lg font-medium text-foreground hover:text-primary transition-colors"
                 >
                   {t('nav.showcase')}
                 </a>
                 <a
-                  href="#contact"
-                  onClick={(e) => {
-                    e.preventDefault();
-                    if (onNavClick) {
-                      onNavClick();
-                    }
-                    handleMobileNav('contact');
-                  }}
+                  href="/#contact"
+                  onClick={(e) => navToSection(e, 'contact', true)}
                   className="text-lg font-medium text-foreground hover:text-primary transition-colors"
                 >
                   {t('nav.contact')}
