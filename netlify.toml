@@ -98,6 +98,13 @@
   [headers.values]
     Cache-Control = "public, max-age=31536000, immutable"
 
+# لوحة الإدارة أداة داخلية للمشرفين — لا تُخزَّن أبداً حتى يحصلوا على آخر نسخة
+# فور كل نشر (وإلا يمسك المتصفح نسخة قديمة تنقصها تبويبات مثل «فحص الجودة»).
+[[headers]]
+  for = "/admin/*"
+  [headers.values]
+    Cache-Control = "no-store, max-age=0, must-revalidate"
+
 [[headers]]
   for = "/*.js"
   [headers.values]
