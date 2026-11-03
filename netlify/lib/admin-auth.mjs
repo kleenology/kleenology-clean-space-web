@@ -99,8 +99,9 @@ export function verifyToken(token) {
   try {
     const { exp, role } = JSON.parse(Buffer.from(payload, "base64url").toString());
     if (typeof exp !== "number" || Date.now() > exp) return null;
-    // التوكنات القديمة بلا دور تُعتبر إدارة
-    return { exp, role: role === "supervisor" ? "supervisor" : "admin" };
+    // الدور صريح فقط: الإدارة توكنها يحمل role:"admin". أي توكن بلا دور صريح
+    // (قديم) يُعامل كمشرف — أقل صلاحية، فلا يصل للشركاء إلا جلسة إدارة فعلية.
+    return { exp, role: role === "admin" ? "admin" : "supervisor" };
   } catch {
     return null;
   }

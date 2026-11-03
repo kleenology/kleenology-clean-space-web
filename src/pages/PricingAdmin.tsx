@@ -141,6 +141,11 @@ export default function PricingAdmin() {
     if (openGroup) openPanelRef.current?.scrollIntoView({ behavior: "smooth", block: "start" });
   }, [openGroup]);
 
+  // حارس إضافي: جلسة غير إدارة لا تفتح تبويب الشركاء أبداً مهما تغيّرت الحالة
+  useEffect(() => {
+    if (role !== "admin" && mode === "partners") setMode(null);
+  }, [role, mode]);
+
   const patch = useCallback((changes: Partial<QuoteInput>) => {
     setInput((current) => (current ? { ...current, ...changes } : current));
   }, []);
@@ -459,7 +464,7 @@ export default function PricingAdmin() {
           <main className="max-w-3xl mx-auto px-4 pt-6">
             <WorkGuide />
           </main>
-        ) : mode === "partners" ? (
+        ) : mode === "partners" && role === "admin" ? (
           <main className="max-w-5xl mx-auto px-4 pt-6">
             <PartnersPanel token={token} />
           </main>
