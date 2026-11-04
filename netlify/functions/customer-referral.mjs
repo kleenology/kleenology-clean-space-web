@@ -1,38 +1,21 @@
-// إحالة العملاء: كل عميل يحصل كوداً تلقائياً مع إرسال تقريره. صديقه يحجز
-// بالكود فيأخذ خصماً، والعميل المحيل يأخذ مكافأة على طلبه الجاي.
+// إحالة العملاء: كل عميل يحصل كوداً تلقائياً (يُنشأ عند حفظ الفحص). صديقه
+// يحجز بالكود فيأخذ خصماً، والعميل المحيل يأخذ مكافأة على طلبه الجاي.
 //   POST {action:"ensure", reportId}   [إدارة] إنشاء/إرجاع كود إحالة لتقرير
 //   GET  ?code=X                        [عام] اسم العميل المحيل (لصفحة الصديق)
 //   POST {action:"friend", code, ...}   [عام] تسجيل صديق حجز عبر الكود
 //
 // لا نكشف جوال العميل المحيل. المعرّفات عشوائية يصعب تخمينها.
 
-import crypto from "node:crypto";
 import { jsonResponse, requireSession } from "../lib/admin-auth.mjs";
 import { rateLimited, clientIp } from "../lib/rate-limit.mjs";
-import { recordStore, MAX_BODY_BYTES } from "../lib/blob-records.mjs";
-import { normalizePhone } from "../lib/search-text.mjs";
+import { MAX_BODY_BYTES } from "../lib/blob-records.mjs";
 import { notifyAdmin } from "../lib/notify.mjs";
-
-const REF_STORE = "customer-referrals";
-const CHECKS_STORE = "pricing-quality-checks";
-
-export const FRIEND_DISCOUNT = 15;   // خصم الصديق على أول طلب
-export const REFERRER_REWARD = 15;   // مكافأة العميل المحيل على طلبه الجاي
-
-const clean = (s, n) => (typeof s === "string" ? s.trim().slice(0, n) : "");
-const validPhone = (p) => normalizePhone(p).length >= 9;
-
-async function genCode(store) {
-  for (let i = 0; i < 6; i++) {
-    const code = `C-${crypto.randomBytes(3).toString("hex").toUpperCase()}`;
-    const exists = await store.get(code, { type: "json" }).catch(() => null);
-    if (!exists) return code;
-  }
-  return `C-${Date.now().toString(36).toUpperCase()}`;
-}
+import {
+  referralStore, ensureReferral, clean, validPhone, FRIEND_DISCOUNT, REFERRER_REWARD,
+} from "../lib/customer-referrals.mjs";
 
 export default async (request) => {
-  const refs = recordStore(REF_STORE);
+  const refs = referralStore();
 
   try {
     // اسم المحيل للصفحة العامة للصديق
@@ -51,30 +34,11 @@ export default async (request) => {
     let payload;
     try { payload = JSON.parse(raw); } catch { return jsonResponse({ error: "invalid_body" }, 400); }
 
-    // إنشاء/إرجاع كود لتقرير — إدارة فقط، idempotent عبر فهرس عكسي بالتقرير
+    // إنشاء/إرجاع كود لتقرير — إدارة فقط
     if (payload.action === "ensure") {
       if (!requireSession(request)) return jsonResponse({ error: "unauthorized" }, 401);
-      const reportId = clean(payload.reportId, 120);
-      if (!reportId) return jsonResponse({ error: "missing_report" }, 400);
-
-      const existing = await refs.get(`idx:${reportId}`, { type: "json" }).catch(() => null);
-      if (existing?.code) {
-        return jsonResponse({ code: existing.code, friendDiscount: FRIEND_DISCOUNT, referrerReward: REFERRER_REWARD });
-      }
-
-      const check = await recordStore(CHECKS_STORE).get(reportId, { type: "json" }).catch(() => null);
-      if (!check) return jsonResponse({ error: "not_found" }, 404);
-
-      const code = await genCode(refs);
-      await refs.setJSON(code, {
-        code,
-        referrerName: clean(check.customerName, 80),
-        referrerPhone: clean(check.phone, 20),
-        reportId,
-        createdAt: new Date().toISOString(),
-        friends: [],
-      });
-      await refs.setJSON(`idx:${reportId}`, { code });
+      const code = await ensureReferral(payload.reportId);
+      if (!code) return jsonResponse({ error: "missing_fields" }, 400);
       return jsonResponse({ code, friendDiscount: FRIEND_DISCOUNT, referrerReward: REFERRER_REWARD });
     }
 
