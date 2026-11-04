@@ -12,6 +12,7 @@
 /api/deposit/config    /.netlify/functions/deposit-config    200
 /api/deposit/create    /.netlify/functions/create-deposit    200
 /api/payment/status    /.netlify/functions/payment-status    200
+/api/summary/test    /.netlify/functions/summary-test    200
 
 /*    /index.html   200
 /terms-and-conditions    /index.html   200
