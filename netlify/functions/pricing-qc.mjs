@@ -5,6 +5,7 @@ import { isConfigured, requireSession, jsonResponse } from "../lib/admin-auth.mj
 import {
   recordStore, recentKeys, summarizeKeys, searchRecords, newKey, MAX_BODY_BYTES,
 } from "../lib/blob-records.mjs";
+import { ensureReferral } from "../lib/customer-referrals.mjs";
 
 const STORE = "pricing-quality-checks";
 
@@ -73,6 +74,8 @@ export default async (request) => {
       const { id: _ignored, ...rest } = payload;
       const record = { ...rest, savedAt: new Date().toISOString() };
       await store.setJSON(key, record);
+      // كود الإحالة يُنشأ تلقائياً مع الحفظ (لتقرير فيه اسم وجوال) — تكميلي
+      await ensureReferral(key, record).catch(() => {});
       return jsonResponse({ id: key, savedAt: record.savedAt });
     }
 
