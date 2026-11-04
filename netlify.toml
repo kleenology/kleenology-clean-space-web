@@ -82,6 +82,11 @@
   to = "/.netlify/functions/qc-report"
   status = 200
 
+[[redirects]]
+  from = "/api/referral"
+  to = "/.netlify/functions/customer-referral"
+  status = 200
+
 # القالب النظيف (يكتبه scripts/prerender.mjs) — index.html صار الرئيسية المصيَّرة
 [[redirects]]
   from = "/*"

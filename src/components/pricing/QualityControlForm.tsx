@@ -240,8 +240,16 @@ export function QualityControlForm({ token }: { token: string }) {
   };
 
   // يرسل رابط التقرير العام (بلا بيانات داخلية) لجوال العميل على الواتس
-  const sendToCustomer = () => {
+  const sendToCustomer = async () => {
     if (!savedId) return;
+    // كود الإحالة يُنشأ تلقائياً مع إرسال التقرير (idempotent) ليظهر للعميل
+    try {
+      await fetch("/api/referral", {
+        method: "POST",
+        headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` },
+        body: JSON.stringify({ action: "ensure", reportId: savedId }),
+      });
+    } catch { /* الإحالة تكميلية — لا تمنع إرسال التقرير */ }
     const link = customerReportUrl(savedId);
     const name = data.customerName.trim();
     const msg = `مرحباً${name ? " " + name : ""} 🌿\nهذا تقرير جودة التنظيف من كلينولوجي:\n${link}\nشكراً لثقتك بنا 🙏`;

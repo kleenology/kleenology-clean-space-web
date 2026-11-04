@@ -29,6 +29,7 @@ import QcReport from "./pages/QcReport";
 import Partners from "./pages/Partners";
 import PartnerReferral from "./pages/PartnerReferral";
 import CustomerReport from "./pages/CustomerReport";
+import FriendReferral from "./pages/FriendReferral";
 import ApartmentCleaning from "./pages/ApartmentCleaning";
 import VillaCleaning from "./pages/VillaCleaning";
 import { PixelTracker } from "@/components/PixelTracker";
@@ -149,6 +150,8 @@ const App = ({ wrapRouter = browserRouter }: { wrapRouter?: RouterWrap }) => {
               <Route path="/p/:code" element={<PartnerReferral />} />
               {/* تقرير جودة التنظيف للعميل — عام بلا تسجيل دخول، بلا بيانات داخلية */}
               <Route path="/report/:id" element={<CustomerReport />} />
+              {/* صفحة إحالة صديق — خصم للصديق ومكافأة للعميل المحيل */}
+              <Route path="/ref/:code" element={<FriendReferral />} />
               {/* صفحة داخلية لمشرف التسعير — محمية بكلمة مرور ومحجوبة عن محركات البحث */}
               <Route path="/admin/pricing" element={<PricingAdmin />} />
               <Route path="/admin/pricing/qc/:id" element={<QcReport />} />

@@ -2,11 +2,14 @@ import { useEffect, useMemo, useState } from "react";
 import { useParams } from "react-router-dom";
 import { SEO } from "@/components/SEO";
 import { Button } from "@/components/ui/button";
-import { CheckCircle2, Loader2, MessageCircle, CalendarCheck, ShieldCheck, MapPin, Calendar, ImageOff } from "lucide-react";
+import { CheckCircle2, Loader2, MessageCircle, CalendarCheck, ShieldCheck, MapPin, Calendar, ImageOff, Gift, Copy } from "lucide-react";
+import { toast } from "sonner";
 import { scoreOf, checklistOf, type QualityCheck } from "@/lib/pricing/qcReport";
 import { kindLabel } from "@/lib/pricing/qcChecklist";
 
 const WHATSAPP_NUMBER = "966537519929";
+const FRIEND_DISCOUNT = 15;   // خصم الصديق
+const REFERRER_REWARD = 15;   // مكافأة العميل على طلبه الجاي
 
 interface ReportData {
   id: string;
@@ -18,6 +21,7 @@ interface ReportData {
   customItems?: QualityCheck["customItems"];
   results: QualityCheck["results"];
   photos: string[];
+  referralCode: string | null;
   savedAt: string;
 }
 
@@ -126,6 +130,36 @@ export default function CustomerReport() {
                 </div>
               </div>
             )}
+
+            {/* شارك واربح — كود إحالة العميل */}
+            {report.referralCode && (() => {
+              const link = `${window.location.origin}/ref/${report.referralCode}`;
+              const shareMsg = `أنصحك بكلينولوجي لخدمات التنظيف بالرياض 🌿\nاحجز من رابطي وخذ خصم ${FRIEND_DISCOUNT}٪ على أول طلب:\n${link}`;
+              return (
+                <div className="bg-brand-yellow/15 border border-brand-yellow/50 rounded-2xl shadow-clean p-5">
+                  <h2 className="font-bold mb-1 flex items-center gap-2">
+                    <Gift className="h-5 w-5 text-brand-blue-deeper" /> شارك واربح
+                  </h2>
+                  <p className="text-sm text-foreground/80 mb-4 leading-relaxed">
+                    صديقك ياخذ خصم <b>{FRIEND_DISCOUNT}٪</b> على أول طلب لما يحجز من رابطك،
+                    وأنت تاخذ خصم <b>{REFERRER_REWARD}٪</b> على طلبك الجاي. 🎉
+                  </p>
+                  <div className="flex items-center gap-2 bg-background border rounded-lg px-3 py-2 mb-3">
+                    <span className="text-xs text-muted-foreground truncate flex-1" dir="ltr">{link}</span>
+                    <button type="button" aria-label="نسخ الرابط"
+                            onClick={() => navigator.clipboard.writeText(link).then(() => toast.success("تم نسخ الرابط"))}
+                            className="shrink-0 text-muted-foreground hover:text-foreground">
+                      <Copy className="h-4 w-4" />
+                    </button>
+                  </div>
+                  <a href={`https://wa.me/?text=${encodeURIComponent(shareMsg)}`} target="_blank" rel="noopener noreferrer">
+                    <Button className="w-full h-12 bg-[#25D366] hover:bg-[#1da851] text-white">
+                      <MessageCircle className="h-4 w-4 ml-2" /> شارك مع أصدقائك عبر واتساب
+                    </Button>
+                  </a>
+                </div>
+              );
+            })()}
 
             {/* شكر ودعوة لإعادة الحجز */}
             <div className="bg-card border rounded-2xl shadow-clean p-5 text-center">
