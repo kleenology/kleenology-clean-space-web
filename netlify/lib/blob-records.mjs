@@ -11,9 +11,11 @@ export const MAX_SEARCH_SCAN = 500;
 export const MAX_BODY_BYTES = 64 * 1024;
 
 // المفتاح يبدأ بالطابع الزمني، فترتيب المفاتيح تنازلياً = الأحدث أولاً
-// بلا حاجة لقراءة كل سجل لمعرفة تاريخه.
+// بلا حاجة لقراءة كل سجل لمعرفة تاريخه. نستبدل «:» و«.» بـ«-» حتى يكون
+// المفتاح آمناً داخل الروابط (تقرير العميل يُشارَك على الواتس بلا ترميز ملتبس).
 export function newKey() {
-  return `${new Date().toISOString()}-${Math.random().toString(36).slice(2, 8)}`;
+  const stamp = new Date().toISOString().replace(/[:.]/g, "-");
+  return `${stamp}-${Math.random().toString(36).slice(2, 8)}`;
 }
 
 export function recordStore(name) {
