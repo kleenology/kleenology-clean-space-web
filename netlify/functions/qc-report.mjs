@@ -12,6 +12,7 @@ import { recordStore } from "../lib/blob-records.mjs";
 
 const CHECKS_STORE = "pricing-quality-checks";
 const PHOTOS_STORE = "pricing-qc-photos";
+const REF_STORE = "customer-referrals";
 
 function photoStore() {
   return getStore({ name: PHOTOS_STORE, consistency: "strong" });
@@ -61,6 +62,9 @@ export default async (request) => {
       });
     }
 
+    // كود إحالة العميل إن أُنشئ (مخزّن بفهرس عكسي بالتقرير)
+    const refIdx = await recordStore(REF_STORE).get(`idx:${id}`, { type: "json" }).catch(() => null);
+
     // بيانات التقرير للعميل — منقّاة
     return jsonResponse({
       report: {
@@ -73,6 +77,7 @@ export default async (request) => {
         customItems: Array.isArray(record.customItems) ? record.customItems : undefined,
         results: publicResults(record.results),
         photos: photoKeys,
+        referralCode: refIdx?.code ?? null,
         savedAt: record.savedAt ?? "",
       },
     });
