@@ -167,3 +167,8 @@ export function emptyCheck(
 export function reportUrl(id: string): string {
   return `${window.location.origin}/admin/pricing/qc/${encodeURIComponent(id)}`;
 }
+
+/** رابط التقرير العام للعميل — يفتح بلا تسجيل دخول، بلا بيانات داخلية */
+export function customerReportUrl(id: string): string {
+  return `${window.location.origin}/report/${encodeURIComponent(id)}`;
+}

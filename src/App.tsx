@@ -28,6 +28,7 @@ import PricingAdmin from "./pages/PricingAdmin";
 import QcReport from "./pages/QcReport";
 import Partners from "./pages/Partners";
 import PartnerReferral from "./pages/PartnerReferral";
+import CustomerReport from "./pages/CustomerReport";
 import ApartmentCleaning from "./pages/ApartmentCleaning";
 import VillaCleaning from "./pages/VillaCleaning";
 import { PixelTracker } from "@/components/PixelTracker";
@@ -146,6 +147,8 @@ const App = ({ wrapRouter = browserRouter }: { wrapRouter?: RouterWrap }) => {
               <Route path="/partners" element={<Partners />} />
               {/* رابط إحالة الشريك: kleenology.me/p/P-XXXXX */}
               <Route path="/p/:code" element={<PartnerReferral />} />
+              {/* تقرير جودة التنظيف للعميل — عام بلا تسجيل دخول، بلا بيانات داخلية */}
+              <Route path="/report/:id" element={<CustomerReport />} />
               {/* صفحة داخلية لمشرف التسعير — محمية بكلمة مرور ومحجوبة عن محركات البحث */}
               <Route path="/admin/pricing" element={<PricingAdmin />} />
               <Route path="/admin/pricing/qc/:id" element={<QcReport />} />

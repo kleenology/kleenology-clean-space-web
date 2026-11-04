@@ -4,9 +4,10 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import {
-  ArrowRight, Camera, Copy, FileText, HardHat, Link2, ListChecks, Loader2,
+  ArrowRight, Camera, Copy, FileText, HardHat, Link2, ListChecks, Loader2, MessageCircle,
   PenLine, RefreshCw, Save, Sofa, Sparkles, Trash2, X,
 } from "lucide-react";
+import { toWhatsAppNumber } from "@/lib/pricing/quoteMessage";
 import { toast } from "sonner";
 import { cn } from "@/lib/utils";
 import {
@@ -14,7 +15,7 @@ import {
   type ChecklistItem, type ServiceKind, type Verdict,
 } from "@/lib/pricing/qcChecklist";
 import {
-  buildManagementReport, checklistOf, emptyCheck, reportUrl, scoreOf,
+  buildManagementReport, checklistOf, emptyCheck, reportUrl, customerReportUrl, scoreOf,
   type QualityCheck,
 } from "@/lib/pricing/qcReport";
 import {
@@ -236,6 +237,17 @@ export function QualityControlForm({ token }: { token: string }) {
   const copyLink = () => {
     if (!savedId) return;
     copy(reportUrl(savedId), "تم نسخ رابط التقرير");
+  };
+
+  // يرسل رابط التقرير العام (بلا بيانات داخلية) لجوال العميل على الواتس
+  const sendToCustomer = () => {
+    if (!savedId) return;
+    const link = customerReportUrl(savedId);
+    const name = data.customerName.trim();
+    const msg = `مرحباً${name ? " " + name : ""} 🌿\nهذا تقرير جودة التنظيف من كلينولوجي:\n${link}\nشكراً لثقتك بنا 🙏`;
+    const number = toWhatsAppNumber(data.phone);
+    const base = number ? `https://wa.me/${number}?text=` : `https://wa.me/?text=`;
+    window.open(base + encodeURIComponent(msg), "_blank");
   };
 
   const reset = () => {
@@ -654,10 +666,19 @@ export function QualityControlForm({ token }: { token: string }) {
           {saving ? <Loader2 className="h-4 w-4 ml-2 animate-spin" /> : <Save className="h-4 w-4 ml-2" />}
           {savedId ? "تحديث الفحص" : "حفظ الفحص"}
         </Button>
+        {/* إرسال التقرير للعميل: رابط عام بلا بيانات داخلية، يفتح واتس العميل */}
+        <Button
+          onClick={sendToCustomer}
+          disabled={!savedId}
+          className="w-full bg-[#25D366] hover:bg-[#1da851] text-white"
+        >
+          <MessageCircle className="h-4 w-4 ml-2" />
+          أرسل التقرير للعميل
+        </Button>
         <div className="grid grid-cols-2 gap-2">
           <Button variant="outline" onClick={copyLink} disabled={!savedId}>
             <Link2 className="h-4 w-4 ml-2" />
-            نسخ الرابط
+            نسخ رابط الإدارة
           </Button>
           <Button variant="outline" disabled={score.checked === 0}
                   onClick={() => copy(buildManagementReport(data), "تم نسخ تقرير الإدارة")}>
