@@ -77,16 +77,6 @@
   to = "/.netlify/functions/partners"
   status = 200
 
-[[redirects]]
-  from = "/api/scan/headers"
-  to = "/.netlify/functions/http-headers"
-  status = 200
-
-[[redirects]]
-  from = "/api/scan/subdomains"
-  to = "/.netlify/functions/subdomains"
-  status = 200
-
 # القالب النظيف (يكتبه scripts/prerender.mjs) — index.html صار الرئيسية المصيَّرة
 [[redirects]]
   from = "/*"

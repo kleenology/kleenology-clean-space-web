@@ -18,7 +18,6 @@ import RiyadhCleaning from "./pages/RiyadhCleaning";
 import NeighborhoodCleaning from "./pages/NeighborhoodCleaning";
 import AdsLanding from "./pages/AdsLanding";
 import PremiumLanding from "./pages/PremiumLanding";
-import SecurityScanner from "./pages/SecurityScanner";
 import Blog from "./pages/Blog";
 import BlogPost from "./pages/BlogPost";
 import SelfInspection from "./pages/SelfInspection";
@@ -138,7 +137,6 @@ const App = ({ wrapRouter = browserRouter }: { wrapRouter?: RouterWrap }) => {
               <Route path="/cleaning-riyadh/:neighborhood" element={<NeighborhoodCleaning />} />
               <Route path="/book-now" element={<AdsLanding />} />
               <Route path="/premium" element={<PremiumLanding />} />
-              <Route path="/scanner" element={<SecurityScanner />} />
               <Route path="/blog" element={<Blog />} />
               <Route path="/blog/:slug" element={<BlogPost />} />
               <Route path="/self-inspection" element={<SelfInspection />} />
