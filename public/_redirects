@@ -7,6 +7,11 @@
 /api/pricing/qc-photo    /.netlify/functions/pricing-qc-photo    200
 /api/pricing/partners    /.netlify/functions/pricing-partners    200
 /api/partners    /.netlify/functions/partners    200
+/api/report/qc    /.netlify/functions/qc-report    200
+/api/referral    /.netlify/functions/customer-referral    200
+/api/deposit/config    /.netlify/functions/deposit-config    200
+/api/deposit/create    /.netlify/functions/create-deposit    200
+/api/payment/status    /.netlify/functions/payment-status    200
 
 /*    /index.html   200
 /terms-and-conditions    /index.html   200
