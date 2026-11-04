@@ -639,9 +639,9 @@ export function QualityControlForm({ token }: { token: string }) {
 
       </div>
 
-      {/* النتيجة والإجراءات — شريط سفلي على الجوال، وعمود جانبي على اللابتوب
-          حيث كان الشريط الثابت يطفو فوق قائمة البنود ويغطيها */}
-      <div className="bg-card border rounded-2xl shadow-float p-4 sm:p-5 space-y-3 sticky bottom-4 mt-4 lg:mt-0 lg:sticky lg:top-32 lg:bottom-auto">
+      {/* النتيجة والإجراءات — ثابتة بآخر النموذج على الجوال (لا تطفو فوق البنود
+          وتغطيها)، وعمود جانبي ملتصق على اللابتوب */}
+      <div className="bg-card border rounded-2xl shadow-float p-4 sm:p-5 space-y-3 mt-4 lg:mt-0 lg:sticky lg:top-32">
         <div className="flex items-center justify-between">
           <div>
             <span className={cn(
