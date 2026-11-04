@@ -78,15 +78,47 @@ function paintGrime(ctx: CanvasRenderingContext2D, w: number, h: number) {
 
 }
 
-/** مسّاحة: شفرة مطاط عمودية وحامل ومقبض أصفر للخلف */
+/** ممسحة زجاج واقعية: شفرة مطاط أمامية، قناة معدنية، ومقبض أصفر بقبضة */
 function Squeegee() {
   return (
-    <svg viewBox="0 0 120 200" className="h-full w-auto drop-shadow-2xl" aria-hidden="true">
-      <rect x="62" y="88" width="58" height="22" rx="11" className="fill-brand-yellow" transform="rotate(-12 62 99)" />
-      <rect x="30" y="6" width="34" height="188" rx="10" className="fill-brand-yellow" />
-      <rect x="36" y="14" width="6" height="172" rx="3" fill="rgba(255,255,255,0.35)" />
-      <rect x="8" y="0" width="26" height="200" rx="6" fill="#1f2937" />
-      <rect x="12" y="6" width="4" height="188" rx="2" fill="rgba(255,255,255,0.18)" />
+    <svg viewBox="0 0 130 220" className="h-full w-auto drop-shadow-2xl" aria-hidden="true">
+      <defs>
+        <linearGradient id="sqMetal" x1="0" y1="0" x2="1" y2="0">
+          <stop offset="0" stopColor="#eef2f6" />
+          <stop offset="0.5" stopColor="#9aa6b2" />
+          <stop offset="1" stopColor="#c7d0d9" />
+        </linearGradient>
+        <linearGradient id="sqHandle" x1="0" y1="0" x2="1" y2="0">
+          <stop offset="0" stopColor="#ffd84a" />
+          <stop offset="0.55" stopColor="#f3be16" />
+          <stop offset="1" stopColor="#cf9a06" />
+        </linearGradient>
+        <linearGradient id="sqGrip" x1="0" y1="0" x2="1" y2="0">
+          <stop offset="0" stopColor="#374151" />
+          <stop offset="1" stopColor="#1b222c" />
+        </linearGradient>
+      </defs>
+
+      {/* شفرة المطاط — الحافة الأمامية التي تمسح الزجاج */}
+      <rect x="3" y="14" width="7" height="192" rx="3.5" fill="#141b24" />
+      <rect x="6.4" y="16" width="1.8" height="188" rx="0.9" fill="rgba(255,255,255,0.22)" />
+
+      {/* القناة المعدنية التي تمسك الشفرة */}
+      <rect x="9" y="7" width="21" height="206" rx="7" fill="url(#sqMetal)" stroke="#7a8691" strokeWidth="1" />
+      <rect x="13" y="12" width="3" height="198" rx="1.5" fill="rgba(255,255,255,0.65)" />
+      {/* أغطية الأطراف */}
+      <rect x="7" y="4" width="25" height="11" rx="5.5" fill="#8b97a3" />
+      <rect x="7" y="205" width="25" height="11" rx="5.5" fill="#8b97a3" />
+
+      {/* وصلة من القناة إلى المقبض */}
+      <rect x="28" y="94" width="26" height="32" rx="8" fill="url(#sqMetal)" stroke="#7a8691" strokeWidth="1" />
+
+      {/* المقبض الأصفر */}
+      <rect x="46" y="86" width="66" height="48" rx="20" fill="url(#sqHandle)" />
+      <rect x="54" y="92" width="5" height="36" rx="2.5" fill="rgba(255,255,255,0.45)" />
+      {/* قبضة مطاطية في نهاية المقبض */}
+      <rect x="92" y="82" width="34" height="56" rx="17" fill="url(#sqGrip)" />
+      <rect x="99" y="92" width="5" height="36" rx="2.5" fill="rgba(255,255,255,0.15)" />
     </svg>
   );
 }
