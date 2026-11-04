@@ -87,6 +87,7 @@ export default function PricingAdmin() {
   const [showCodes, setShowCodes] = useState(false);
   // عدد العملاء المحالين اللي ما تواصلنا معهم — يظهر رقماً أحمر على «الشركاء»
   const [newLeads, setNewLeads] = useState(0);
+  const [summaryBusy, setSummaryBusy] = useState(false);
 
   useEffect(() => {
     // يتحدث عند الدخول وكل ما رجع المشرف من تبويب الشركاء
@@ -211,6 +212,24 @@ export default function PricingAdmin() {
   };
 
   const customerQuote = () => buildCustomerQuote(catalogue, quote, customer, { showCodes });
+
+  // يرسل ملخص الشهر الحالي على تليجرام فوراً — تجربة من اللوحة
+  const sendSummaryTest = async () => {
+    setSummaryBusy(true);
+    try {
+      const res = await fetch("/api/summary/test", {
+        method: "POST",
+        headers: { Authorization: `Bearer ${token}` },
+      });
+      if (res.ok) toast.success("أُرسل الملخص على تليجرام ✅");
+      else if (res.status === 400) toast.error("تليجرام غير مهيّأ — تأكد من إعداد البوت");
+      else toast.error("تعذّر الإرسال، جرّب لاحقاً");
+    } catch {
+      toast.error("تعذّر الاتصال بالخادم");
+    } finally {
+      setSummaryBusy(false);
+    }
+  };
 
   const copy = async (text: string, message: string) => {
     try {
@@ -450,6 +469,21 @@ export default function PricingAdmin() {
                 </button>
               ))}
             </div>
+
+            {/* زر تجربة الملخص الشهري — للإدارة فقط */}
+            {role === "admin" && (
+              <div className="text-center mt-6">
+                <button
+                  type="button"
+                  onClick={sendSummaryTest}
+                  disabled={summaryBusy}
+                  className="inline-flex items-center gap-2 text-sm text-muted-foreground hover:text-brand-blue-dark transition-colors disabled:opacity-60"
+                >
+                  {summaryBusy ? <Loader2 className="h-4 w-4 animate-spin" /> : <MessageCircle className="h-4 w-4" />}
+                  أرسل ملخص الشهر على تليجرام (تجربة)
+                </button>
+              </div>
+            )}
             </div>
           </main>
         ) : mode === "inspection" ? (
