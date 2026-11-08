@@ -92,6 +92,11 @@
   to = "/.netlify/functions/summary-test"
   status = 200
 
+[[redirects]]
+  from = "/api/reviews"
+  to = "/.netlify/functions/reviews"
+  status = 200
+
 # القالب النظيف (يكتبه scripts/prerender.mjs) — index.html صار الرئيسية المصيَّرة
 [[redirects]]
   from = "/*"

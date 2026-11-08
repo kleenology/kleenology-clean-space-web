@@ -1,8 +1,10 @@
-import { useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { Star, Quote, ChevronLeft, ChevronRight } from "lucide-react";
 
-const reviews = [
+interface Review { nameAr: string; nameEn: string; textAr: string; textEn: string; rating: number; }
+
+const DEFAULT_REVIEWS: Review[] = [
   {
     nameAr: "ياسر بن مضواح",
     nameEn: "Yaser bin Mudwah",
@@ -51,11 +53,33 @@ export const Testimonials = () => {
   const { i18n } = useTranslation();
   const isRTL = i18n.dir() === "rtl";
   const [current, setCurrent] = useState(0);
+  const [dynamic, setDynamic] = useState<Review[]>([]);
+
+  // الآراء المعتمدة من العملاء تُعرض أولاً، ثم الآراء الأساسية
+  useEffect(() => {
+    let cancelled = false;
+    fetch("/api/reviews")
+      .then((res) => (res.ok ? res.json() : Promise.reject()))
+      .then((data) => {
+        if (cancelled || !Array.isArray(data.reviews)) return;
+        const mapped: Review[] = data.reviews
+          .filter((r: { text?: string; rating?: number }) => r.text && r.rating)
+          .map((r: { name?: string; text: string; rating: number }) => ({
+            nameAr: r.name || "عميل", nameEn: r.name || "Client",
+            textAr: r.text, textEn: r.text, rating: r.rating,
+          }));
+        if (mapped.length) setDynamic(mapped);
+      })
+      .catch(() => { /* نكتفي بالآراء الأساسية */ });
+    return () => { cancelled = true; };
+  }, []);
+
+  const reviews = useMemo(() => [...dynamic, ...DEFAULT_REVIEWS], [dynamic]);
 
   const prev = () => setCurrent((c) => (c === 0 ? reviews.length - 1 : c - 1));
   const next = () => setCurrent((c) => (c === reviews.length - 1 ? 0 : c + 1));
 
-  const review = reviews[current];
+  const review = reviews[current] ?? reviews[0];
 
   return (
     <section className="py-20 bg-muted/30" dir={isRTL ? "rtl" : "ltr"}>

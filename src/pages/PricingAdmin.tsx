@@ -7,7 +7,7 @@ import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import {
   Calculator, LogOut, Loader2, Copy, MessageCircle, RotateCcw,
-  Minus, Plus, Search, X, Package, PlusCircle, ClipboardList, ShieldCheck, ArrowRight, ArrowLeft, Handshake, BookOpen,
+  Minus, Plus, Search, X, Package, PlusCircle, ClipboardList, ShieldCheck, ArrowRight, ArrowLeft, Handshake, BookOpen, Star,
 } from "lucide-react";
 import { toast } from "sonner";
 import { cn } from "@/lib/utils";
@@ -22,6 +22,7 @@ import { CustomerSearch } from "@/components/pricing/CustomerSearch";
 import { InspectionForm } from "@/components/pricing/InspectionForm";
 import { QualityControlForm } from "@/components/pricing/QualityControlForm";
 import { PartnersPanel } from "@/components/pricing/PartnersPanel";
+import { ReviewsPanel } from "@/components/pricing/ReviewsPanel";
 import { WorkGuide } from "@/components/pricing/WorkGuide";
 import { loadPartnersData } from "@/lib/partners/api";
 
@@ -77,7 +78,7 @@ export default function PricingAdmin() {
   const [customer, setCustomer] = useState<CustomerInfo>(emptyCustomer);
   const [search, setSearch] = useState("");
   // لا وضع مختاراً عند الدخول — المشرف يقرر أولاً ماذا يفعل
-  const [mode, setMode] = useState<"quote" | "inspection" | "qc" | "partners" | "guide" | null>(null);
+  const [mode, setMode] = useState<"quote" | "inspection" | "qc" | "partners" | "guide" | "reviews" | null>(null);
   const [openGroup, setOpenGroup] = useState<string | null>(null);
   const [openInspectionId, setOpenInspectionId] = useState<string | null>(null);
   // البحث في الرابط: يعود كما هو بعد فتح سجل، ويصلح للحفظ والمشاركة
@@ -142,9 +143,9 @@ export default function PricingAdmin() {
     if (openGroup) openPanelRef.current?.scrollIntoView({ behavior: "smooth", block: "start" });
   }, [openGroup]);
 
-  // حارس إضافي: جلسة غير إدارة لا تفتح تبويب الشركاء أبداً مهما تغيّرت الحالة
+  // حارس إضافي: جلسة غير إدارة لا تفتح تبويبات الإدارة الخاصة (الشركاء/الآراء)
   useEffect(() => {
-    if (role !== "admin" && mode === "partners") setMode(null);
+    if (role !== "admin" && (mode === "partners" || mode === "reviews")) setMode(null);
   }, [role, mode]);
 
   const patch = useCallback((changes: Partial<QuoteInput>) => {
@@ -346,8 +347,9 @@ export default function PricingAdmin() {
               { key: "inspection", label: "معاينة", Icon: ClipboardList },
               { key: "qc", label: "فحص الجودة", Icon: ShieldCheck },
               { key: "guide", label: "الدليل", Icon: BookOpen },
+              { key: "reviews", label: "الآراء", Icon: Star },
               { key: "partners", label: "الشركاء", Icon: Handshake },
-            ] as const).filter((t) => role === "admin" || t.key !== "partners").map(({ key, label, Icon }) => (
+            ] as const).filter((t) => role === "admin" || !["partners", "reviews"].includes(t.key)).map(({ key, label, Icon }) => (
               <button
                 key={key}
                 type="button"
@@ -441,11 +443,16 @@ export default function PricingAdmin() {
                   iconClass: "bg-rose-100 text-rose-700", bar: "bg-rose-500",
                 },
                 {
+                  key: "reviews", Icon: Star, label: "الآراء",
+                  desc: "اعتمد آراء العملاء اللي تجي من صفحة التقييم لتظهر في الصفحة الرئيسية",
+                  iconClass: "bg-yellow-100 text-yellow-700", bar: "bg-yellow-500",
+                },
+                {
                   key: "partners", Icon: Handshake, label: "الشركاء",
                   desc: "اعتمد المقاولين وتابع عملاءهم المحالين وأرسل كشف العمولات الشهري",
                   iconClass: "bg-amber-100 text-amber-700", bar: "bg-amber-500",
                 },
-              ] as const).filter((c) => role === "admin" || c.key !== "partners").map(({ key, Icon, label, desc, iconClass, bar }) => (
+              ] as const).filter((c) => role === "admin" || !["partners", "reviews"].includes(c.key)).map(({ key, Icon, label, desc, iconClass, bar }) => (
                 <button
                   key={key}
                   type="button"
@@ -497,6 +504,10 @@ export default function PricingAdmin() {
         ) : mode === "guide" ? (
           <main className="max-w-3xl mx-auto px-4 pt-6">
             <WorkGuide />
+          </main>
+        ) : mode === "reviews" && role === "admin" ? (
+          <main className="max-w-3xl mx-auto px-4 pt-6">
+            <ReviewsPanel token={token} />
           </main>
         ) : mode === "partners" && role === "admin" ? (
           <main className="max-w-5xl mx-auto px-4 pt-6">
