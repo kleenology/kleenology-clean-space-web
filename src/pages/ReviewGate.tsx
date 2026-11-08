@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { Star, MessageSquare, ExternalLink, CheckCircle } from "lucide-react";
+import { Star, MessageSquare, CheckCircle, Loader2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 
 const GOOGLE_REVIEW_URL = "https://g.page/r/CVBs3ysRpq-WEAE/review";
@@ -8,9 +8,11 @@ const WHATSAPP = "966537519929";
 export default function ReviewGate() {
   const [rating, setRating] = useState(0);
   const [hovered, setHovered] = useState(0);
-  const [stage, setStage] = useState<"stars" | "positive" | "feedback" | "thanks">("stars");
+  const [stage, setStage] = useState<"stars" | "positive" | "googleThanks" | "feedback" | "thanks">("stars");
   const [form, setForm] = useState({ name: "", phone: "", message: "" });
-  const [submitted, setSubmitted] = useState(false);
+  // رأي العميل الراضي يُنشر في الموقع بعد اعتماد الإدارة
+  const [review, setReview] = useState({ name: "", text: "", website: "" });
+  const [busy, setBusy] = useState(false);
 
   const handleRating = (stars: number) => {
     setRating(stars);
@@ -18,6 +20,23 @@ export default function ReviewGate() {
       setStage("positive");
     } else {
       setStage("feedback");
+    }
+  };
+
+  const submitReview = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setBusy(true);
+    try {
+      await fetch("/api/reviews", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ action: "submit", rating, ...review }),
+      });
+    } catch {
+      /* تكميلي — ننتقل لقوقل حتى لو تعذّر الحفظ */
+    } finally {
+      setBusy(false);
+      setStage("googleThanks");
     }
   };
 
@@ -79,33 +98,66 @@ export default function ReviewGate() {
           </div>
         )}
 
-        {/* Positive Stage */}
+        {/* Positive Stage — اكتب رأيك ليظهر في الموقع */}
         {stage === "positive" && (
+          <div className="bg-white rounded-2xl shadow-lg border border-border p-8">
+            <div className="text-center mb-5">
+              <div className="w-16 h-16 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                <CheckCircle className="h-8 w-8 text-green-600" />
+              </div>
+              <h2 className="text-2xl font-bold text-foreground mb-2">يسعدنا إنك راضٍ 🙏</h2>
+              <div className="flex justify-center gap-1 mb-2">
+                {[1,2,3,4,5].map((s) => (
+                  <Star key={s} className={`h-6 w-6 ${s <= rating ? "fill-yellow-400 text-yellow-400" : "text-gray-200 fill-gray-200"}`} />
+                ))}
+              </div>
+              <p className="text-sm text-muted-foreground">اكتب كلمة عن تجربتك — تنشرها لك في موقعنا وتشجّع غيرك.</p>
+            </div>
+
+            <form onSubmit={submitReview} className="space-y-4 relative">
+              <input type="text" tabIndex={-1} autoComplete="off" aria-hidden="true" name="website"
+                     value={review.website} onChange={(e) => setReview({ ...review, website: e.target.value })}
+                     className="absolute -left-[9999px] w-px h-px opacity-0" />
+              <div>
+                <label className="block text-sm font-medium text-foreground mb-1">اسمك</label>
+                <input
+                  type="text" required value={review.name}
+                  onChange={(e) => setReview({ ...review, name: e.target.value })}
+                  className="w-full border border-border rounded-lg px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-primary/30"
+                  placeholder="يظهر الاسم الأول فقط"
+                />
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-foreground mb-1">رأيك</label>
+                <textarea
+                  required rows={3} value={review.text}
+                  onChange={(e) => setReview({ ...review, text: e.target.value })}
+                  className="w-full border border-border rounded-lg px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-primary/30 resize-none"
+                  placeholder="مثال: خدمة ممتازة وفريق محترف، التزموا بالموعد والنتيجة فاقت توقعي."
+                />
+              </div>
+              <Button type="submit" className="w-full" size="lg" disabled={busy}>
+                {busy ? <Loader2 className="h-5 w-5 animate-spin" /> : "انشر رأيي"}
+              </Button>
+            </form>
+          </div>
+        )}
+
+        {/* Google Thanks — بعد نشر الرأي، ندعوه لقوقل */}
+        {stage === "googleThanks" && (
           <div className="bg-white rounded-2xl shadow-lg border border-border p-8 text-center">
             <div className="w-16 h-16 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-5">
               <CheckCircle className="h-8 w-8 text-green-600" />
             </div>
-            <h2 className="text-2xl font-bold text-foreground mb-2">ممتاز! يسعدنا إنك راضٍ</h2>
+            <h2 className="text-2xl font-bold text-foreground mb-2">وصلنا رأيك 🌿</h2>
             <p className="text-muted-foreground mb-6 leading-relaxed text-sm">
-              شكراً لتقييمك الإيجابي 🙏<br />
-              اضغط الزر أدناه وشاركنا تجربتك على قوقل — ما يأخذ إلا دقيقة
+              شكراً لك! يظهر رأيك في موقعنا بعد مراجعة بسيطة.<br />
+              وإذا تكرّمت، شاركنا نفس التقييم على قوقل — يفيدنا كثير.
             </p>
-            {/* Selected stars */}
-            <div className="flex justify-center gap-1 mb-6">
-              {[1,2,3,4,5].map((s) => (
-                <Star key={s} className={`h-6 w-6 ${s <= rating ? "fill-yellow-400 text-yellow-400" : "text-gray-200 fill-gray-200"}`} />
-              ))}
-            </div>
-            <Button
-              onClick={() => window.open(GOOGLE_REVIEW_URL, "_blank")}
-              className="w-full mb-4"
-              size="lg"
-            >
+            <Button onClick={() => window.open(GOOGLE_REVIEW_URL, "_blank")} className="w-full mb-3" size="lg">
               اكتب تقييمك على قوقل ←
             </Button>
-            <p className="text-xs text-muted-foreground">
-              ستحتاج تختار النجوم مرة ثانية على صفحة قوقل
-            </p>
+            <a href="/"><Button variant="outline" className="w-full">العودة للرئيسية</Button></a>
           </div>
         )}
 
