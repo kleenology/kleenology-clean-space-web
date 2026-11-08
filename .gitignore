@@ -22,3 +22,8 @@ dist-ssr
 *.njsproj
 *.sln
 *.sw?
+
+# ملفات الأسرار المحلية — لا تُرفع إطلاقاً
+.env
+.env.*
+!.env.example
