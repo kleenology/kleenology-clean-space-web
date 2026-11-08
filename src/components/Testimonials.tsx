@@ -2,6 +2,8 @@ import { useEffect, useMemo, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { Star, Quote, ChevronLeft, ChevronRight } from "lucide-react";
 
+const ALL_REVIEWS_URL = "https://kleenology.github.io/Feedback/reviews.html";
+
 interface Review { nameAr: string; nameEn: string; textAr: string; textEn: string; rating: number; }
 
 const DEFAULT_REVIEWS: Review[] = [
@@ -161,6 +163,15 @@ export const Testimonials = () => {
           >
             <ChevronRight className="h-5 w-5" />
           </button>
+        </div>
+
+        {/* رابط صفحة جميع الآراء */}
+        <div className="text-center mt-8">
+          <a href={ALL_REVIEWS_URL} target="_blank" rel="noopener noreferrer"
+             className="inline-flex items-center gap-2 bg-white border border-border hover:border-primary hover:text-primary px-6 py-3 rounded-xl font-semibold text-sm shadow-sm transition-colors">
+            <Star className="h-4 w-4 text-brand-yellow fill-brand-yellow" />
+            {isRTL ? "شاهد جميع آراء عملائنا" : "See all our reviews"}
+          </a>
         </div>
 
       </div>
