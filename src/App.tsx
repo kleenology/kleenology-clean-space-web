@@ -30,6 +30,7 @@ import Partners from "./pages/Partners";
 import PartnerReferral from "./pages/PartnerReferral";
 import CustomerReport from "./pages/CustomerReport";
 import FriendReferral from "./pages/FriendReferral";
+import Reviews from "./pages/Reviews";
 import ApartmentCleaning from "./pages/ApartmentCleaning";
 import VillaCleaning from "./pages/VillaCleaning";
 import { PixelTracker } from "@/components/PixelTracker";
@@ -144,6 +145,7 @@ const App = ({ wrapRouter = browserRouter }: { wrapRouter?: RouterWrap }) => {
               <Route path="/self-inspection" element={<SelfInspection />} />
               <Route path="/privacy-policy" element={<PrivacyPolicy />} />
               <Route path="/review" element={<ReviewGate />} />
+              <Route path="/reviews" element={<Reviews />} />
               <Route path="/offer" element={<OfferLanding />} />
               <Route path="/partners" element={<Partners />} />
               {/* رابط إحالة الشريك: kleenology.me/p/P-XXXXX */}
