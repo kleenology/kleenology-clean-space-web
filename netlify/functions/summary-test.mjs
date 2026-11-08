@@ -1,13 +1,15 @@
 // إرسال ملخص تجريبي الآن على تليجرام — للإدارة فقط (زر في اللوحة).
 // يرسل أرقام الشهر الحالي حتى اللحظة.
 
-import { requireSession, jsonResponse } from "../lib/admin-auth.mjs";
+import { requireSession, sessionRole, jsonResponse } from "../lib/admin-auth.mjs";
 import { notifyEnabled } from "../lib/notify.mjs";
 import { sendSummary } from "../lib/summary.mjs";
 
 export default async (request) => {
   if (request.method !== "POST") return jsonResponse({ error: "method_not_allowed" }, 405);
   if (!requireSession(request)) return jsonResponse({ error: "unauthorized" }, 401);
+  // الملخص للإدارة فقط — المشرف لا يُشغّل تنبيهات تليجرام
+  if (sessionRole(request) !== "admin") return jsonResponse({ error: "forbidden" }, 403);
   if (!notifyEnabled()) return jsonResponse({ error: "telegram_not_configured" }, 400);
 
   try {
