@@ -1,15 +1,17 @@
 import { useTranslation } from "react-i18next";
 import { Link } from "react-router-dom";
-import { ArrowLeft, ArrowRight } from "lucide-react";
+import {
+  ArrowLeft, ArrowRight, Home, Building2, Stethoscope, UtensilsCrossed, BedDouble, HardHat,
+} from "lucide-react";
 
-// قائمة نصية بدل ست بطاقات بأيقونات — والقطاع اللي له صفحة خدمة يوديك لها
-const sectors: { key: string; href?: string }[] = [
-  { key: "homes", href: "/home-cleaning" },
-  { key: "offices", href: "/office-cleaning" },
-  { key: "medical" },
-  { key: "restaurants" },
-  { key: "hotels" },
-  { key: "construction", href: "/post-construction-cleaning" },
+// بطاقات موحّدة بأيقونة لكل قطاع — والقطاع اللي له صفحة خدمة يوديك لها
+const sectors: { key: string; href?: string; Icon: typeof Home }[] = [
+  { key: "homes", href: "/home-cleaning", Icon: Home },
+  { key: "offices", href: "/office-cleaning", Icon: Building2 },
+  { key: "medical", Icon: Stethoscope },
+  { key: "restaurants", Icon: UtensilsCrossed },
+  { key: "hotels", Icon: BedDouble },
+  { key: "construction", href: "/post-construction-cleaning", Icon: HardHat },
 ];
 
 const content = {
@@ -43,7 +45,6 @@ export const ClientSectors = () => {
   const { i18n } = useTranslation();
   const isRTL = i18n.dir() === "rtl";
   const c = isRTL ? content.ar : content.en;
-
   const Arrow = isRTL ? ArrowLeft : ArrowRight;
 
   return (
@@ -52,32 +53,40 @@ export const ClientSectors = () => {
         <h2 className="text-2xl md:text-3xl font-bold text-foreground mb-2">{c.title}</h2>
         <p className="text-muted-foreground mb-8 max-w-2xl">{c.subtitle}</p>
 
-        <ul className="grid md:grid-cols-2 gap-x-12 border-t">
-          {sectors.map(({ key, href }) => {
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-4">
+          {sectors.map(({ key, href, Icon }) => {
             const sector = c.sectors[key as keyof typeof c.sectors];
-            const body = (
-              <>
-                <div>
-                  <h3 className="font-bold text-foreground">{sector.label}</h3>
-                  <p className="text-sm text-muted-foreground">{sector.desc}</p>
+            const card = (
+              <div className={cardClass(!!href)}>
+                <div className="w-11 h-11 rounded-xl bg-brand-blue/10 text-brand-blue flex items-center justify-center shrink-0">
+                  <Icon className="h-5 w-5" />
                 </div>
-                {href && <Arrow className="h-4 w-4 text-brand-blue shrink-0 transition-transform rtl:group-hover:-translate-x-1 ltr:group-hover:translate-x-1" />}
-              </>
+                <div className="min-w-0">
+                  <h3 className="font-bold text-foreground mb-1 flex items-center gap-1.5">
+                    {sector.label}
+                    {href && (
+                      <Arrow className="h-3.5 w-3.5 text-brand-blue opacity-0 -translate-x-1 group-hover:opacity-100 group-hover:translate-x-0 transition-all" />
+                    )}
+                  </h3>
+                  <p className="text-sm text-muted-foreground leading-relaxed">{sector.desc}</p>
+                </div>
+              </div>
             );
-            return (
-              <li key={key} className="border-b">
-                {href ? (
-                  <Link to={href} className="group flex items-center justify-between gap-4 py-4 hover:text-brand-blue">
-                    {body}
-                  </Link>
-                ) : (
-                  <div className="flex items-center justify-between gap-4 py-4">{body}</div>
-                )}
-              </li>
+            return href ? (
+              <Link key={key} to={href} className="group h-full">{card}</Link>
+            ) : (
+              <div key={key} className="h-full">{card}</div>
             );
           })}
-        </ul>
+        </div>
       </div>
     </section>
   );
 };
+
+function cardClass(clickable: boolean) {
+  return [
+    "h-full bg-card border rounded-2xl p-5 shadow-clean transition-all flex items-start gap-4",
+    clickable ? "hover:shadow-float hover:border-brand-blue/40 hover:-translate-y-0.5 cursor-pointer" : "",
+  ].join(" ");
+}
