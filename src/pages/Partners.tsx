@@ -578,7 +578,7 @@ export default function Partners() {
               <span className="h-px w-8 bg-brand-yellow/70" aria-hidden />
               للمقاولين وشركات الإنشاءات ومكاتب العقار
             </div>
-            <h1 className="text-[2rem] sm:text-5xl font-extrabold leading-[1.18] tracking-tight mb-5">
+            <h1 className="text-[1.9rem] sm:text-5xl font-extrabold leading-[1.45] sm:leading-[1.3] mb-5">
               شريكك في تنظيف
               <br />
               <span className="text-brand-yellow">ما بعد البناء والتسليم</span>
