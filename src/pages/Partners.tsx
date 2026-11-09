@@ -553,12 +553,6 @@ export default function Partners() {
     formRef.current?.scrollIntoView({ behavior: "smooth", block: "start" });
   };
 
-  const trust = useMemo(() => [
-    { Icon: ShieldCheck, text: "فريق مؤمَّن عليه" },
-    { Icon: Camera, text: "فحص جودة بالصور" },
-    { Icon: CalendarCheck, text: "تحويل بنكي شهري" },
-  ], []);
-
   return (
     <div className="min-h-screen bg-background" dir="rtl">
       <SEO
@@ -573,37 +567,49 @@ export default function Partners() {
       <section ref={heroRef} className="relative overflow-hidden text-white">
         <img src={heroImage} alt="" aria-hidden="true"
              className="absolute inset-0 w-full h-full object-cover" />
-        <div className="absolute inset-0 bg-gradient-to-l from-brand-blue-deeper/95 via-brand-blue-deep/90 to-brand-blue-deep/70" />
-        <div className="relative max-w-6xl mx-auto px-4 pt-28 pb-20 sm:pt-32 sm:pb-28">
+        {/* تدرّج اتجاهي + تظليل سفلي يعطي عمقاً سينمائياً بدل الطبقة المسطّحة */}
+        <div className="absolute inset-0 bg-gradient-to-l from-brand-blue-deeper via-brand-blue-deep/92 to-brand-blue-deep/55" />
+        <div className="absolute inset-0" aria-hidden="true"
+             style={{ background: "radial-gradient(130% 120% at 88% 115%, rgba(3,16,32,0.6), transparent 55%)" }} />
+        <div className="relative max-w-6xl mx-auto px-4 pt-28 pb-16 sm:pt-32 sm:pb-20">
           <div className="max-w-2xl">
-            <span className="inline-flex items-center gap-2 rounded-full bg-white/15 backdrop-blur px-4 py-1.5 text-sm font-medium mb-6">
-              برنامج الشركاء · للمقاولين وشركات الإنشاءات ومكاتب العقار
-            </span>
-            <h1 className="text-4xl sm:text-5xl font-bold leading-[1.3] mb-5">
-              شريكك في تنظيف ما بعد البناء والتسليم
+            {/* عنوان علوي نحيف بخط لوني بدل الحبّة العامة */}
+            <div className="inline-flex items-center gap-3 text-sm font-semibold text-brand-yellow mb-6">
+              <span className="h-px w-8 bg-brand-yellow/70" aria-hidden />
+              للمقاولين وشركات الإنشاءات ومكاتب العقار
+            </div>
+            <h1 className="text-[2rem] sm:text-5xl font-extrabold leading-[1.18] tracking-tight mb-5">
+              شريكك في تنظيف
+              <br />
+              <span className="text-brand-yellow">ما بعد البناء والتسليم</span>
             </h1>
-            <p className="text-lg sm:text-xl text-white/85 leading-relaxed mb-8">
-              نكمّل مشاريعك بتنظيف احترافي يسلّم العميل مكاناً جاهزاً، وتكسب
-              عمولة <span className="font-semibold text-white">10٪</span> على كل طلب،
+            <p className="text-base sm:text-lg text-white/85 leading-relaxed mb-8 max-w-xl">
+              نكمّل مشاريعك بتنظيف احترافي يسلّم العميل مكاناً جاهزاً — وتكسب
+              عمولة <b className="text-white font-bold">10٪</b> على كل طلب،
               مع خصم {CUSTOMER_DISCOUNT_PERCENT}٪ لعميلك على أول طلب.
             </p>
             <div className="flex flex-col sm:flex-row gap-3 mb-10">
               <Button size="lg" onClick={() => goToForm("register")}
-                      className="h-12 px-8 text-base bg-white text-brand-blue-deeper hover:bg-white/90 font-bold shadow-float">
-                سجّل كشريك
+                      className="h-14 px-8 text-base bg-brand-yellow text-brand-blue-deeper hover:bg-brand-yellow/90 font-bold shadow-float">
+                سجّل كشريك الآن
                 <ArrowLeft className="h-5 w-5 mr-2" />
               </Button>
               <Button size="lg" variant="outline" onClick={() => goToForm("lead")}
-                      className="h-12 px-8 text-base bg-transparent border-white/40 text-white hover:bg-white/15 hover:text-white">
+                      className="h-14 px-8 text-base bg-white/5 border-white/40 text-white hover:bg-white/15 hover:text-white backdrop-blur">
                 عندي كود — سجّل عميل
               </Button>
             </div>
-            <div className="flex flex-wrap gap-x-6 gap-y-3">
-              {trust.map(({ Icon, text }) => (
-                <span key={text} className="flex items-center gap-2 text-sm text-white/90">
-                  <Icon className="h-5 w-5 text-white/70" />
-                  {text}
-                </span>
+            {/* شريط أرقام حقيقية بدل الصف العام — أكثر مصداقية */}
+            <div className="flex flex-wrap items-center gap-x-8 sm:gap-x-10 gap-y-4 border-t border-white/15 pt-6">
+              {[
+                { v: "10٪", l: "عمولة على كل طلب" },
+                { v: "+690", l: "عميل خدمناهم" },
+                { v: "98٪", l: "رضا العملاء" },
+              ].map(({ v, l }) => (
+                <div key={l}>
+                  <div className="text-2xl sm:text-3xl font-extrabold tabular-nums leading-none">{v}</div>
+                  <div className="text-xs text-white/70 mt-1">{l}</div>
+                </div>
               ))}
             </div>
           </div>
