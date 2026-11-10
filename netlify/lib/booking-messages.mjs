@@ -20,7 +20,7 @@ export function reminderMessage(b) {
 export function reviewMessage(b) {
   return (
     `تم إنجاز خدمتك ✅\n\n` +
-    `شكراً لثقتك بكلينولوجي يا ${b.customerName || ""} 🌿\n` +
+    `شكراً لثقتك بكلينولوجي يا ${b.customerName || ""}\n` +
     `نتمنى الخدمة نالت رضاك.\n\n` +
     `رأيك يهمنا — قيّمنا في دقيقة:\n${REVIEW_URL}\n\n` +
     `وإذا تبي تحجز مرة ثانية، إحنا جاهزين 💙`
