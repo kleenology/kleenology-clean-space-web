@@ -87,7 +87,7 @@ const TEMPLATES: Template[] = [
       `تم إنجاز خدمتك ✅\n\n` +
       `شكراً لثقتك بكلينولوجي يا ${v.name || ""} 🌿\n` +
       `نتمنى الخدمة نالت رضاك.\n\n` +
-      `رأيك يهمنا — قيّمنا في دقيقة:\nkleenology.me/review\n\n` +
+      `رأيك يهمنا — قيّمنا في دقيقة:\nkleenology.github.io/Feedback/reviews.html\n\n` +
       `وإذا تبي تحجز مرة ثانية، إحنا جاهزين 💙`,
   },
   {
@@ -173,10 +173,32 @@ export function MessagesPanel({ token }: { token: string }) {
     toast.success(`تعبّت بيانات ${m.name || "العميل"}`);
   };
 
+  // حفظ الحجز في السجل + تنبيه الجروب على تليجرام، وجدولة التذكير والتقييم تلقائياً.
+  // في الخلفية بدون await حتى لا يحجب المتصفح نافذة الواتس.
+  const saveBooking = () => {
+    const b = {
+      customerName: vals.name || "",
+      phone,
+      bookingNo: vals.bookingNo || "",
+      date: vals.date || "",
+      time: vals.time || "",
+      location: vals.location || "",
+      serviceType: vals.service || "",
+    };
+    fetch("/api/pricing/bookings", {
+      method: "POST",
+      headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` },
+      body: JSON.stringify(b),
+    })
+      .then((r) => { if (r.ok) toast.success("حُفظ الحجز وأُرسل للجروب — بيوصلك تذكير قبل الموعد بيوم"); })
+      .catch(() => {});
+  };
+
   const send = () => {
     const number = toWhatsAppNumber(phone);
     const base = number ? `https://wa.me/${number}?text=` : `https://wa.me/?text=`;
-    window.open(base + encodeURIComponent(message), "_blank");
+    window.open(base + encodeURIComponent(message), "_blank"); // أولاً داخل نقرة المستخدم
+    if (active === "confirm") saveBooking(); // يحفظ الحجز للتذكير والتقييم التلقائي
     regenBooking(); // رقم طلب جديد للرسالة الجاية
   };
 
@@ -274,14 +296,16 @@ export function MessagesPanel({ token }: { token: string }) {
           </div>
           <div className="grid grid-cols-2 gap-2">
             <Button onClick={send} className="bg-[#25D366] hover:bg-[#1da851] text-white">
-              <MessageCircle className="h-4 w-4 ml-1.5" />إرسال واتساب
+              <MessageCircle className="h-4 w-4 ml-1.5" />{active === "confirm" ? "احجز وأرسل واتساب" : "إرسال واتساب"}
             </Button>
             <Button variant="outline" onClick={copy}>
               <Copy className="h-4 w-4 ml-1.5" />نسخ
             </Button>
           </div>
           <p className="text-[11px] text-muted-foreground text-center">
-            بدون جوال، يفتح الواتس وتختار العميل بنفسك.
+            {active === "confirm"
+              ? "يُحفظ الحجز ويوصلك على تليجرام تذكير قبل الموعد بيوم ورسالة تقييم بعده — جاهزة تنسخها وترسلها."
+              : "بدون جوال، يفتح الواتس وتختار العميل بنفسك."}
           </p>
         </div>
       </div>

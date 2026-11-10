@@ -73,6 +73,11 @@
   status = 200
 
 [[redirects]]
+  from = "/api/pricing/bookings"
+  to = "/.netlify/functions/pricing-bookings"
+  status = 200
+
+[[redirects]]
   from = "/api/partners"
   to = "/.netlify/functions/partners"
   status = 200
