@@ -7,7 +7,7 @@ import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import {
   Calculator, LogOut, Loader2, Copy, MessageCircle, RotateCcw,
-  Minus, Plus, Search, X, Package, PlusCircle, ClipboardList, ShieldCheck, ArrowRight, ArrowLeft, Handshake, BookOpen, Star,
+  Minus, Plus, Search, X, Package, PlusCircle, ClipboardList, ShieldCheck, ArrowRight, ArrowLeft, Handshake, BookOpen, Star, MessageSquare,
 } from "lucide-react";
 import { toast } from "sonner";
 import { cn } from "@/lib/utils";
@@ -23,6 +23,7 @@ import { InspectionForm } from "@/components/pricing/InspectionForm";
 import { QualityControlForm } from "@/components/pricing/QualityControlForm";
 import { PartnersPanel } from "@/components/pricing/PartnersPanel";
 import { ReviewsPanel } from "@/components/pricing/ReviewsPanel";
+import { MessagesPanel } from "@/components/pricing/MessagesPanel";
 import { WorkGuide } from "@/components/pricing/WorkGuide";
 import { loadPartnersData } from "@/lib/partners/api";
 
@@ -78,7 +79,7 @@ export default function PricingAdmin() {
   const [customer, setCustomer] = useState<CustomerInfo>(emptyCustomer);
   const [search, setSearch] = useState("");
   // لا وضع مختاراً عند الدخول — المشرف يقرر أولاً ماذا يفعل
-  const [mode, setMode] = useState<"quote" | "inspection" | "qc" | "partners" | "guide" | "reviews" | null>(null);
+  const [mode, setMode] = useState<"quote" | "inspection" | "qc" | "partners" | "guide" | "reviews" | "messages" | null>(null);
   const [openGroup, setOpenGroup] = useState<string | null>(null);
   const [openInspectionId, setOpenInspectionId] = useState<string | null>(null);
   // البحث في الرابط: يعود كما هو بعد فتح سجل، ويصلح للحفظ والمشاركة
@@ -346,6 +347,7 @@ export default function PricingAdmin() {
               { key: "quote", label: "تسعير", Icon: Calculator },
               { key: "inspection", label: "معاينة", Icon: ClipboardList },
               { key: "qc", label: "فحص الجودة", Icon: ShieldCheck },
+              { key: "messages", label: "الرسائل", Icon: MessageSquare },
               { key: "guide", label: "الدليل", Icon: BookOpen },
               { key: "reviews", label: "الآراء", Icon: Star },
               { key: "partners", label: "الشركاء", Icon: Handshake },
@@ -438,6 +440,11 @@ export default function PricingAdmin() {
                   iconClass: "bg-emerald-100 text-emerald-700", bar: "bg-emerald-500",
                 },
                 {
+                  key: "messages", Icon: MessageSquare, label: "رسائل جاهزة",
+                  desc: "قوالب رسائل للعميل (تأكيد حجز، تذكير، تقييم...) تعبّيها وترسلها واتساب",
+                  iconClass: "bg-teal-100 text-teal-700", bar: "bg-teal-500",
+                },
+                {
                   key: "guide", Icon: BookOpen, label: "دليل العمل",
                   desc: "خطوات العمل الصحيحة، التوثيق بالصور، نطاق الخدمة، وقائمة التحقق قبل التسليم",
                   iconClass: "bg-rose-100 text-rose-700", bar: "bg-rose-500",
@@ -500,6 +507,10 @@ export default function PricingAdmin() {
         ) : mode === "qc" ? (
           <main className="max-w-6xl mx-auto px-4 pt-6">
             <QualityControlForm token={token} />
+          </main>
+        ) : mode === "messages" ? (
+          <main className="max-w-4xl mx-auto px-4 pt-6">
+            <MessagesPanel />
           </main>
         ) : mode === "guide" ? (
           <main className="max-w-3xl mx-auto px-4 pt-6">
