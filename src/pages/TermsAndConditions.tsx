@@ -9,6 +9,7 @@ const SECTION_KEYS = [
   "itemSensitivity",
   "appointmentChanges",
   "serviceDuration",
+  "annualVisitContracts",
   "furnitureMoving",
   "maintenanceSpareParts",
   "liabilityDisclaimer",

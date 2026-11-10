@@ -200,21 +200,31 @@ const resources = {
         appointmentChanges: {
           title: '3. Appointment Postponement or Cancellation',
           points: [
-            'Appointment postponement is allowed with a minimum of 48 hours notice, and the company has the right to cancel the appointment or re-evaluate the site upon postponement.',
-            'If postponed with less than 48 hours notice, the advance payment is non-refundable.',
-            'Failure to receive the team or schedule a new appointment within 30 days is considered cancellation and the team deserves full service value.'
+            'The appointment may be postponed at least 48 hours before the scheduled time; the company has the right to cancel the appointment, terminate the contract, or re-evaluate the site.',
+            'The advance payment of the service value or the booking fee is non-refundable if the appointment is postponed less than 48 hours before the service time.',
+            'If the client does not receive the team at the scheduled time for the service, this is considered a cancellation by the client of the scheduled appointment, and the client acknowledges the company\'s entitlement to the full advance paid for the agreed service.'
           ]
         },
         serviceDuration: {
           title: '4. Service Duration',
           points: [
-            'Service typically takes one working day, and after 24 hours from completion, the client is considered to agree with the results and no complaints are accepted.',
-            'Client may request one review within 24 hours of work completion; refusing to receive the team for review is considered waiver of any compensation.',
-            'The company has the right to extend work duration if the work requires it.'
+            'The service is completed within one working day unless the company specifies additional time; the passage of 24 hours after the end of the service time is considered the client\'s approval of receiving the work site, completing the service, and the absence of any observations, and no complaint is accepted thereafter.',
+            'The client may request a review from the company if there are observations on the provided service, within no more than 24 hours of the visit time; the client\'s refusal to receive the team is considered a waiver of any resulting compensation.',
+            'The company has the right to extend the work period for additional days at its discretion based on the needs of the work and the time it requires.'
+          ]
+        },
+        annualVisitContracts: {
+          title: '5. Annual Visit Contracts',
+          points: [
+            'In annual visit contracts, visit dates are set from the contract date, provided that the next visit falls within (90 – 180 – 270) days of the first visit date and no later than 360 days from the first visit; each visit is invoiced after its completion or once the company becomes entitled to its consideration.',
+            'The client may, with the company\'s approval, postpone a visit from its scheduled date by no more than thirty days.',
+            'If the client does not receive the team at the scheduled service time, or does not set another date within fifteen days, this is considered a cancellation by the client of the visit, and the client acknowledges the company\'s entitlement to the full consideration of the visit agreed in the contract.',
+            'For a one-off visit the client may request one review appointment; for an annual contract the client may request two review appointments during the contract term.',
+            'With the company\'s approval — if there are observations on the provided service — the client may request a review appointment after six days have passed since the last visit and within no more than thirty days thereof.'
           ]
         },
         furnitureMoving: {
-          title: '5. Furniture Moving',
+          title: '6. Furniture Moving',
           points: [
             'The client must notify the team supervisor in writing if furniture is not suitable for disassembly, reassembly, or moving; the client bears full responsibility for failing to give such notice, including that no compensation is due from the company.',
             'If damage occurs to furniture that was moved and it is proven that the company caused it, the company\'s compensation shall not exceed the total value of the client\'s invoice.',
@@ -222,7 +232,7 @@ const resources = {
           ]
         },
         maintenanceSpareParts: {
-          title: '6. Maintenance and Spare Parts',
+          title: '7. Maintenance and Spare Parts',
           points: [
             'The client acknowledges the company\'s entitlement to the repair amount for the specified fault upon its completion, based on the client\'s initial approval of the repair; the appearance of another fault different from the one repaired does not affect this entitlement.',
             'The client acknowledges the company\'s entitlement to the amount of the service provided once the repair is completed, with the company\'s liability released after the team leaves the site.',
@@ -230,7 +240,7 @@ const resources = {
           ]
         },
         liabilityDisclaimer: {
-          title: '7. Liability Disclaimer',
+          title: '8. Liability Disclaimer',
           points: [
             'The team is committed to cleaning visible and general areas only. The cleaning and sanitization service does not include stains and dirt that can only be removed with corrosive materials or special equipment — for example: silicone, rust, paints of all kinds, cement on ceilings or surfaces, chandeliers of all kinds, fire traces, wall washing, floor polishing, or anything else not included in the contract or the provided quotation.',
             'Service pricing is subject to an initial quote and a final quote; the final quote is issued after a team inspects the service location and provides a written quotation, and the company has the right to terminate the contract or amend the final quote with the client\'s approval.',
@@ -244,7 +254,7 @@ const resources = {
           ]
         },
         giftCard: {
-          title: '8. Gift Card',
+          title: '9. Gift Card',
           points: [
             'The card cannot be exchanged for cash and its value is non-refundable.',
             'The card is valid for 12 months from the date of purchase, unless otherwise stated.',
@@ -252,7 +262,7 @@ const resources = {
           ]
         },
         offersDiscounts: {
-          title: '9. Offers and Discounts',
+          title: '10. Offers and Discounts',
           points: [
             'Offers are available only with online booking, and two offers cannot be combined in one order.',
             'Minimum invoice after discount is 400 SAR; each offer is for a limited time and on specific services.',
@@ -263,7 +273,7 @@ const resources = {
           ]
         },
         loyaltyProgram: {
-          title: '10. Loyalty Program',
+          title: '11. Loyalty Program',
           points: [
             'Membership is available to everyone and requires account activation.',
             'Customer receives cashback as a percentage of invoice value; balance is added to wallet and must be used within the specified period for each offer.',
@@ -273,7 +283,7 @@ const resources = {
           ]
         },
         governingLaw: {
-          title: '11. Governing Law and Jurisdiction',
+          title: '12. Governing Law and Jurisdiction',
           points: [
             'These terms and conditions are governed by and construed in accordance with the laws and regulations of the Kingdom of Saudi Arabia.',
             'The competent courts of the Kingdom of Saudi Arabia have jurisdiction over any disputes arising from the use of Kleenology\'s website or services.',
@@ -281,7 +291,7 @@ const resources = {
           ]
         },
         disputeResolution: {
-          title: '12. Dispute Resolution',
+          title: '13. Dispute Resolution',
           points: [
             'In the event of any dispute, users are encouraged to first contact the Kleenology customer service team at +966 53 751 9929 or via email at Contract@kleenology.net to reach an amicable solution.',
             'If a resolution cannot be reached through customer service within a reasonable period, disputes shall be referred in accordance with the governing law set out in the Governing Law and Jurisdiction section.',
@@ -289,7 +299,7 @@ const resources = {
           ]
         },
         amendments: {
-          title: '13. Amendments to These Terms',
+          title: '14. Amendments to These Terms',
           points: [
             'Kleenology reserves the right to update or amend these terms and conditions at any time. Users will be notified of material changes via the website or through the contact information provided at booking.',
             'Continued use of the website or services after any amendment constitutes acceptance of the updated terms.'
@@ -504,21 +514,31 @@ const resources = {
         appointmentChanges: {
           title: '3. تأجيل أو إلغاء الموعد',
           points: [
-            'يسمح بتأجيل الموعد قبل 48 ساعة كحد أدنى، ويحق للشركة إلغاء الموعد أو إعادة تقييم الموقع عند التأجيل.',
-            'إذا تم التأجيل قبل أقل من 48 ساعة، فالدفعة المقدمة غير قابلة للاسترداد.',
-            'عدم استقبال الفريق أو عدم تحديد موعد جديد خلال 30 يوماً يعتبر إلغاءً ويستحق الفريق كامل قيمة الخدمة.'
+            'الموعد قابل للتأجيل قبل 48 ساعة من الموعد كحد أدنى، وللشركة الحق في إلغاء الموعد أو فسخ العقد أو إعادة تقييم الموقع.',
+            'الدفعة المقدمة من قيمة الخدمة أو رسوم الحجز غير قابلة للاسترداد في حال تأجيل الموعد قبل أقل من 48 ساعة من موعد الخدمة.',
+            'في حال عدم استقبال العميل للفريق خلال الموعد المحدد لتقديم الخدمة، فيعد ذلك إلغاءً من العميل للموعد المحدد، ويقر العميل باستحقاق الشركة لكامل المقدم المسلّم لها مقابل الخدمة المتفق عليها.'
           ]
         },
         serviceDuration: {
           title: '4. مدة تقديم الخدمة',
           points: [
-            'تستغرق الخدمة عادةً يوم عمل، وبعد مرور 24 ساعة من الانتهاء يعتبر العميل موافقاً على النتيجة ولا تُقبل أي شكاوى.',
-            'يمكن للعميل طلب مراجعة واحدة خلال 24 ساعة من انتهاء العمل؛ رفض استقبال الفريق للمراجعة يعتبر تنازلاً عن أي تعويض.',
-            'للشركة حق تمديد مدة العمل إذا احتاج العمل ذلك.'
+            'يتم إنجاز الخدمة خلال يوم عمل واحد ما لم تحدد الشركة مدة إضافية، ويعد مرور 24 ساعة على انتهاء وقت تقديم الخدمة موافقةً من العميل على استلام موقع العمل وإتمام الخدمة وعدم وجود ملاحظات عليها، ولا تُقبل أي شكوى بعد ذلك.',
+            'للعميل طلب المراجعة من الشركة حال وجود ملاحظات على الخدمة المقدمة، وبما لا يتجاوز 24 ساعة من موعد الزيارة، ويعد رفض العميل لاستقبال الفريق إسقاطًا منه لأي تعويض يترتب على ذلك.',
+            'للشركة الحق في تمديد فترة العمل لأيام إضافية وذلك حسب تقديرها لحاجة العمل وما يتطلبه من وقت.'
+          ]
+        },
+        annualVisitContracts: {
+          title: '5. عقود الزيارات السنوية',
+          points: [
+            'في عقود الزيارات السنوية، يتم تحديد مواعيد الزيارات من تاريخ التعاقد، على أن تكون فترة الزيارة التالية خلال (90 - 180 - 270) يومًا من تاريخ الزيارة الأولى، وبما لا يتجاوز 360 يومًا من موعد الزيارة الأولى، ويتم فوترة كل زيارة بعد الانتهاء منها أو حال استحقاق الشركة للمقابل عليها.',
+            'يمكن للعميل وبعد موافقة الشركة تأجيل الزيارة عن موعدها المحدد بما لا يتجاوز ثلاثين يومًا.',
+            'في حال عدم استقبال العميل للفريق خلال الموعد المحدد لتقديم الخدمة، أو عدم تحديد موعد آخر خلال خمسة عشر يومًا، فيعد ذلك إلغاءً من العميل للزيارة، ويقر العميل باستحقاق الشركة لكامل مقابل الزيارة المتفق عليه في العقد.',
+            'في حال كانت الزيارة فردية فللعميل طلب موعد مراجعة واحدة، وفي حال التعاقد السنوي فللعميل طلب موعدَي مراجعة خلال مدة العقد.',
+            'للعميل وبعد موافقة الشركة — حال وجود ملاحظات على الخدمة المقدمة — طلب موعد مراجعة وذلك بعد مرور ستة أيام على آخر زيارة وبما لا يتجاوز ثلاثين يومًا منها.'
           ]
         },
         furnitureMoving: {
-          title: '5. نقل الأثاث',
+          title: '6. نقل الأثاث',
           points: [
             'يلتزم العميل بإخطار مشرف الفريق كتابةً في حال كان الأثاث غير قابل للفك والتركيب والنقل، ويتحمل المسؤولية كاملة عند عدم إخطاره، ومن ذلك عدم لزوم التعويض على الشركة.',
             'في حال وقع تلف للأثاث الذي تم نقله وثبت أن الشركة هي المتسببة فيه، فإنها تلتزم بالتعويض بما لا يتجاوز إجمالي قيمة الفاتورة للعميل.',
@@ -526,7 +546,7 @@ const resources = {
           ]
         },
         maintenanceSpareParts: {
-          title: '6. الصيانة وقطع الغيار',
+          title: '7. الصيانة وقطع الغيار',
           points: [
             'يقر العميل باستحقاق الشركة لمبلغ الإصلاح للخلل المحدد عند الانتهاء منه بناءً على موافقته على إصلاحه ابتداءً، ولا يمنع من استحقاقها له ظهور خلل آخر مختلف عن الخلل الذي تم إصلاحه.',
             'يقر العميل باستحقاق الشركة لمبلغ الخدمة المقدمة في حال إصلاحها، مع إخلاء مسؤوليتها بعد مغادرة الفريق للموقع.',
@@ -534,7 +554,7 @@ const resources = {
           ]
         },
         liabilityDisclaimer: {
-          title: '7. إخلاء المسؤولية',
+          title: '8. إخلاء المسؤولية',
           points: [
             'يلتزم الفريق بتنظيف المناطق الظاهرة والعامة فقط، ولا يدخل ضمن خدمة التنظيف والتعقيم جميع البقع والأوساخ التي لا يمكن إزالتها إلا بمواد حارقة أو معدات خاصة، ومنها على سبيل المثال: السليكون، الصدأ، دهانات البوية بأنواعها، الإسمنت على الأسقف أو الأسطح، والثريا بأنواعها، أثر الحريق، غسل الجدران، جلي الأرض، وأي شيء آخر غير مشمول في العقد أو عرض السعر المقدم.',
             'يخضع تقييم سعر الخدمة المقدمة إلى تسعير أولي وتسعير نهائي، ويكون التسعير النهائي عن طريق إرسال فريق لمعاينة مكان تقديم الخدمة وتحرير عرض سعر مكتوب، وللشركة الحق في فسخ العقد أو التعديل في عرض التسعير النهائي بموافقة العميل.',
@@ -548,7 +568,7 @@ const resources = {
           ]
         },
         giftCard: {
-          title: '8. بطاقة الإهداء',
+          title: '9. بطاقة الإهداء',
           points: [
             'لا يمكن استبدال البطاقة نقدًا أو استرجاع قيمتها.',
             'البطاقة صالحة لمدة 12 شهرًا من تاريخ الشراء، ما لم يُذكر خلاف ذلك.',
@@ -556,7 +576,7 @@ const resources = {
           ]
         },
         offersDiscounts: {
-          title: '9. العروض والخصومات',
+          title: '10. العروض والخصومات',
           points: [
             'العروض متاحة فقط عند الحجز الإلكتروني، ولا يمكن دمج عرضين في طلب واحد.',
             'الحد الأدنى للفاتورة بعد الخصم هو 400 ريال؛ كل عرض لفترة محدودة وعلى خدمات محددة.',
@@ -567,7 +587,7 @@ const resources = {
           ]
         },
         loyaltyProgram: {
-          title: '10. برنامج الولاء',
+          title: '11. برنامج الولاء',
           points: [
             'الاشتراك متاح للجميع ويتطلب تفعيل الحساب.',
             'يحصل العميل على كاش باك كنسبة من قيمة الفاتورة؛ يُضاف الرصيد للمحفظة ويجب استخدامه خلال المدة المحددة لكل عرض.',
@@ -577,7 +597,7 @@ const resources = {
           ]
         },
         governingLaw: {
-          title: '11. القانون الحاكم والاختصاص القضائي',
+          title: '12. القانون الحاكم والاختصاص القضائي',
           points: [
             'تخضع هذه الشروط والأحكام وتُفسَّر وفقًا لأنظمة ولوائح المملكة العربية السعودية.',
             'تختص المحاكم المختصة في المملكة العربية السعودية بالفصل في أي نزاعات تنشأ عن استخدام موقع كلينولوجي أو خدماتها.',
@@ -585,7 +605,7 @@ const resources = {
           ]
         },
         disputeResolution: {
-          title: '12. حل النزاعات',
+          title: '13. حل النزاعات',
           points: [
             'في حال نشوء أي نزاع، يُشجَّع العملاء على التواصل أولًا مع فريق خدمة عملاء كلينولوجي على الرقم +966 53 751 9929 أو عبر البريد الإلكتروني Contract@kleenology.net للتوصل إلى حل ودي.',
             'إذا تعذّر الوصول إلى حل عبر خدمة العملاء في غضون مدة معقولة، تُحال النزاعات وفق القانون الحاكم المنصوص عليه في بند القانون الحاكم والاختصاص القضائي.',
@@ -593,7 +613,7 @@ const resources = {
           ]
         },
         amendments: {
-          title: '13. التعديلات على هذه الشروط',
+          title: '14. التعديلات على هذه الشروط',
           points: [
             'تحتفظ كلينولوجي بالحق في تحديث هذه الشروط والأحكام أو تعديلها في أي وقت. سيتم إخطار العملاء بالتغييرات الجوهرية عبر الموقع الإلكتروني أو من خلال معلومات الاتصال المقدمة عند الحجز.',
             'يُعدّ استمرار استخدام الموقع أو الخدمات بعد أي تعديل موافقةً على الشروط المحدَّثة.'
