@@ -8,6 +8,11 @@ import { cn } from "@/lib/utils";
 import { toWhatsAppNumber } from "@/lib/pricing/quoteMessage";
 
 interface Match { name: string; phone: string; location?: string; date?: string; time?: string; service?: string }
+interface Booking {
+  id: string; customerName: string; phone: string; bookingNo: string; date: string;
+  time: string; location: string; serviceType: string; savedAt: string;
+  reminderSentAt: string; reviewSentAt: string;
+}
 
 type Vals = Record<string, string>;
 interface Field { key: string; label: string; placeholder?: string; optional?: boolean; kind?: "text" | "date" | "booking" | "time" }
@@ -130,6 +135,24 @@ export function MessagesPanel({ token }: { token: string }) {
   const [term, setTerm] = useState("");
   const [results, setResults] = useState<Match[]>([]);
   const [searching, setSearching] = useState(false);
+  const [view, setView] = useState<"compose" | "bookings">("compose");
+  const [bookings, setBookings] = useState<Booking[]>([]);
+  const [loadingB, setLoadingB] = useState(false);
+
+  const loadBookings = async () => {
+    setLoadingB(true);
+    try {
+      const res = await fetch("/api/pricing/bookings", { headers: { Authorization: `Bearer ${token}` } });
+      const data = res.ok ? await res.json() : { bookings: [] };
+      setBookings(data.bookings ?? []);
+    } catch {
+      toast.error("تعذّر جلب الحجوزات");
+    } finally {
+      setLoadingB(false);
+    }
+  };
+
+  const openBookings = () => { setView("bookings"); loadBookings(); };
 
   const tpl = TEMPLATES.find((t) => t.key === active)!;
   const message = useMemo(() => tpl.build(vals).trim(), [tpl, vals]);
@@ -226,6 +249,66 @@ export function MessagesPanel({ token }: { token: string }) {
         <p className="text-sm text-muted-foreground">التاريخ جاهز ورقم الطلب يتولّد تلقائياً (ويتجدّد بعد كل إرسال). ابحث عن العميل أو عبّي يدوياً ثم أرسل واتساب.</p>
       </div>
 
+      {/* تبديل: إنشاء رسالة أو عرض الحجوزات */}
+      <div className="flex gap-2 bg-muted/50 p-1 rounded-xl w-full sm:w-fit">
+        <button type="button" onClick={() => setView("compose")}
+          className={cn("flex-1 sm:flex-none text-sm rounded-lg px-4 py-2 font-medium transition-colors",
+            view === "compose" ? "bg-card shadow-clean text-foreground" : "text-muted-foreground")}>
+          إنشاء رسالة
+        </button>
+        <button type="button" onClick={openBookings}
+          className={cn("flex-1 sm:flex-none text-sm rounded-lg px-4 py-2 font-medium transition-colors",
+            view === "bookings" ? "bg-card shadow-clean text-foreground" : "text-muted-foreground")}>
+          الحجوزات
+        </button>
+      </div>
+
+      {view === "bookings" ? (
+        <div className="space-y-3">
+          <div className="flex items-center justify-between">
+            <p className="text-sm text-muted-foreground">آخر الحجوزات المحفوظة — وحالة التذكير والتقييم.</p>
+            <Button type="button" variant="outline" size="sm" className="h-9 shrink-0"
+                    onClick={loadBookings} disabled={loadingB}>
+              {loadingB ? <Loader2 className="h-4 w-4 animate-spin" /> : <><RefreshCw className="h-4 w-4 ml-1.5" />تحديث</>}
+            </Button>
+          </div>
+          {loadingB ? (
+            <div className="flex justify-center py-12"><Loader2 className="h-5 w-5 animate-spin text-primary" /></div>
+          ) : bookings.length === 0 ? (
+            <p className="text-sm text-muted-foreground text-center py-12">ما فيه حجوزات محفوظة بعد. احجز من قالب «تأكيد حجز» وتظهر هنا.</p>
+          ) : (
+            <div className="space-y-2.5">
+              {bookings.map((b) => (
+                <div key={b.id} className="bg-card border rounded-2xl p-4 shadow-clean">
+                  <div className="flex items-start justify-between gap-2">
+                    <div className="min-w-0">
+                      <div className="font-bold truncate">{b.customerName || "—"}</div>
+                      {b.phone && <div className="text-xs text-muted-foreground" dir="ltr">{b.phone}</div>}
+                    </div>
+                    <span className="text-[11px] font-mono text-muted-foreground shrink-0" dir="ltr">{b.bookingNo}</span>
+                  </div>
+                  <div className="mt-2 text-sm text-muted-foreground space-y-0.5">
+                    {b.serviceType && <div>🧹 {b.serviceType}</div>}
+                    <div>🗓️ {b.date}{b.time ? ` — ${b.time}` : ""}</div>
+                    {b.location && <div>📍 {b.location}</div>}
+                  </div>
+                  <div className="mt-2.5 flex flex-wrap gap-1.5">
+                    <span className={cn("text-[11px] rounded-full px-2 py-0.5",
+                      b.reminderSentAt ? "bg-green-100 text-green-700" : "bg-muted text-muted-foreground")}>
+                      {b.reminderSentAt ? "✓ تذكير أُرسل" : "تذكير قبل الموعد بيوم"}
+                    </span>
+                    <span className={cn("text-[11px] rounded-full px-2 py-0.5",
+                      b.reviewSentAt ? "bg-green-100 text-green-700" : "bg-muted text-muted-foreground")}>
+                      {b.reviewSentAt ? "✓ تقييم أُرسل" : "تقييم بعد الخدمة"}
+                    </span>
+                  </div>
+                </div>
+              ))}
+            </div>
+          )}
+        </div>
+      ) : (
+      <>
       {/* أسرع طريقة: البحث عن العميل */}
       <div className="bg-brand-blue/5 border border-brand-blue/20 rounded-2xl p-3 sm:p-4">
         <form onSubmit={(e) => { e.preventDefault(); lookup(); }} className="flex gap-2">
@@ -339,6 +422,8 @@ export function MessagesPanel({ token }: { token: string }) {
           </p>
         </div>
       </div>
+      </>
+      )}
     </div>
   );
 }

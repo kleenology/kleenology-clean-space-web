@@ -21,6 +21,8 @@ function summarize(key, r) {
     location: r?.location ?? "",
     serviceType: r?.serviceType ?? "",
     savedAt: r?.savedAt ?? "",
+    reminderSentAt: r?.reminderSentAt ?? "",
+    reviewSentAt: r?.reviewSentAt ?? "",
   };
 }
 
