@@ -31,11 +31,51 @@ export default async (request) => {
   if (!requireSession(request)) return jsonResponse({ error: "unauthorized" }, 401);
 
   const store = recordStore(STORE);
+  const url = new URL(request.url);
+  const id = url.searchParams.get("id");
+
+  const clean = (v, max) => String(v ?? "").slice(0, max);
 
   try {
     if (request.method === "GET") {
       const { keys, total } = await recentKeys(store);
       return jsonResponse({ bookings: await summarizeKeys(store, keys, summarize), total });
+    }
+
+    if (request.method === "PUT") {
+      if (!id) return jsonResponse({ error: "missing_id" }, 400);
+      const existing = await store.get(id, { type: "json" }).catch(() => null);
+      if (!existing) return jsonResponse({ error: "not_found" }, 404);
+
+      const raw = await request.text();
+      if (raw.length > MAX_BODY_BYTES) return jsonResponse({ error: "too_large" }, 413);
+      let body;
+      try { body = JSON.parse(raw); } catch { return jsonResponse({ error: "invalid_body" }, 400); }
+
+      const updated = {
+        ...existing,
+        customerName: clean(body.customerName ?? existing.customerName, 120),
+        phone: clean(body.phone ?? existing.phone, 40),
+        bookingNo: clean(body.bookingNo ?? existing.bookingNo, 40),
+        date: clean(body.date ?? existing.date, 20),
+        time: clean(body.time ?? existing.time, 60),
+        location: clean(body.location ?? existing.location, 120),
+        serviceType: clean(body.serviceType ?? existing.serviceType, 120),
+        updatedAt: new Date().toISOString(),
+      };
+      // تغيّر الموعد ⇒ نعيد جدولة التذكير والتقييم
+      if (updated.date !== existing.date) {
+        delete updated.reminderSentAt;
+        delete updated.reviewSentAt;
+      }
+      await store.setJSON(id, updated);
+      return jsonResponse({ id, updated: true });
+    }
+
+    if (request.method === "DELETE") {
+      if (!id) return jsonResponse({ error: "missing_id" }, 400);
+      await store.delete(id);
+      return jsonResponse({ deleted: id });
     }
 
     if (request.method === "POST") {
