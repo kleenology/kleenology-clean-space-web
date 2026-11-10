@@ -2,7 +2,7 @@ import { useMemo, useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Copy, MessageCircle, CalendarCheck, Bell, Car, Star, FileText, Search, Loader2, User } from "lucide-react";
+import { Copy, MessageCircle, CalendarCheck, Bell, Car, Star, FileText, Search, Loader2, User, RefreshCw } from "lucide-react";
 import { toast } from "sonner";
 import { cn } from "@/lib/utils";
 import { toWhatsAppNumber } from "@/lib/pricing/quoteMessage";
@@ -10,7 +10,17 @@ import { toWhatsAppNumber } from "@/lib/pricing/quoteMessage";
 interface Match { name: string; phone: string; location?: string; date?: string; time?: string; service?: string }
 
 type Vals = Record<string, string>;
-interface Field { key: string; label: string; placeholder?: string; optional?: boolean }
+interface Field { key: string; label: string; placeholder?: string; optional?: boolean; kind?: "text" | "date" | "booking" }
+
+// التاريخ جاهز (اليوم) ويتحدّث اسم اليوم تلقائياً، ورقم الطلب يتولّد من جديد بعد كل رسالة
+const pad = (n: number) => String(n).padStart(2, "0");
+const todayISO = () => { const d = new Date(); return `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}`; };
+const arWeekday = (iso: string) => {
+  if (!iso) return "";
+  const d = new Date(`${iso}T00:00:00`);
+  return isNaN(d.getTime()) ? "" : d.toLocaleDateString("ar", { weekday: "long" });
+};
+const genBooking = () => `AP-${Math.floor(100000 + Math.random() * 900000)}`;
 interface Template {
   key: string; label: string; Icon: typeof Bell;
   fields: Field[];
@@ -24,9 +34,8 @@ const TEMPLATES: Template[] = [
     key: "confirm", label: "تأكيد حجز", Icon: CalendarCheck,
     fields: [
       { key: "name", label: "اسم العميل" },
-      { key: "bookingNo", label: "رقم الموعد", placeholder: "AP-XXXXXX" },
-      { key: "day", label: "اليوم", placeholder: "الخميس" },
-      { key: "date", label: "التاريخ", placeholder: "2026-05-21" },
+      { key: "bookingNo", label: "رقم الطلب", kind: "booking" },
+      { key: "date", label: "التاريخ", kind: "date" },
       { key: "time", label: "الوقت", placeholder: "بين 4 و 6 مساءً" },
       { key: "location", label: "الموقع / الحي", optional: true },
     ],
@@ -45,7 +54,7 @@ const TEMPLATES: Template[] = [
     key: "reminder", label: "تذكير بالموعد", Icon: Bell,
     fields: [
       { key: "name", label: "اسم العميل" },
-      { key: "date", label: "التاريخ", placeholder: "الخميس 2026-05-21" },
+      { key: "date", label: "التاريخ", kind: "date" },
       { key: "time", label: "الوقت", placeholder: "بين 4 و 6 مساءً" },
       { key: "location", label: "الموقع / الحي", optional: true },
     ],
@@ -89,7 +98,7 @@ const TEMPLATES: Template[] = [
       { key: "location", label: "الموقع / الحي", optional: true },
       { key: "amount", label: "المبلغ (ر.س)", placeholder: "900" },
       { key: "duration", label: "مدة التنفيذ", placeholder: "يوم عمل", optional: true },
-      { key: "validUntil", label: "العرض ساري حتى", optional: true },
+      { key: "validUntil", label: "العرض ساري حتى", optional: true, kind: "date" },
     ],
     build: (v) =>
       `عرض سعر من كلينولوجي 🧾\n\n` +
@@ -105,14 +114,19 @@ const TEMPLATES: Template[] = [
 export function MessagesPanel({ token }: { token: string }) {
   const [active, setActive] = useState(TEMPLATES[0].key);
   const [phone, setPhone] = useState("");
-  const [vals, setVals] = useState<Vals>({});
+  const [vals, setVals] = useState<Vals>(() => {
+    const date = todayISO();
+    return { bookingNo: genBooking(), date, day: arWeekday(date) };
+  });
   const [term, setTerm] = useState("");
   const [results, setResults] = useState<Match[]>([]);
   const [searching, setSearching] = useState(false);
 
   const tpl = TEMPLATES.find((t) => t.key === active)!;
   const message = useMemo(() => tpl.build(vals).trim(), [tpl, vals]);
-  const set = (k: string, v: string) => setVals((prev) => ({ ...prev, [k]: v }));
+  const set = (k: string, v: string) =>
+    setVals((prev) => ({ ...prev, [k]: v, ...(k === "date" ? { day: arWeekday(v) } : {}) }));
+  const regenBooking = () => setVals((prev) => ({ ...prev, bookingNo: genBooking() }));
 
   // أسهل طريقة: ابحث عن العميل في سجلات المعاينة/فحص الجودة فتتعبّى بياناته تلقائياً
   const lookup = async () => {
@@ -150,6 +164,7 @@ export function MessagesPanel({ token }: { token: string }) {
       name: m.name || v.name,
       location: m.location || v.location,
       date: m.date || v.date,
+      day: m.date ? (arWeekday(m.date) || v.day) : v.day,
       time: m.time || v.time,
       service: m.service || v.service,
     }));
@@ -162,13 +177,17 @@ export function MessagesPanel({ token }: { token: string }) {
     const number = toWhatsAppNumber(phone);
     const base = number ? `https://wa.me/${number}?text=` : `https://wa.me/?text=`;
     window.open(base + encodeURIComponent(message), "_blank");
+    regenBooking(); // رقم طلب جديد للرسالة الجاية
   };
+
+  const copy = () =>
+    navigator.clipboard.writeText(message).then(() => { toast.success("تم نسخ الرسالة"); regenBooking(); });
 
   return (
     <div className="space-y-5">
       <div>
         <h2 className="font-bold text-lg">رسائل جاهزة للعميل</h2>
-        <p className="text-sm text-muted-foreground">ابحث عن العميل فتتعبّى بياناته تلقائياً، أو عبّي يدوياً — ثم أرسل واتساب.</p>
+        <p className="text-sm text-muted-foreground">التاريخ جاهز ورقم الطلب يتولّد تلقائياً (ويتجدّد بعد كل إرسال). ابحث عن العميل أو عبّي يدوياً ثم أرسل واتساب.</p>
       </div>
 
       {/* أسرع طريقة: البحث عن العميل */}
@@ -227,8 +246,22 @@ export function MessagesPanel({ token }: { token: string }) {
               <Label htmlFor={`m-${f.key}`}>
                 {f.label} {f.optional && <span className="text-xs text-muted-foreground">(اختياري)</span>}
               </Label>
-              <Input id={`m-${f.key}`} className="h-11" placeholder={f.placeholder}
-                     value={vals[f.key] ?? ""} onChange={(e) => set(f.key, e.target.value)} />
+              {f.kind === "booking" ? (
+                <div className="flex gap-2">
+                  <Input id={`m-${f.key}`} dir="ltr" className="h-11 text-right font-mono tracking-wide"
+                         value={vals[f.key] ?? ""} onChange={(e) => set(f.key, e.target.value)} />
+                  <Button type="button" variant="outline" className="h-11 shrink-0 px-3"
+                          onClick={regenBooking} title="توليد رقم جديد">
+                    <RefreshCw className="h-4 w-4" />
+                  </Button>
+                </div>
+              ) : f.kind === "date" ? (
+                <Input id={`m-${f.key}`} type="date" dir="ltr" className="h-11 text-right"
+                       value={vals[f.key] ?? ""} onChange={(e) => set(f.key, e.target.value)} />
+              ) : (
+                <Input id={`m-${f.key}`} className="h-11" placeholder={f.placeholder}
+                       value={vals[f.key] ?? ""} onChange={(e) => set(f.key, e.target.value)} />
+              )}
             </div>
           ))}
         </div>
@@ -243,8 +276,7 @@ export function MessagesPanel({ token }: { token: string }) {
             <Button onClick={send} className="bg-[#25D366] hover:bg-[#1da851] text-white">
               <MessageCircle className="h-4 w-4 ml-1.5" />إرسال واتساب
             </Button>
-            <Button variant="outline"
-                    onClick={() => navigator.clipboard.writeText(message).then(() => toast.success("تم نسخ الرسالة"))}>
+            <Button variant="outline" onClick={copy}>
               <Copy className="h-4 w-4 ml-1.5" />نسخ
             </Button>
           </div>
