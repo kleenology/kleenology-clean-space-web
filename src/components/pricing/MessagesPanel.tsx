@@ -10,7 +10,12 @@ import { toWhatsAppNumber } from "@/lib/pricing/quoteMessage";
 interface Match { name: string; phone: string; location?: string; date?: string; time?: string; service?: string }
 
 type Vals = Record<string, string>;
-interface Field { key: string; label: string; placeholder?: string; optional?: boolean; kind?: "text" | "date" | "booking" }
+interface Field { key: string; label: string; placeholder?: string; optional?: boolean; kind?: "text" | "date" | "booking" | "time" }
+
+const HOURS = Array.from({ length: 12 }, (_, i) => String(i + 1));
+const MINUTES = ["00", "15", "30", "45"];
+const selectCls = "flex h-11 rounded-md border border-input bg-background px-2 text-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring";
+const composeTime = (h: string, m: string, p: string) => `${h}:${m} ${p}`;
 
 // التاريخ جاهز (اليوم) ويتحدّث اسم اليوم تلقائياً، ورقم الطلب يتولّد من جديد بعد كل رسالة
 const pad = (n: number) => String(n).padStart(2, "0");
@@ -36,7 +41,7 @@ const TEMPLATES: Template[] = [
       { key: "name", label: "اسم العميل" },
       { key: "bookingNo", label: "رقم الطلب", kind: "booking" },
       { key: "date", label: "التاريخ", kind: "date" },
-      { key: "time", label: "الوقت", placeholder: "بين 4 و 6 مساءً" },
+      { key: "time", label: "الوقت", kind: "time" },
       { key: "location", label: "الموقع / الحي", optional: true },
     ],
     build: (v) =>
@@ -55,7 +60,7 @@ const TEMPLATES: Template[] = [
     fields: [
       { key: "name", label: "اسم العميل" },
       { key: "date", label: "التاريخ", kind: "date" },
-      { key: "time", label: "الوقت", placeholder: "بين 4 و 6 مساءً" },
+      { key: "time", label: "الوقت", kind: "time" },
       { key: "location", label: "الموقع / الحي", optional: true },
     ],
     build: (v) =>
@@ -116,8 +121,11 @@ export function MessagesPanel({ token }: { token: string }) {
   const [phone, setPhone] = useState("");
   const [vals, setVals] = useState<Vals>(() => {
     const date = todayISO();
-    return { bookingNo: genBooking(), date, day: arWeekday(date) };
+    return { bookingNo: genBooking(), date, day: arWeekday(date), time: composeTime("4", "00", "مساءً") };
   });
+  const [timeH, setTimeH] = useState("4");
+  const [timeM, setTimeM] = useState("00");
+  const [timeP, setTimeP] = useState("مساءً");
   const [term, setTerm] = useState("");
   const [results, setResults] = useState<Match[]>([]);
   const [searching, setSearching] = useState(false);
@@ -127,6 +135,11 @@ export function MessagesPanel({ token }: { token: string }) {
   const set = (k: string, v: string) =>
     setVals((prev) => ({ ...prev, [k]: v, ...(k === "date" ? { day: arWeekday(v) } : {}) }));
   const regenBooking = () => setVals((prev) => ({ ...prev, bookingNo: genBooking() }));
+  const onTime = (patch: { h?: string; m?: string; p?: string }) => {
+    const h = patch.h ?? timeH, m = patch.m ?? timeM, p = patch.p ?? timeP;
+    setTimeH(h); setTimeM(m); setTimeP(p);
+    set("time", composeTime(h, m, p));
+  };
 
   // أسهل طريقة: ابحث عن العميل في سجلات المعاينة/فحص الجودة فتتعبّى بياناته تلقائياً
   const lookup = async () => {
@@ -280,6 +293,22 @@ export function MessagesPanel({ token }: { token: string }) {
               ) : f.kind === "date" ? (
                 <Input id={`m-${f.key}`} type="date" dir="ltr" className="h-11 text-right"
                        value={vals[f.key] ?? ""} onChange={(e) => set(f.key, e.target.value)} />
+              ) : f.kind === "time" ? (
+                <div className="flex gap-2">
+                  <select aria-label="صباحاً أو مساءً" className={cn(selectCls, "flex-[1.2]")} value={timeP}
+                          onChange={(e) => onTime({ p: e.target.value })}>
+                    <option>صباحاً</option>
+                    <option>مساءً</option>
+                  </select>
+                  <select aria-label="الساعة" className={cn(selectCls, "flex-1")} value={timeH}
+                          onChange={(e) => onTime({ h: e.target.value })}>
+                    {HOURS.map((h) => <option key={h}>{h}</option>)}
+                  </select>
+                  <select aria-label="الدقائق" className={cn(selectCls, "flex-1")} value={timeM}
+                          onChange={(e) => onTime({ m: e.target.value })}>
+                    {MINUTES.map((m) => <option key={m}>{m}</option>)}
+                  </select>
+                </div>
               ) : (
                 <Input id={`m-${f.key}`} className="h-11" placeholder={f.placeholder}
                        value={vals[f.key] ?? ""} onChange={(e) => set(f.key, e.target.value)} />
