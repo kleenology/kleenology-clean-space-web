@@ -23,6 +23,7 @@ function summarize(key, r) {
     savedAt: r?.savedAt ?? "",
     reminderSentAt: r?.reminderSentAt ?? "",
     reviewSentAt: r?.reviewSentAt ?? "",
+    followupSentAt: r?.followupSentAt ?? "",
   };
 }
 

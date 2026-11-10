@@ -7,6 +7,7 @@
 /api/pricing/qc-photo    /.netlify/functions/pricing-qc-photo    200
 /api/pricing/partners    /.netlify/functions/pricing-partners    200
 /api/pricing/bookings    /.netlify/functions/pricing-bookings    200
+/api/pricing/dashboard    /.netlify/functions/pricing-dashboard    200
 /api/partners    /.netlify/functions/partners    200
 /api/report/qc    /.netlify/functions/qc-report    200
 /api/referral    /.netlify/functions/customer-referral    200

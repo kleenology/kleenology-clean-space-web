@@ -5,7 +5,7 @@
 
 import { recordStore, MAX_SEARCH_SCAN } from "../lib/blob-records.mjs";
 import { notifyAdmin, notifyEnabled } from "../lib/notify.mjs";
-import { reminderMessage, reviewMessage } from "../lib/booking-messages.mjs";
+import { reminderMessage, reviewMessage, rebookMessage } from "../lib/booking-messages.mjs";
 
 const STORE = "pricing-bookings";
 
@@ -24,9 +24,13 @@ export default async () => {
   const store = recordStore(STORE);
   const tomorrow = riyadhDate(1);
   const yesterday = riyadhDate(-1);
+  // متابعة إعادة الحجز بعد مدة من الخدمة (افتراضياً ٣٠ يوم، قابلة للضبط)
+  const followupDays = Number(process.env.REBOOK_FOLLOWUP_DAYS) || 30;
+  const followupDate = riyadhDate(-followupDays);
 
   let reminders = 0;
   let reviews = 0;
+  let followups = 0;
 
   try {
     const { blobs } = await store.list();
@@ -60,11 +64,22 @@ export default async () => {
         await store.setJSON(key, { ...r, reviewSentAt: new Date().toISOString() });
         reviews++;
       }
+
+      // متابعة إعادة الحجز: مرّت المدة من الخدمة ولم تُرسَل متابعة بعد
+      if (r.date === followupDate && !r.followupSentAt) {
+        await notifyAdmin(
+          `🔁 متابعة إعادة حجز — صار ${followupDays} يوم من خدمة العميل، انسخ وأرسل له:\n` +
+          `${r.phone ? `(جواله: ${r.phone})\n` : ""}` +
+          `——————————\n${rebookMessage(r)}`,
+        );
+        await store.setJSON(key, { ...r, followupSentAt: new Date().toISOString() });
+        followups++;
+      }
     }
   } catch (error) {
     console.error("booking-reminders error:", error);
     return new Response("error", { status: 500 });
   }
 
-  return new Response(`reminders:${reminders} reviews:${reviews}`, { status: 200 });
+  return new Response(`reminders:${reminders} reviews:${reviews} followups:${followups}`, { status: 200 });
 };
