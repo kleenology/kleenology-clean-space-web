@@ -45,26 +45,45 @@ const BookingRow = ({ b }: { b: Booking }) => (
 export function DashboardPanel({ token }: { token: string }) {
   const [data, setData] = useState<Data | null>(null);
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(false);
 
-  useEffect(() => {
-    let alive = true;
+  const load = () => {
+    setLoading(true);
+    setError(false);
     fetch("/api/pricing/dashboard", { headers: { Authorization: `Bearer ${token}` } })
-      .then((r) => (r.ok ? r.json() : null))
-      .then((d) => { if (alive) setData(d); })
-      .catch(() => {})
-      .finally(() => { if (alive) setLoading(false); });
-    return () => { alive = false; };
-  }, [token]);
+      .then(async (r) => {
+        const ct = r.headers.get("content-type") || "";
+        if (!r.ok || !ct.includes("application/json")) throw new Error("bad response");
+        return r.json();
+      })
+      .then((d) => setData(d))
+      .catch(() => setError(true))
+      .finally(() => setLoading(false));
+  };
+
+  useEffect(() => { load(); /* eslint-disable-next-line react-hooks/exhaustive-deps */ }, [token]);
 
   if (loading) {
     return <div className="flex justify-center py-8"><Loader2 className="h-5 w-5 animate-spin text-primary" /></div>;
   }
-  if (!data) return null;
+  if (error || !data) {
+    return (
+      <div className="bg-card border rounded-2xl p-4 text-center">
+        <p className="text-sm text-muted-foreground mb-2">تعذّر تحميل لوحة النظرة السريعة.</p>
+        <button type="button" onClick={load}
+                className="text-sm text-brand-blue font-medium underline underline-offset-4">إعادة المحاولة</button>
+      </div>
+    );
+  }
 
   const { counts } = data;
 
   return (
     <div className="space-y-4">
+      <div className="flex items-center gap-2">
+        <h2 className="text-lg font-bold">نظرة سريعة</h2>
+        <span className="h-1 flex-1 rounded-full bg-brand-yellow/40" aria-hidden />
+      </div>
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
         <Tile Icon={CalendarDays} label="مواعيد اليوم" value={data.todayBookings.length} accent="text-brand-blue" />
         <Tile Icon={CalendarClock} label="مواعيد الأسبوع" value={data.weekBookings.length} accent="text-brand-blue" />
