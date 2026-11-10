@@ -2,10 +2,13 @@ import { useMemo, useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Copy, MessageCircle, CalendarCheck, Bell, Car, Star, FileText, Search, Loader2, User, RefreshCw } from "lucide-react";
+import { Copy, MessageCircle, CalendarCheck, Bell, Car, Star, FileText, Search, Loader2, User, RefreshCw, Pencil, Trash2 } from "lucide-react";
 import { toast } from "sonner";
 import { cn } from "@/lib/utils";
 import { toWhatsAppNumber } from "@/lib/pricing/quoteMessage";
+import {
+  Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter,
+} from "@/components/ui/dialog";
 
 interface Match { name: string; phone: string; location?: string; date?: string; time?: string; service?: string }
 interface Booking {
@@ -154,6 +157,82 @@ export function MessagesPanel({ token }: { token: string }) {
 
   const openBookings = () => { setView("bookings"); loadBookings(); };
 
+  const [bQuery, setBQuery] = useState("");
+  const [bFilter, setBFilter] = useState<"all" | "upcoming" | "past">("all");
+  const [editing, setEditing] = useState<Booking | null>(null);
+  const [editH, setEditH] = useState("4");
+  const [editM, setEditM] = useState("00");
+  const [editP, setEditP] = useState("مساءً");
+
+  const filteredBookings = useMemo(() => {
+    const today = todayISO();
+    const q = bQuery.trim().toLowerCase();
+    return bookings
+      .filter((b) => {
+        if (bFilter === "upcoming" && b.date && b.date < today) return false;
+        if (bFilter === "past" && (!b.date || b.date >= today)) return false;
+        if (q) {
+          const hay = `${b.customerName} ${b.phone} ${b.bookingNo} ${b.serviceType} ${b.location}`.toLowerCase();
+          if (!hay.includes(q)) return false;
+        }
+        return true;
+      })
+      .sort((a, b) => (bFilter === "past" ? (b.date || "").localeCompare(a.date || "") : (a.date || "").localeCompare(b.date || "")));
+  }, [bookings, bQuery, bFilter]);
+
+  // يبني رسالة من قالب لحجز محفوظ ويفتح واتساب العميل
+  const sendForBooking = (b: Booking, key: string) => {
+    const t = TEMPLATES.find((x) => x.key === key);
+    if (!t) return;
+    const v: Vals = {
+      name: b.customerName, bookingNo: b.bookingNo, service: b.serviceType,
+      date: b.date, day: arWeekday(b.date), time: b.time, location: b.location,
+    };
+    const msg = t.build(v).trim();
+    const number = toWhatsAppNumber(b.phone);
+    window.open((number ? `https://wa.me/${number}?text=` : `https://wa.me/?text=`) + encodeURIComponent(msg), "_blank");
+  };
+
+  const deleteBooking = async (b: Booking) => {
+    if (!window.confirm(`حذف حجز ${b.customerName || b.bookingNo}؟`)) return;
+    try {
+      const res = await fetch(`/api/pricing/bookings?id=${encodeURIComponent(b.id)}`, {
+        method: "DELETE", headers: { Authorization: `Bearer ${token}` },
+      });
+      if (res.ok) { setBookings((bs) => bs.filter((x) => x.id !== b.id)); toast.success("حُذف الحجز"); }
+      else toast.error("تعذّر الحذف");
+    } catch { toast.error("تعذّر الحذف"); }
+  };
+
+  const startEdit = (b: Booking) => {
+    // نفكّك الوقت المحفوظ (مثل "4:30 مساءً") للقوائم، وإلا الافتراضي
+    const mt = (b.time || "").match(/(\d{1,2}):(\d{2})\s*(صباحاً|مساءً)/);
+    setEditH(mt?.[1] ?? "4");
+    setEditM(mt?.[2] ?? "00");
+    setEditP(mt?.[3] ?? "مساءً");
+    setEditing({ ...b });
+  };
+
+  const saveEdit = async () => {
+    if (!editing) return;
+    const body = {
+      customerName: editing.customerName, phone: editing.phone, bookingNo: editing.bookingNo,
+      date: editing.date, time: composeTime(editH, editM, editP),
+      location: editing.location, serviceType: editing.serviceType,
+    };
+    try {
+      const res = await fetch(`/api/pricing/bookings?id=${encodeURIComponent(editing.id)}`, {
+        method: "PUT",
+        headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` },
+        body: JSON.stringify(body),
+      });
+      if (!res.ok) { toast.error("تعذّر الحفظ"); return; }
+      toast.success("تم تحديث الحجز");
+      setEditing(null);
+      loadBookings();
+    } catch { toast.error("تعذّر الحفظ"); }
+  };
+
   const tpl = TEMPLATES.find((t) => t.key === active)!;
   const message = useMemo(() => tpl.build(vals).trim(), [tpl, vals]);
   const set = (k: string, v: string) =>
@@ -265,20 +344,38 @@ export function MessagesPanel({ token }: { token: string }) {
 
       {view === "bookings" ? (
         <div className="space-y-3">
-          <div className="flex items-center justify-between">
-            <p className="text-sm text-muted-foreground">آخر الحجوزات المحفوظة — وحالة التذكير والتقييم.</p>
-            <Button type="button" variant="outline" size="sm" className="h-9 shrink-0"
-                    onClick={loadBookings} disabled={loadingB}>
-              {loadingB ? <Loader2 className="h-4 w-4 animate-spin" /> : <><RefreshCw className="h-4 w-4 ml-1.5" />تحديث</>}
+          {/* بحث + تحديث */}
+          <div className="flex gap-2">
+            <div className="relative flex-1">
+              <Search className="absolute right-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground pointer-events-none" />
+              <Input className="h-10 pr-9" placeholder="دوّر بالاسم أو الجوال أو رقم الطلب"
+                     value={bQuery} onChange={(e) => setBQuery(e.target.value)} />
+            </div>
+            <Button type="button" variant="outline" className="h-10 shrink-0 px-3"
+                    onClick={loadBookings} disabled={loadingB} title="تحديث">
+              {loadingB ? <Loader2 className="h-4 w-4 animate-spin" /> : <RefreshCw className="h-4 w-4" />}
             </Button>
           </div>
+          {/* فلترة */}
+          <div className="flex gap-2">
+            {([["all", "الكل"], ["upcoming", "القادمة"], ["past", "المنتهية"]] as const).map(([k, label]) => (
+              <button key={k} type="button" onClick={() => setBFilter(k)}
+                className={cn("text-xs rounded-full px-3 py-1.5 border transition-colors",
+                  bFilter === k ? "bg-primary text-primary-foreground border-primary" : "bg-card hover:bg-muted")}>
+                {label}
+              </button>
+            ))}
+          </div>
+
           {loadingB ? (
             <div className="flex justify-center py-12"><Loader2 className="h-5 w-5 animate-spin text-primary" /></div>
-          ) : bookings.length === 0 ? (
-            <p className="text-sm text-muted-foreground text-center py-12">ما فيه حجوزات محفوظة بعد. احجز من قالب «تأكيد حجز» وتظهر هنا.</p>
+          ) : filteredBookings.length === 0 ? (
+            <p className="text-sm text-muted-foreground text-center py-12">
+              {bookings.length === 0 ? "ما فيه حجوزات محفوظة بعد. احجز من قالب «تأكيد حجز» وتظهر هنا." : "ما فيه حجوزات مطابقة."}
+            </p>
           ) : (
             <div className="space-y-2.5">
-              {bookings.map((b) => (
+              {filteredBookings.map((b) => (
                 <div key={b.id} className="bg-card border rounded-2xl p-4 shadow-clean">
                   <div className="flex items-start justify-between gap-2">
                     <div className="min-w-0">
@@ -302,10 +399,98 @@ export function MessagesPanel({ token }: { token: string }) {
                       {b.reviewSentAt ? "✓ تقييم أُرسل" : "تقييم بعد الخدمة"}
                     </span>
                   </div>
+
+                  {/* أزرار واتساب سريعة */}
+                  <div className="mt-3 grid grid-cols-3 gap-1.5">
+                    <Button type="button" size="sm" variant="outline" className="h-9 text-xs px-1"
+                            onClick={() => sendForBooking(b, "confirm")}>
+                      <MessageCircle className="h-3.5 w-3.5 ml-1" />التأكيد
+                    </Button>
+                    <Button type="button" size="sm" variant="outline" className="h-9 text-xs px-1"
+                            onClick={() => sendForBooking(b, "reminder")}>
+                      <Bell className="h-3.5 w-3.5 ml-1" />تذكير
+                    </Button>
+                    <Button type="button" size="sm" variant="outline" className="h-9 text-xs px-1"
+                            onClick={() => sendForBooking(b, "after")}>
+                      <Star className="h-3.5 w-3.5 ml-1" />تقييم
+                    </Button>
+                  </div>
+                  {/* تعديل / حذف */}
+                  <div className="mt-1.5 flex gap-1.5">
+                    <Button type="button" size="sm" variant="ghost" className="h-8 flex-1 text-xs text-muted-foreground"
+                            onClick={() => startEdit(b)}>
+                      <Pencil className="h-3.5 w-3.5 ml-1" />تعديل
+                    </Button>
+                    <Button type="button" size="sm" variant="ghost" className="h-8 flex-1 text-xs text-red-600 hover:text-red-700 hover:bg-red-50"
+                            onClick={() => deleteBooking(b)}>
+                      <Trash2 className="h-3.5 w-3.5 ml-1" />حذف
+                    </Button>
+                  </div>
                 </div>
               ))}
             </div>
           )}
+
+          {/* نافذة التعديل */}
+          <Dialog open={!!editing} onOpenChange={(o) => !o && setEditing(null)}>
+            <DialogContent dir="rtl" className="max-w-md">
+              <DialogHeader>
+                <DialogTitle className="text-right">تعديل الحجز</DialogTitle>
+              </DialogHeader>
+              {editing && (
+                <div className="space-y-3">
+                  <div className="space-y-1.5">
+                    <Label htmlFor="e-name">اسم العميل</Label>
+                    <Input id="e-name" className="h-11" value={editing.customerName}
+                           onChange={(e) => setEditing({ ...editing, customerName: e.target.value })} />
+                  </div>
+                  <div className="space-y-1.5">
+                    <Label htmlFor="e-phone">الجوال</Label>
+                    <Input id="e-phone" dir="ltr" className="h-11 text-right" value={editing.phone}
+                           onChange={(e) => setEditing({ ...editing, phone: e.target.value })} />
+                  </div>
+                  <div className="space-y-1.5">
+                    <Label htmlFor="e-service">نوع الخدمة</Label>
+                    <Input id="e-service" className="h-11" value={editing.serviceType}
+                           onChange={(e) => setEditing({ ...editing, serviceType: e.target.value })} />
+                  </div>
+                  <div className="space-y-1.5">
+                    <Label htmlFor="e-date">التاريخ</Label>
+                    <Input id="e-date" type="date" dir="ltr" className="h-11 text-right" value={editing.date}
+                           onChange={(e) => setEditing({ ...editing, date: e.target.value })} />
+                  </div>
+                  <div className="space-y-1.5">
+                    <Label>الوقت</Label>
+                    <div className="flex gap-2">
+                      <select aria-label="صباحاً أو مساءً" className={cn(selectCls, "flex-[1.2]")} value={editP}
+                              onChange={(e) => setEditP(e.target.value)}>
+                        <option>صباحاً</option>
+                        <option>مساءً</option>
+                      </select>
+                      <select aria-label="الساعة" className={cn(selectCls, "flex-1")} value={editH}
+                              onChange={(e) => setEditH(e.target.value)}>
+                        {HOURS.map((h) => <option key={h}>{h}</option>)}
+                      </select>
+                      <select aria-label="الدقائق" className={cn(selectCls, "flex-1")} value={editM}
+                              onChange={(e) => setEditM(e.target.value)}>
+                        {MINUTES.map((m) => <option key={m}>{m}</option>)}
+                      </select>
+                    </div>
+                  </div>
+                  <div className="space-y-1.5">
+                    <Label htmlFor="e-loc">الموقع / الحي</Label>
+                    <Input id="e-loc" className="h-11" value={editing.location}
+                           onChange={(e) => setEditing({ ...editing, location: e.target.value })} />
+                  </div>
+                  <p className="text-[11px] text-muted-foreground">لو غيّرت التاريخ، يُعاد جدولة التذكير والتقييم تلقائياً.</p>
+                </div>
+              )}
+              <DialogFooter className="gap-2 sm:gap-2">
+                <Button variant="outline" onClick={() => setEditing(null)}>إلغاء</Button>
+                <Button onClick={saveEdit}>حفظ التعديلات</Button>
+              </DialogFooter>
+            </DialogContent>
+          </Dialog>
         </div>
       ) : (
       <>
