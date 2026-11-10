@@ -510,7 +510,7 @@ export default function PricingAdmin() {
           </main>
         ) : mode === "messages" ? (
           <main className="max-w-4xl mx-auto px-4 pt-6">
-            <MessagesPanel />
+            <MessagesPanel token={token} />
           </main>
         ) : mode === "guide" ? (
           <main className="max-w-3xl mx-auto px-4 pt-6">
