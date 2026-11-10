@@ -40,6 +40,7 @@ const TEMPLATES: Template[] = [
     fields: [
       { key: "name", label: "اسم العميل" },
       { key: "bookingNo", label: "رقم الطلب", kind: "booking" },
+      { key: "service", label: "نوع الخدمة", placeholder: "تنظيف ما بعد البناء", optional: true },
       { key: "date", label: "التاريخ", kind: "date" },
       { key: "time", label: "الوقت", kind: "time" },
       { key: "location", label: "الموقع / الحي", optional: true },
@@ -48,12 +49,12 @@ const TEMPLATES: Template[] = [
       `مرحباً ${v.name || ""}،\n\n` +
       `تم تأكيد حجز موعد خدمة التنظيف 🧹 الخاصة بك:\n\n` +
       line("🔖", "رقم موعدك", v.bookingNo) +
+      line("🧹", "الخدمة", v.service) +
       line("📅", "اليوم", v.day) +
       line("🗓️", "التاريخ", v.date) +
       line("⏰", "الوقت", v.time) +
       line("📍", "الموقع", v.location) +
-      `\nشكراً لاختيارك كلينولوجي 🌿\n\n` +
-      `تُطبّق الشروط والأحكام: kleenology.me/terms-and-conditions`,
+      `\nشكراً لاختيارك كلينولوجي`,
   },
   {
     key: "reminder", label: "تذكير بالموعد", Icon: Bell,
@@ -80,7 +81,7 @@ const TEMPLATES: Template[] = [
       { key: "supervisorPhone", label: "جوال المشرف", optional: true },
     ],
     build: (v) =>
-      `فريق كلينولوجي في الطريق إليك 🚗🌿\n\n` +
+      `فريق كلينولوجي في الطريق إليك 🚗\n\n` +
       `مرحباً ${v.name || ""}، فريقنا بيوصلك خلال ${v.minutes || "..."} دقيقة تقريباً.\n` +
       (v.supervisor ? `المشرف: ${v.supervisor}${v.supervisorPhone ? ` — جواله: ${v.supervisorPhone}` : ""}\n` : "") +
       `\nنرجو تجهيز مدخل المكان. شكراً لك 🙏`,
@@ -90,7 +91,7 @@ const TEMPLATES: Template[] = [
     fields: [{ key: "name", label: "اسم العميل" }],
     build: (v) =>
       `تم إنجاز خدمتك ✅\n\n` +
-      `شكراً لثقتك بكلينولوجي يا ${v.name || ""} 🌿\n` +
+      `شكراً لثقتك بكلينولوجي يا ${v.name || ""}\n` +
       `نتمنى الخدمة نالت رضاك.\n\n` +
       `رأيك يهمنا — قيّمنا في دقيقة:\nkleenology.github.io/Feedback/reviews.html\n\n` +
       `وإذا تبي تحجز مرة ثانية، إحنا جاهزين 💙`,
@@ -112,7 +113,7 @@ const TEMPLATES: Template[] = [
       line("📍", "الموقع", v.location) +
       (v.amount ? `💰 المبلغ: ${v.amount} ر.س شامل الضريبة\n` : "") +
       line("⏱️", "مدة التنفيذ", v.duration) +
-      `\n${v.validUntil ? `العرض ساري حتى ${v.validUntil}. ` : ""}للتأكيد ردّ بـ «أوافق» ونحجز لك الموعد 🌿`,
+      `\n${v.validUntil ? `العرض ساري حتى ${v.validUntil}. ` : ""}للتأكيد ردّ بـ «أوافق» ونحجز لك الموعد`,
   },
 ];
 
