@@ -2,10 +2,12 @@ import { useMemo, useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Copy, MessageCircle, CalendarCheck, Bell, Car, Star, FileText } from "lucide-react";
+import { Copy, MessageCircle, CalendarCheck, Bell, Car, Star, FileText, Search, Loader2, User } from "lucide-react";
 import { toast } from "sonner";
 import { cn } from "@/lib/utils";
 import { toWhatsAppNumber } from "@/lib/pricing/quoteMessage";
+
+interface Match { name: string; phone: string; location?: string; date?: string; time?: string; service?: string }
 
 type Vals = Record<string, string>;
 interface Field { key: string; label: string; placeholder?: string; optional?: boolean }
@@ -100,14 +102,61 @@ const TEMPLATES: Template[] = [
   },
 ];
 
-export function MessagesPanel() {
+export function MessagesPanel({ token }: { token: string }) {
   const [active, setActive] = useState(TEMPLATES[0].key);
   const [phone, setPhone] = useState("");
   const [vals, setVals] = useState<Vals>({});
+  const [term, setTerm] = useState("");
+  const [results, setResults] = useState<Match[]>([]);
+  const [searching, setSearching] = useState(false);
 
   const tpl = TEMPLATES.find((t) => t.key === active)!;
   const message = useMemo(() => tpl.build(vals).trim(), [tpl, vals]);
   const set = (k: string, v: string) => setVals((prev) => ({ ...prev, [k]: v }));
+
+  // أسهل طريقة: ابحث عن العميل في سجلات المعاينة/فحص الجودة فتتعبّى بياناته تلقائياً
+  const lookup = async () => {
+    const q = term.trim();
+    if (!q) return;
+    setSearching(true);
+    try {
+      const auth = { headers: { Authorization: `Bearer ${token}` } };
+      const [insp, qc] = await Promise.all([
+        fetch(`/api/pricing/inspections?q=${encodeURIComponent(q)}`, auth).then((r) => (r.ok ? r.json() : { inspections: [] })).catch(() => ({ inspections: [] })),
+        fetch(`/api/pricing/qc?q=${encodeURIComponent(q)}`, auth).then((r) => (r.ok ? r.json() : { checks: [] })).catch(() => ({ checks: [] })),
+      ]);
+      const rows: Match[] = [
+        ...(insp.inspections ?? []).map((m: Record<string, string>) => ({ name: m.customerName, phone: m.phone, location: m.location, date: m.date, time: m.time, service: m.serviceType })),
+        ...(qc.checks ?? []).map((m: Record<string, string>) => ({ name: m.customerName, phone: m.phone, location: m.location, date: m.date })),
+      ].filter((r) => r.name || r.phone);
+      const seen = new Set<string>();
+      const uniq = rows.filter((r) => {
+        const k = `${r.phone || ""}|${r.name || ""}`;
+        if (seen.has(k)) return false;
+        seen.add(k);
+        return true;
+      });
+      setResults(uniq.slice(0, 8));
+      if (uniq.length === 0) toast.info("ما لقينا عميل بهذا الاسم/الجوال");
+    } finally {
+      setSearching(false);
+    }
+  };
+
+  const pick = (m: Match) => {
+    if (m.phone) setPhone(m.phone);
+    setVals((v) => ({
+      ...v,
+      name: m.name || v.name,
+      location: m.location || v.location,
+      date: m.date || v.date,
+      time: m.time || v.time,
+      service: m.service || v.service,
+    }));
+    setResults([]);
+    setTerm("");
+    toast.success(`تعبّت بيانات ${m.name || "العميل"}`);
+  };
 
   const send = () => {
     const number = toWhatsAppNumber(phone);
@@ -119,7 +168,39 @@ export function MessagesPanel() {
     <div className="space-y-5">
       <div>
         <h2 className="font-bold text-lg">رسائل جاهزة للعميل</h2>
-        <p className="text-sm text-muted-foreground">اختر نوع الرسالة، عبّي الخانات، وأرسلها واتساب مباشرة.</p>
+        <p className="text-sm text-muted-foreground">ابحث عن العميل فتتعبّى بياناته تلقائياً، أو عبّي يدوياً — ثم أرسل واتساب.</p>
+      </div>
+
+      {/* أسرع طريقة: البحث عن العميل */}
+      <div className="bg-brand-blue/5 border border-brand-blue/20 rounded-2xl p-3 sm:p-4">
+        <form onSubmit={(e) => { e.preventDefault(); lookup(); }} className="flex gap-2">
+          <div className="relative flex-1">
+            <Search className="absolute right-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground pointer-events-none" />
+            <Input className="h-11 pr-9" placeholder="ابحث عن العميل — بالاسم أو الجوال"
+                   value={term} onChange={(e) => setTerm(e.target.value)} />
+          </div>
+          <Button type="submit" className="h-11 shrink-0" disabled={searching || !term.trim()}>
+            {searching ? <Loader2 className="h-4 w-4 animate-spin" /> : "بحث"}
+          </Button>
+        </form>
+        {results.length > 0 && (
+          <div className="mt-2 space-y-1.5">
+            {results.map((m, i) => (
+              <button key={i} type="button" onClick={() => pick(m)}
+                      className="w-full flex items-center gap-3 text-right rounded-xl border bg-card px-3 py-2.5 hover:border-brand-blue transition-colors">
+                <div className="w-8 h-8 rounded-full bg-brand-blue/10 text-brand-blue flex items-center justify-center shrink-0">
+                  <User className="h-4 w-4" />
+                </div>
+                <div className="min-w-0 flex-1">
+                  <div className="font-semibold text-sm truncate">{m.name || "بلا اسم"}</div>
+                  <div className="text-[11px] text-muted-foreground">
+                    {[m.phone, m.location, m.date].filter(Boolean).join(" · ")}
+                  </div>
+                </div>
+              </button>
+            ))}
+          </div>
+        )}
       </div>
 
       {/* اختيار القالب */}
