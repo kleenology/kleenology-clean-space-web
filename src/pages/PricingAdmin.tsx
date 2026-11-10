@@ -24,6 +24,7 @@ import { QualityControlForm } from "@/components/pricing/QualityControlForm";
 import { PartnersPanel } from "@/components/pricing/PartnersPanel";
 import { ReviewsPanel } from "@/components/pricing/ReviewsPanel";
 import { MessagesPanel } from "@/components/pricing/MessagesPanel";
+import { DashboardPanel } from "@/components/pricing/DashboardPanel";
 import { WorkGuide } from "@/components/pricing/WorkGuide";
 import { loadPartnersData } from "@/lib/partners/api";
 
@@ -415,6 +416,8 @@ export default function PricingAdmin() {
                 setMode("inspection");
               }}
             />
+
+            {role === "admin" && <DashboardPanel token={token} />}
 
             <div>
             <div className="text-center mb-7">

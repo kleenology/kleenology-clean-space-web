@@ -14,7 +14,7 @@ interface Match { name: string; phone: string; location?: string; date?: string;
 interface Booking {
   id: string; customerName: string; phone: string; bookingNo: string; date: string;
   time: string; location: string; serviceType: string; savedAt: string;
-  reminderSentAt: string; reviewSentAt: string;
+  reminderSentAt: string; reviewSentAt: string; followupSentAt: string;
 }
 
 type Vals = Record<string, string>;
@@ -398,6 +398,9 @@ export function MessagesPanel({ token }: { token: string }) {
                       b.reviewSentAt ? "bg-green-100 text-green-700" : "bg-muted text-muted-foreground")}>
                       {b.reviewSentAt ? "✓ تقييم أُرسل" : "تقييم بعد الخدمة"}
                     </span>
+                    {b.followupSentAt && (
+                      <span className="text-[11px] rounded-full px-2 py-0.5 bg-green-100 text-green-700">✓ متابعة أُرسلت</span>
+                    )}
                   </div>
 
                   {/* أزرار واتساب سريعة */}
