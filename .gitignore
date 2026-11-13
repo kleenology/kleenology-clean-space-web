@@ -27,3 +27,8 @@ dist-ssr
 .env
 .env.*
 !.env.example
+
+# أدوات وكلاء محلية (skills) — ليست جزءاً من الموقع
+.agents/
+.claude/
+skills-lock.json
