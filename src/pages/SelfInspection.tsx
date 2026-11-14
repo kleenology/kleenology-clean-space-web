@@ -588,7 +588,7 @@ export default function SelfInspection() {
 
                 {/* Property */}
                 <div className="bg-muted/40 rounded-xl p-4 mb-3 space-y-1.5">
-                  <p className="text-xs text-muted-foreground font-semibold uppercase tracking-wide mb-2">
+                  <p className="text-xs text-muted-foreground font-semibold mb-2">
                     {isRTL ? "المكان" : "Property"}
                   </p>
                   {[
@@ -605,7 +605,7 @@ export default function SelfInspection() {
 
                 {/* Rooms */}
                 <div className="bg-muted/40 rounded-xl p-4 mb-3">
-                  <p className="text-xs text-muted-foreground font-semibold uppercase tracking-wide mb-2">
+                  <p className="text-xs text-muted-foreground font-semibold mb-2">
                     {isRTL ? "الغرف" : "Rooms"}
                   </p>
                   <div className="space-y-1.5">
@@ -625,7 +625,7 @@ export default function SelfInspection() {
                 {/* Media thumbnails */}
                 {data.media.length > 0 && (
                   <div className="bg-muted/40 rounded-xl p-4 mb-3">
-                    <p className="text-xs text-muted-foreground font-semibold uppercase tracking-wide mb-2">
+                    <p className="text-xs text-muted-foreground font-semibold mb-2">
                       {isRTL
                         ? `الوسائط (${data.media.length} ملف)`
                         : `Media (${data.media.length} file${data.media.length > 1 ? "s" : ""})`}
@@ -649,7 +649,7 @@ export default function SelfInspection() {
 
                 {/* Contact */}
                 <div className="bg-muted/40 rounded-xl p-4 mb-4 space-y-1.5">
-                  <p className="text-xs text-muted-foreground font-semibold uppercase tracking-wide mb-2">
+                  <p className="text-xs text-muted-foreground font-semibold mb-2">
                     {isRTL ? "التواصل" : "Contact"}
                   </p>
                   {[

@@ -34,7 +34,9 @@ const bookingView = (r) => ({
 
 export default async (request) => {
   if (!isConfigured()) return jsonResponse({ error: "not_configured" }, 503);
-  if (!requireSession(request)) return jsonResponse({ error: "unauthorized" }, 401);
+  const session = requireSession(request);
+  if (!session) return jsonResponse({ error: "unauthorized" }, 401);
+  if (session.role !== "admin") return jsonResponse({ error: "forbidden" }, 403);
   if (request.method !== "GET") return jsonResponse({ error: "method_not_allowed" }, 405);
 
   try {

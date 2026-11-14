@@ -36,7 +36,7 @@ function renderBlock(block: ContentBlock, idx: number) {
       );
     case "tip":
       return (
-        <div key={idx} className="my-6 bg-primary/8 border-r-4 border-primary rounded-lg px-5 py-4">
+        <div key={idx} className="my-6 bg-primary/5 border border-primary/15 rounded-lg px-5 py-4">
           <p className="text-sm text-foreground font-medium">{block.text}</p>
         </div>
       );

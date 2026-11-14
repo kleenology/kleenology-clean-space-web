@@ -77,7 +77,7 @@ export default function AdsLanding() {
       {/* Hero */}
       <section className="bg-foreground text-white px-6 py-20 text-center">
         <div className="max-w-2xl mx-auto">
-          <p className="text-white/50 text-sm tracking-widest uppercase mb-6 font-medium">
+          <p className="text-white/60 text-sm mb-6 font-medium">
             Kleenology — الرياض
           </p>
           <h1 className="text-4xl md:text-5xl font-bold leading-tight mb-6">

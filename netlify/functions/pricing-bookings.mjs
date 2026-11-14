@@ -29,7 +29,13 @@ function summarize(key, r) {
 
 export default async (request) => {
   if (!isConfigured()) return jsonResponse({ error: "not_configured" }, 503);
-  if (!requireSession(request)) return jsonResponse({ error: "unauthorized" }, 401);
+  const session = requireSession(request);
+  if (!session) return jsonResponse({ error: "unauthorized" }, 401);
+  // تصفّح/تعديل/حذف الحجوزات للإدارة فقط (فيها بيانات عملاء). الحفظ (POST)
+  // يبقى متاحاً لأي جلسة حتى يقدر المشرف يحفظ الحجز عند إرسال التأكيد.
+  if (request.method !== "POST" && session.role !== "admin") {
+    return jsonResponse({ error: "forbidden" }, 403);
+  }
 
   const store = recordStore(STORE);
   const url = new URL(request.url);
