@@ -125,7 +125,7 @@ const TEMPLATES: Template[] = [
   },
 ];
 
-export function MessagesPanel({ token }: { token: string }) {
+export function MessagesPanel({ token, role }: { token: string; role?: string }) {
   const [active, setActive] = useState(TEMPLATES[0].key);
   const [phone, setPhone] = useState("");
   const [vals, setVals] = useState<Vals>(() => {
@@ -328,7 +328,8 @@ export function MessagesPanel({ token }: { token: string }) {
         <p className="text-sm text-muted-foreground">التاريخ جاهز ورقم الطلب يتولّد تلقائياً (ويتجدّد بعد كل إرسال). ابحث عن العميل أو عبّي يدوياً ثم أرسل واتساب.</p>
       </div>
 
-      {/* تبديل: إنشاء رسالة أو عرض الحجوزات */}
+      {/* تبديل: إنشاء رسالة أو عرض الحجوزات — عرض الحجوزات للإدارة فقط */}
+      {role === "admin" && (
       <div className="flex gap-2 bg-muted/50 p-1 rounded-xl w-full sm:w-fit">
         <button type="button" onClick={() => setView("compose")}
           className={cn("flex-1 sm:flex-none text-sm rounded-lg px-4 py-2 font-medium transition-colors",
@@ -341,6 +342,7 @@ export function MessagesPanel({ token }: { token: string }) {
           الحجوزات
         </button>
       </div>
+      )}
 
       {view === "bookings" ? (
         <div className="space-y-3">
