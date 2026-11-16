@@ -1,49 +1,32 @@
-import { useEffect, useLayoutEffect, useRef, useState, type ReactNode } from "react";
+import { useEffect, useRef, type ReactNode } from "react";
+import gsap from "gsap";
+import { ScrollTrigger } from "gsap/ScrollTrigger";
+import { useGSAP } from "@gsap/react";
 
-// useLayoutEffect ما يشتغل وقت التصيير المسبق ويطبع تحذير — هناك useEffect يكفي
-const useIsomorphicLayoutEffect = typeof window === "undefined" ? useEffect : useLayoutEffect;
+gsap.registerPlugin(ScrollTrigger, useGSAP);
 
 /**
- * يدخل القسم بحركة خفيفة أول ما يظهر في الشاشة.
- * يُخفى فقط بعد التحميل وفقط لو كان تحت الشاشة — فالمحتوى ظاهر في HTML
- * المُصيَّر مسبقاً ولمحركات البحث، وما يختفي لو تعطل السكربت.
+ * يدخل القسم بحركة خفيفة (GSAP) أول ما يظهر في الشاشة.
+ * الحركة تعمل في المتصفح فقط — فالمحتوى ظاهر في HTML المُصيَّر مسبقاً
+ * ولمحركات البحث، وما يختفي لو تعطل السكربت. ويُحترم تقليل الحركة.
  */
 export function Reveal({ children }: { children: ReactNode }) {
   const ref = useRef<HTMLDivElement>(null);
-  const [state, setState] = useState<"static" | "hidden" | "shown">("static");
 
-  useIsomorphicLayoutEffect(() => {
+  useGSAP(() => {
     const el = ref.current;
-    if (!el || window.matchMedia("(prefers-reduced-motion: reduce)").matches) return;
-    if (el.getBoundingClientRect().top > window.innerHeight) setState("hidden");
-  }, []);
+    if (!el) return;
+    if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) return;
+    gsap.from(el, {
+      opacity: 0,
+      y: 40,
+      duration: 0.8,
+      ease: "power2.out",
+      scrollTrigger: { trigger: el, start: "top 85%", once: true },
+    });
+  }, { scope: ref });
 
-  useEffect(() => {
-    if (state !== "hidden" || !ref.current) return;
-    const observer = new IntersectionObserver(
-      ([entry]) => {
-        if (entry.isIntersecting) {
-          setState("shown");
-          observer.disconnect();
-        }
-      },
-      { rootMargin: "0px 0px -10% 0px" },
-    );
-    observer.observe(ref.current);
-    return () => observer.disconnect();
-  }, [state]);
-
-  return (
-    <div
-      ref={ref}
-      className={
-        state === "static" ? undefined
-          : `transition-all duration-700 ease-out ${state === "hidden" ? "opacity-0 translate-y-10" : "opacity-100 translate-y-0"}`
-      }
-    >
-      {children}
-    </div>
-  );
+  return <div ref={ref}>{children}</div>;
 }
 
 /** شريط رفيع أعلى الشاشة يتعبأ مع التمرير */
