@@ -12,6 +12,7 @@
     "preview": "vite preview"
   },
   "dependencies": {
+    "@gsap/react": "^2.1.2",
     "@hookform/resolvers": "^3.9.0",
     "@netlify/blobs": "^11.0.3",
     "@radix-ui/react-accordion": "^1.2.0",
@@ -47,6 +48,7 @@
     "cmdk": "^1.0.0",
     "date-fns": "^3.6.0",
     "embla-carousel-react": "^8.3.0",
+    "gsap": "^3.15.1",
     "i18next": "^23.16.8",
     "input-otp": "^1.2.4",
     "lucide-react": "^0.462.0",
