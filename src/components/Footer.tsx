@@ -48,8 +48,8 @@ export const Footer = ({ onTermsClick, onNavClick }: FooterProps) => {
               <a href="/deep-cleaning" className="block text-sm text-background/80 hover:text-brand-yellow transition-colors">{t('footer.deepCleaningLink')}</a>
               <a href="/carpet-cleaning" className="block text-sm text-background/80 hover:text-brand-yellow transition-colors">{t('footer.carpetCleaningLink')}</a>
               <a href="/post-construction-cleaning" className="block text-sm text-background/80 hover:text-brand-yellow transition-colors">{t('footer.postConstructionLink')}</a>
-              <a href="/apartment-cleaning-riyadh" className="block text-sm text-background/80 hover:text-brand-yellow transition-colors">{isRTL ? "تنظيف شقق بالرياض" : "Apartment Cleaning"}</a>
-              <a href="/villa-cleaning-riyadh" className="block text-sm text-background/80 hover:text-brand-yellow transition-colors">{isRTL ? "تنظيف فلل بالرياض" : "Villa Cleaning"}</a>
+              <a href="/apartment-cleaning-riyadh" className="block text-sm text-background/80 hover:text-brand-yellow transition-colors">{isRTL ? "تنظيف شقق" : "Apartment Cleaning"}</a>
+              <a href="/villa-cleaning-riyadh" className="block text-sm text-background/80 hover:text-brand-yellow transition-colors">{isRTL ? "تنظيف فلل" : "Villa Cleaning"}</a>
             </div>
           </div>
 

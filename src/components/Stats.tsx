@@ -6,7 +6,7 @@ const stats = [
   { icon: Calendar, valueAr: "٣", valueEn: "3", suffixAr: " سنوات", suffixEn: " Years", labelAr: "خبرة في السوق", labelEn: "In the Market", count: 3 },
   { icon: Users, valueAr: "٦٩٠+", valueEn: "690+", suffixAr: "", suffixEn: "", labelAr: "عميل سعيد", labelEn: "Happy Clients", count: 690 },
   { icon: Star, valueAr: "٩٨٪", valueEn: "98%", suffixAr: "", suffixEn: "", labelAr: "نسبة رضا العملاء", labelEn: "Client Satisfaction", count: 98 },
-  { icon: MapPin, valueAr: "", valueEn: "", suffixAr: "", suffixEn: "", labelAr: "نخدم مدينة الرياض", labelEn: "Serving Riyadh", count: 0 },
+  { icon: MapPin, valueAr: "قبل وبعد", valueEn: "Before & After", suffixAr: "", suffixEn: "", labelAr: "توثيق الجودة بالصور", labelEn: "Photo Quality Proof", count: 0 },
 ];
 
 function useCountUp(target: number, duration = 1500, start: boolean) {
@@ -29,7 +29,7 @@ function useCountUp(target: number, duration = 1500, start: boolean) {
 const StatCard = ({ valueAr, valueEn, suffixAr, suffixEn, labelAr, labelEn, count, isRTL, start }: any) => {
   const animated = useCountUp(count, 1500, start);
   const displayValue = count === 0
-    ? (isRTL ? "الرياض" : "Riyadh")
+    ? (isRTL ? valueAr : valueEn)
     : count === 690
     ? `${animated}+`
     : count === 98

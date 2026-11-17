@@ -2,7 +2,7 @@ import { useTranslation } from "react-i18next";
 import { Sparkles } from "lucide-react";
 
 const itemsAr = [
-  "✨ خدمة تنظيف احترافية في الرياض",
+  "✨ خدمة تنظيف احترافية",
   "🏅 فريق معتمد ذو خبرة +٣ سنوات",
   "✅ ضمان الرضا أو نعود مجاناً",
   "🌿 مواد تنظيف آمنة وصديقة للبيئة",
@@ -10,7 +10,7 @@ const itemsAr = [
 ];
 
 const itemsEn = [
-  "✨ Professional cleaning service in Riyadh",
+  "✨ Professional cleaning service",
   "🏅 Certified team with 3+ years experience",
   "✅ Satisfaction guarantee or we return free",
   "🌿 Safe & eco-friendly cleaning products",
