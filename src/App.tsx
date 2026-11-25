@@ -34,6 +34,7 @@ import ApartmentCleaning from "./pages/ApartmentCleaning";
 import VillaCleaning from "./pages/VillaCleaning";
 import { PixelTracker } from "@/components/PixelTracker";
 import { WhatsAppChatWidget } from "@/components/WhatsAppChatWidget";
+import { InstallPrompt } from "@/components/InstallPrompt";
 import { PerformanceMonitor } from "@/components/PerformanceMonitor";
 import { EnhancedTracking } from "@/components/EnhancedTracking";
 import { Component, ErrorInfo, ReactNode } from "react";
@@ -160,6 +161,7 @@ const App = ({ wrapRouter = browserRouter }: { wrapRouter?: RouterWrap }) => {
             </Routes>
             {/* داخل الراوتر: يحتاج معرفة المسار ليختفي في صفحات الإعلانات */}
             <WhatsAppChatWidget />
+            <InstallPrompt />
           </>)}
         </TooltipProvider>
       </QueryClientProvider>
